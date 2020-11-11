@@ -61,10 +61,8 @@ calls and 0MQ notification streams to produce 'events'.
 
 Jobs MUST follow those rules:
 
-* The same job MUST be publishable multiple times without causing problematic
-  side effects
-* A job published more than once MUST always produce the equivalent set of
-  events
+* The same job MUST be publishable multiple times without causing problematic side effects
+* A job published more than once MUST always produce the equivalent set of events
 
 ===Events===
 
