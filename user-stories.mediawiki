@@ -8,7 +8,7 @@
 We describe a basic user experience with a atomic swap GUI client for Alice and
 Bob.
 
-<img src="images/gui-mocks.jpg" align="right">
+<img src="images/gui-mocks.jpg">
 
 ==Alice==
 

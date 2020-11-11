@@ -9,7 +9,7 @@
 
 The figure represents the general architecture.
 
-<img src="images/arch.png" align="right">
+<img src="images/arch.png">
 
 ===Client/daemon segregation rationale===
 
@@ -25,7 +25,7 @@ background), heavy or light desktop GUIs, or even scripted/automated backends
 Each pieces can be represented as black boxes receiving inputs and producing
 outputs.
 
-<img src="images/global-arch.jpg" align="right">
+<img src="images/global-arch.jpg">
 
 ''It is worth noting that this diagram only show one syncer, but a syncer per
 blockchain is required.''
@@ -61,10 +61,10 @@ calls and 0MQ notification streams to produce 'events'.
 
 Jobs MUST follow those rules:
 
- * The same job MUST be publishable multiple times without causing problematic
-   side effects
- * A job published more than once MUST always produce the equivalent set of
-   events
+* The same job MUST be publishable multiple times without causing problematic
+  side effects
+* A job published more than once MUST always produce the equivalent set of
+  events
 
 ===Events===
 
