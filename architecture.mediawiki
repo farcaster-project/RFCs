@@ -95,12 +95,16 @@ state accordingly.
 
 ==Swap State==
 
-The swap state is handled by the daemon, in each state some transitions are
-possible via a list of valid inputs. Inputs can be: (i) events, (ii)
-inter-daemon messages, or (iii) action responses. When a swap state receives an
-input a transition to a new state MAY produce outputs. Outputs can be: (i) jobs,
-(ii) inter-daemon messages, or (iii) action requests. Valid transition from one
-state to another are describe through a recipe.
+The Swap state encodes the step of the protocol execution the user is currently
+in, and it is handled by the Daemon. For each given State one or more
+transitions are enabled as a function of a list of valid inputs. Inputs can be:
+(i) events, (ii) inter-daemon messages, or (iii) action responses. When a swap
+state receives an input, a transition to a new state MAY produce outputs.
+Outputs can be: (i) jobs, (ii) inter-daemon messages, or (iii) action requests.
+Valid transition from one state to another are described through a recipe.
+
+Upon Swap state update, daemon pushes new subset of available transitions to
+Client.
 
 After each transition the swap state SHOULD be saved on disk. The daemon SHOULD
 be able to start with a given state and a given recipe. By insuring that daemon
