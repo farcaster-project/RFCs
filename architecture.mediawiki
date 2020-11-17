@@ -25,10 +25,9 @@ background), heavy or light desktop GUIs, or even scripted/automated backends
 Each pieces can be represented as black boxes receiving inputs and producing
 outputs.
 
-<img src="images/global-arch.jpg">
+<img src="images/arch-global.png">
 
-''It is worth noting that this diagram only show one syncer, but a syncer per
-blockchain is required.''
+''It is worth noting that this diagram only show one syncer, but a syncer per blockchain is required.''
 
 ==Daemon==
 
