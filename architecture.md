@@ -1,4 +1,7 @@
 # Farcaster Architecture
+
+[![hackmd-github-sync-badge](https://hackmd.io/vTCjO2-ySr6SB7ObuJMhnA/badge)](https://hackmd.io/vTCjO2-ySr6SB7ObuJMhnA)
+
 ###### tags: `farcaster` `RFC` `architecture`
 
 [TOC]
