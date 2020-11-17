@@ -40,22 +40,22 @@ inter-daemon communication during the swap period.
 Daemon reacts on client inputs 'action responses' and produces 'action requests'
 listen by the client.
 
-A daemon doesn't interact with a blockchain fullnode directly. A syncer do
+A daemon doesn't interact with a blockchain fullnode directly. A syncer does
 handle 'job' requests from a daemon and MAY produce a set of 'events' according
 to the type of 'job'.
 
-Deamon to daemon communication MUST have a mechanism to reconnect given a
+Daemon to daemon communication MUST have a mechanism to reconnect given a
 previously saved state.
 
 ==Syncer==
 
-A syncer is specific to a blockchain and can handle a list of 'job' directly
-related to that blockchain. Thos 'jobs' will be completed in different manners
+A syncer is specific to a blockchain and can handle a list of 'jobs' directly
+related to that blockchain. Those 'jobs' will be completed in different manners
 depending on the blockchain type.
 
 ===Jobs===
 
-A syncer is responsible to handle jobs. To achieve that goal a syncer is
+A syncer is responsible to handle 'jobs'. To achieve that goal a syncer is
 connected to a blockchain, through a full node or equivalent, and uses e.g. RPC
 calls and 0MQ notification streams to produce 'events'.
 
@@ -74,23 +74,37 @@ equivalent.
 ==Client==
 
 The client is the only component aware of the user's private keys and acts as a
-"swap wallet", siging the transactions and messages asked by the daemon through
-'action requests'.
+"swap wallet", signing the transactions and messages provided by the daemon
+through 'action requests'.
 
-Action requests and action responses are asyncronous and may fail, the daemon
-MUST handle failed requests and modify the swap state in reaction.
+Action requests and action responses are asynchronous and may fail, the daemon
+MUST handle failed requests and MAY modify the Swap state in reaction.
 
-Client and daemon MUST have an initialization protocol allowing one or the other
-to restart from a past state.
+Client and Daemon MUST have an initialization protocol allowing one or the other
+to recover from a past Swap state.
 
-==Swap Sate==
+Daemon serves Client the list of Enabled transitions available to move forward
+with the swap protocol execution.
 
-The swap state is handled by the daemon, in each state some transitions are
-possible via a list of valid inputs. Inputs can be: (i) events, (ii)
-inter-daemon messages, or (iii) action responses. When a swap state recieves an
-input a transition to a new state MAY produce outputs. Outputs can be: (i) jobs,
-(ii) inter-daemon messages, or (iii) action requests. Valid transition from one
-state to another are describe through a recipe.
+Client pass User's instructions to the Daemon. That is, Client MAY at the User's
+discretion fire one of the Enabled protocol transitions at each moment in time.
+A subset of transitions MAY require signed protocol messages and/or signed
+blockchain transactions as input. After Client's instruction, Daemon MUST
+undertake the actions associated with the fired transition, and update Swap
+state accordingly.
+
+==Swap State==
+
+The Swap state encodes the step of the protocol execution the user is currently
+in, and it is handled by the Daemon. For each given State one or more
+transitions are enabled as a function of a list of valid inputs. Inputs can be:
+(i) events, (ii) inter-daemon messages, or (iii) action responses. When a swap
+state receives an input, a transition to a new state MAY produce outputs.
+Outputs can be: (i) jobs, (ii) inter-daemon messages, or (iii) action requests.
+Valid transition from one state to another are described through a recipe.
+
+Upon Swap state update, daemon pushes new subset of available transitions to
+Client.
 
 After each transition the swap state SHOULD be saved on disk. The daemon SHOULD
 be able to start with a given state and a given recipe. By insuring that daemon
