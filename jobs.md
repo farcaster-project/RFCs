@@ -1,3 +1,5 @@
+[![hackmd-github-sync-badge](https://hackmd.io/0UBnjLo3QzWx_ReejLHgYQ/badge)](https://hackmd.io/0UBnjLo3QzWx_ReejLHgYQ)
+
 <pre>
   State: draft
   Created: 2020-11-17
