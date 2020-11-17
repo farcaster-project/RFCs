@@ -3,24 +3,21 @@
   Created: 2020-11-17
 </pre>
 
-=Jobs=
+# Jobs
 
-Available jobs are specific to syncers and their parameters can vary depending
-on the related blockchain.
+Available jobs are specific to syncers and their parameters can vary depending on the related blockchain.
 
-This RFC lists available jobs that MUST be supported by a Bitcoin syncer and a
-Monero syncer and their respective outputs: events.
+This RFC lists available jobs that MUST be supported by a Bitcoin syncer and a Monero syncer and their respective outputs: events.
 
 A job can produce zero or more events during its lifetime.
 
 A job MUST be reproducible without undesirable side effets.
 
-==Bitcoin Jobs==
+## Bitcoin Jobs
 
-===Watch Transaction===
+### Watch Transaction
 
-Lifetime: finite, the job is completed after producing the first event or when
-reaching maxlife epoch.
+Lifetime: finite, the job is completed after producing the first event or when reaching maxlife epoch.
 
 Parameters:
 
@@ -32,7 +29,7 @@ Output:
 
 * event: transaction seen
 
-===Broadcast Transaction===
+### Broadcast Transaction
 
 Lifetime: finite, the job is completed after producing the first event.
 
@@ -48,9 +45,9 @@ or
 
 * event: transaction broadcast failed
 
-==Monero Jobs==
+## Monero Jobs
 
-===Watch Wallet===
+### Watch Wallet
 
 Lifetime: finite, the job is completed after reaching the maxlife epoch.
 
@@ -65,7 +62,7 @@ Output:
 
 * event: funds arrived
 
-===Broadcast Transaction===
+### Broadcast Transaction
 
 Lifetime: finite, the job is completed after producing the first event.
 
