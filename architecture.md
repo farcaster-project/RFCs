@@ -2,44 +2,72 @@
 
 [![hackmd-github-sync-badge](https://hackmd.io/vTCjO2-ySr6SB7ObuJMhnA/badge)](https://hackmd.io/vTCjO2-ySr6SB7ObuJMhnA)
 
-###### tags: `farcaster` `RFC` `architecture`
-
-[TOC]
-
 <pre>
   State: draft
   Created: 2020-11-11
 </pre>
 
+###### tags: `RFC` `architecture`
+
+[TOC]
+
+
 ## Global Architecture
 
-The figure represents the general architecture.
+We segregated three main software components: Client, Daemon, and Syncer. 
+- The Client drives the swap,
+- the Daemon orchestrates the swap protocol execution and
+- the Syncer maintains the Protocol state and the Blockchain state in sync  
+
+The figure below represents the general architecture.
+
 ![](https://github.com/farcaster-project/RFCs/raw/master/images/arch.png)
 
+
+The following table summarizes different aspects of each component.
+
+|                 | `swap-client`                    | `swap-daemon`                                        | `chain-syncer`     |
+|-----------------|----------------------------------|------------------------------------------------------|--------------------|
+| definition   | a program that controls the daemon and display the current state | a program that executes the core protocol in a state machine | a program that talks with a specific blockchain |
+| cryptographic keys & secrets | private & public    | public only                                          | public only        |
+| client/user  | end-user                         | `swap-client`, counterparty `swap-daemon`                | `swap-daemon`        |
+| availability          | present at the start and to sign | mostly online, channel of communication between parties | always online      |
+| communicates with | `swap-daemon`                      | `swap-client`, `chain-syncer`, counterparty `swap-daemon` | `swap-daemon`, blockchain |
+| transactions    | signs                            | creates all transactions, verifies signatures        | listens for and publishes transactions  |
+| protocol-state  | doesn't understand protocol, but can represent its state              | understands the protocol, but can't sign             | doesn't understand protocol |
+
 ### Client/daemon segregation rationale
+The rationale behind segregating the client and the daemon currently is not for security reasons -- the client signs the transactions received from the daemon blindly, implying full trust.
 
-The rationale behind segregating the client and the daemon is not for security reasons at the moment (the client signs the transactions received from the daemon blindly, implying full trust), but for the flexibility and extensibility added.
+The client is the only component that has access to secret keys.
 
-Other clients can be created: mobile applications (that also run the daemon in background), heavy or light desktop GUIs, or even scripted/automated backends (e.g. in a business environment).
+The aim of this segregation is to improve flexibility and extensibility added by making the client peripheral to the swap stack, that is, other clients might be created, such as: 
+- clients supporting hardware wallets
+- mobile applications (that may run the daemon in background or in a private server), 
+- heavy- or light-weight desktop GUIs, 
+- scripted/automated backend clients (e.g. in a business environment) 
 
-Each pieces can be represented as black boxes receiving inputs and producing outputs.
+Each swap components is represented as a black box that consumes input messages and produces output messages.
 
 ![](https://github.com/farcaster-project/RFCs/raw/master/images/global-arch.jpg)
 
-''It is worth noting that this diagram only show one syncer, but a syncer per blockchain is required.''
+It is worth noting that this diagram only show one syncer, but a syncer per blockchain is required.
 
 ## Daemon
 
-The daemon is the central component responsible for moving the state of the swap accordingly to the received outputs. It has a bidirectional communication channel with the other daemon to coordinate on the global swap parameters and inter-daemon communication during the swap period.
+The Daemon is the central component responsible for orchestrating the protocol execution. 
 
-Daemon reacts on client 'instruction' inputs and produces 'instruction availability' listen by the client. A daemon and a client MUST implement a mechanism to reconnect given a previously saved state.
+Daemon's main function is to manage the safe progression of the execution of the cross-chain-swap in response to the extrinsic and intrinsic messages it receives -- respectively coming from itself and from the components it directly interacts with. 
 
-A daemon doesn't interact with a blockchain fullnode directly. A syncer does handle 'job' requests from a daemon and MAY produce a set of 'events' according to the type of 'job'.
+The Daemon MUST be fully aware of the complete State of the cross-chain-swap execution. To achieve that it MUST listen to: 
+- on-chain events from both chains via Syncers communication,
+- swap-counterparty protocol messages via inter-daemon communication, 
+- user's instructions via Client communication
 
-Daemon to daemon communication MUST have a mechanism to reconnect given a previously saved state.
+The Daemon MUST create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a petrinet model of the protocol may be used to create a runtime environment that executes the user's respective role in the protocol, by only authorizing firing valid enabled protocol transitions.
+
 
 ## Syncer
-
 A syncer is specific to a blockchain and can handle a list of 'jobs' directly related to that blockchain. Those 'jobs' will be completed in different manners depending on the blockchain type.
 
 ### Jobs
@@ -47,8 +75,8 @@ A syncer is specific to a blockchain and can handle a list of 'jobs' directly re
 A syncer is responsible to handle 'jobs'. To achieve that goal a syncer is connected to a blockchain, through a full node or equivalent, and uses e.g. RPC calls and 0MQ notification streams to produce 'events'.
 
 Jobs MUST follow those rules:
-* The same job MUST be publishable multiple times without causing problematic side effects
-* A job published more than once MUST always produce the equivalent set of events
+* The same job MUST be publishable multiple times without causing consequential side effects
+* A job published more than once MUST always produce an equivalent set of events
 
 ### Events
 
@@ -59,7 +87,7 @@ equivalent.
 
 The client is the only component aware of the user's private keys and acts as a "swap wallet", signing the blockchain transactions and piloting the swap through 'instructions'.
 
-Instruction availibility messages and instructions are asynchronous and may fail, the daemon MUST handle missing instructions from a client and MAY modify the Swap state in reaction.
+Instruction availability messages and instructions are asynchronous and may fail, the daemon MUST handle missing instructions from a client and MAY modify the Swap state in response.
 
 Client and Daemon MUST have an initialization protocol allowing one or the other to recover from a past Swap state.
 
@@ -73,5 +101,5 @@ The Swap state encodes the step of the protocol execution the user is currently 
 
 Valid transitions from one state to other states are described through a recipe. Upon Swap state update, daemon pushes new subset of available instructions to Client.
 
-After each transition the swap state SHOULD be saved on disk. The daemon SHOULD be able to start with a given state and a given recipe. By insuring that daemon outputs can be replayed safely, like jobs, the work already performed since the last saved state can be replayed safely.
+After each transition the swap state SHOULD be saved on disk. The daemon SHOULD be able to start with a given state and a given recipe. By ensuring that daemon outputs can be replayed safely, like jobs, the work already performed since the last saved state can be replayed safely.
 
