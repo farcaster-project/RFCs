@@ -66,6 +66,36 @@ The Daemon MUST be fully aware of the complete State of the cross-chain-swap exe
 
 The Daemon MUST create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a petrinet model of the protocol may be used to create a runtime environment that executes the user's respective role in the protocol, by only authorizing firing valid enabled protocol transitions.
 
+### Inter-daemon communication
+The Daemon has a bidirectional communication channel with the swap counterparty's daemon. This inter-daemon communication is used to pass signed messages in the correct order between the swap counterparties, such as the messages needed for:
+- agreeing on the global swap parameters, 
+- safe initialization, 
+- and safe protocol execution during swap period itself.
+
+### Client-Daemon communication
+1. Client fires one of the enabled transitions, by sending a valid Client Instruction message to the Daemon 
+2. Daemon consumes Client Instruction message
+3. Daemon executes Client's instruction
+4. Daemon's internal Swap state MAY be modified by instruction execution
+5. if the Swap State was modified, Daemon MUST update Client by sending an Enabled Transitions message to the Client about the new enabled protocol transitions Client MAY next fire
+6. Client then MAY fire any of the new enabled protocol transition and progress on the protocol execution (back to step 1)
+
+A valid Client Instruction message fires an enabled protocol transition in the Daemon
+
+### Blockchain communication: Syncer-Daemon communication
+A Daemon does not interact with a blockchain fullnode directly. A 
+
+A Syncer handles 'job' requests from a Daemon and MAY produce a set of 'events' according to the type of 'job' it receives.
+
+## Recovery from saved state between components
+### Inter-daemon
+Daemon to Daemon communication MUST have a mechanism to reconnect and safely and gracefully recover from the latest saved state. This is the most critical recovery of the protocol as recovering to the wrong state MAY permit counter-party to steal funds.
+
+### Client-Daemon
+Similarly, both Daemon and Client MUST implement mechanisms to restablish their connection and safely recover from a previously saved state.
+
+### Syncer-Daemon
+Again, Daemon MUST implement mechanisms to reconnect to Syncer and safely recover from its previously saved state and from the extra information received from Syncer that occured while Daemon was disconnected.
 
 ## Syncer
 A syncer is specific to a blockchain and can handle a list of 'jobs' directly related to that blockchain. Those 'jobs' will be completed in different manners depending on the blockchain type.
