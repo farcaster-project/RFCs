@@ -5,77 +5,102 @@
   Created: 2020-11-17
 </pre>
 
+[TOC]
+
 # Jobs
 
 Available jobs are specific to syncers and their parameters can vary depending on the related blockchain.
 
 This RFC lists available jobs that MUST be supported by a Bitcoin syncer and a Monero syncer and their respective outputs: events.
 
-A job can produce zero or more events during its lifetime.
+A job produces zero or more events during its lifetime.
 
-A job MUST be reproducible without undesirable side effets.
+A job MUST be reproducible without contradictory side effets.
 
 ## Bitcoin Jobs
 
 ### Watch Transaction
+Bitcoin job `watch transaction` allows a daemon to ask a syncer for getting noticed with a `transaction seen` event.
 
-Lifetime: finite, the job is completed after producing the first event or when reaching maxlife epoch.
+Upon job reception a syncer MUST check if the job is already completed and return, if not the syncer MUST start a background task until the job is completed.
 
-Parameters:
+The job is completed after producing the `transaction seen` event or when reaching `maxlife`  epoch or block height.
 
-* txid: the transaction txid to watch
-* confirmations: number of block needed before producing the output, if 0 it produces the output when the transaction appears in the full node mempool
-* maxlife: an epoch after what the job can be discarded if not already completed
+#### Parameters
 
-Output:
+* `txid`: the transaction txid to watch
+* `confirmations`: number of block needed before producing the event, if 0 it produces the output when the transaction appears in the full-node mempool
+* `maxlife`: an epoch or block height after what the job can be discarded if not already completed, same semantic as Bitcoin CLTV
 
-* event: transaction seen
+#### Event
 
-### Broadcast Transaction
+`transaction seen`:
 
-Lifetime: finite, the job is completed after producing the first event.
+* `txid`: the transaction txid
+* `block`: the block hash where the transaction is mined, zero value hash if in mempool
 
-Parameters:
-
-* rawtx: the raw transaction to broadcast
-
-Output:
-
-* event: transaction broadcasted
-
-or
-
-* event: transaction broadcast failed
 
 ## Monero Jobs
 
 ### Watch Wallet
+Monero job `watch wallet` allows a daemon to ask a syncer for getting noticed when funds arrived in a specific view key pair.
 
-Lifetime: finite, the job is completed after reaching the maxlife epoch.
+Upon job reception a syncer MUST scan the last `lastblocks` blocks and return corresponding `funds arrived` events and MUST start a background task until the job is completed.
 
-Parameters:
+The job is completed after reaching the `maxlife` epoch or block height.
 
-* privateview: the private view key
-* publicspend: the public spend key
-* confirmations: number of block needed before producing the output, if 0 it produces the output when the transaction appears in the full node mempool
-* maxlife: an epoch after what the job can be discarded
+#### Parameters
 
-Output:
+* `privateview`: the private view key
+* `publicspend`: the public spend key
+* `confirmations`: number of block needed before producing the `funds arrived` event, if 0 it produces the event when the transaction appears in the full-node mempool
+* `lastblocks`: the number of last blocks to scan for transactions
+* `maxlife`: an epoch after what the job can be discarded or a block height, same semantic as Bitcoin CLTV
 
-* event: funds arrived
+#### Event
+
+`funds arrived`:
+
+* `txid`: the transaction id
+* `amount`: the amount received
+
+## Common
+
+### New height
+Job `new height` allows a daemon to ask a syncer for getting noticed on each height change until some block height or some epoch.
+
+Upon job reception a syncer MUST directly send an `height changed` event and MUST start a background task until the job is completed.
+
+The job is completed after reaching the block height or the epoch specified in the `maxlife` parameters.
+
+#### Parameters
+
+* `maxlife`: an epoch after what the job can be discarded or a block height, same semantic as Bitcoin CLTV
+
+#### Event
+
+`height changed`:
+
+* `height`: the new height number
+* `block`: the block hash
 
 ### Broadcast Transaction
+Job `broadcast transaction` allows a daemon to ask a syncer for broadcasting a transaction.
 
-Lifetime: finite, the job is completed after producing the first event.
+Upon job reception a syncer MUST check if the job is already completed and return, if not the syncer MUST handle the job and return.
 
-Parameters:
+The job is completed after producing a `transaction broadcasted` event or a `broadcast failed` event.
 
-* rawtx: the raw transaction to broadcast
+#### Parameters
 
-Output:
+* `rawtx`: the raw transaction to broadcast
 
-* event: transaction broadcasted
+#### Event
 
-or
+`transaction broadcasted`:
 
-* event: transaction broadcast failed
+* `txid`: the transaction txid
+
+`broadcast failed`:
+
+* `error`: an error description
