@@ -45,9 +45,11 @@ The aim of this segregation is to improve flexibility and extensibility added by
 - clients supporting hardware wallets
 - mobile applications (that may run the daemon in background or in a private server), 
 - heavy- or light-weight desktop GUIs, 
-- scripted/automated backend clients (e.g. in a business environment) 
+- scripted/automated backend clients (e.g. run by market maker, OTCs etc) 
 
-Each swap components is represented as a black box that consumes input messages and produces output messages.
+### Components interaction
+
+Each swap components is represented as a black box that consumes input messages and produces output messages. Each input and output message has a type, components consume certain types of messages only, e.g. the client doesn't consume messages produced by syncers.
 
 ![](https://github.com/farcaster-project/RFCs/raw/master/images/global-arch.jpg)
 
@@ -73,14 +75,41 @@ The Daemon has a bidirectional communication channel with the swap counterparty'
 - and safe protocol execution during swap period itself.
 
 ### Client-Daemon communication
-1. Client fires one of the enabled transitions, by sending a valid Client Instruction message to the Daemon 
-2. Daemon consumes Client Instruction message
-3. Daemon executes Client's instruction
-4. Daemon's internal Swap state MAY be modified by instruction execution
-5. if the Swap State was modified, Daemon MUST update Client by sending an Enabled Transitions message to the Client about the new enabled protocol transitions Client MAY next fire
+1. A valid Client Instruction message sent by the Client to the Daemon instructs the daemon to fire a given enabled protocol transition 
+2. Daemon consumes Client Instruction message and
+3. Daemon fires transitions that are in one-to-one correspondence with Client instructions
+4. Daemon's internal Swap state MAY be modified by firing protocol transitions
+5. if the Swap State was modified, Daemon MUST update Client by sending an Enabled Transitions message to the Client about the new enabled protocol transitions Client MAY next instruct to fire
 6. Client then MAY fire any of the new enabled protocol transition and progress on the protocol execution (back to step 1)
 
 A valid Client Instruction message fires an enabled protocol transition in the Daemon
+
+The figure below presents a petrinet summarizing client-daemon communication scheme.
+
+![](https://i.imgur.com/PwdlQTF.png)
+
+
+
+```
+; run recoverState only once to initialize state!
+recoverState: () -> EnabledTransitions.
+
+userCommand: () -> ClientInstructionQueue.
+
+clientInstruction: EnabledTransitions ClientInstructionQueue -> CheckEnabled.
+
+isEnabled: CheckEnabled -> Enabled.
+notEnabled: CheckEnabled -> Failure.
+
+fireTransition: Enabled -> ApplyEffects.
+
+success: ApplyEffects -> Successful.
+failure: ApplyEffects -> Failure.
+
+updateSuccess: Successful -> EnabledTransitions.
+updateFailure: Failure -> EnabledTransitions.
+
+```
 
 ### Blockchain communication: Syncer-Daemon communication
 A Daemon does not interact with a blockchain fullnode directly. A 
@@ -92,10 +121,10 @@ A Syncer handles 'job' requests from a Daemon and MAY produce a set of 'events' 
 Daemon to Daemon communication MUST have a mechanism to reconnect and safely and gracefully recover from the latest saved state. This is the most critical recovery of the protocol as recovering to the wrong state MAY permit counter-party to steal funds.
 
 ### Client-Daemon
-Similarly, both Daemon and Client MUST implement mechanisms to restablish their connection and safely recover from a previously saved state.
+Both Daemon and Client MUST implement mechanisms to restablish their connection and safely recover from a previously saved state.
 
 ### Syncer-Daemon
-Again, Daemon MUST implement mechanisms to reconnect to Syncer and safely recover from its previously saved state and from the extra information received from Syncer that occured while Daemon was disconnected.
+Daemon MUST implement mechanisms to reconnect to Syncer and safely recover from its previously saved state and from the extra information queried from Syncer about events while Daemon was disconnected.
 
 ## Syncer
 A syncer is specific to a blockchain and can handle a list of 'jobs' directly related to that blockchain. Those 'jobs' will be completed in different manners depending on the blockchain type.
@@ -127,7 +156,7 @@ Client pass User's instructions to the Daemon. That is, Client MAY at the User's
 
 ## Swap State
 
-The Swap state encodes the step of the protocol execution the user is currently in, and it is handled by the Daemon. For each given State zero or more transitions are enabled as a function of a list of valid inputs. Inputs can be: (i) events, (ii) inter-daemon messages, or (iii) instructions. When a swap state receives an input, a transition to a new state MAY produce outputs. Outputs can be: (i) jobs, (ii) inter-daemon messages, or (iii) instruction availibity.
+The Swap state encodes the step of the protocol execution the user is currently in, and it is handled by the Daemon. For each given State zero or more transitions are enabled as a function of a list of valid inputs. Inputs can be: (i) events, (ii) inter-daemon messages, or (iii) instructions. When a swap state receives an input, a transition to a new state MAY produce outputs. Outputs can be: (i) jobs, (ii) inter-daemon messages, or (iii) instruction availability.
 
 Valid transitions from one state to other states are described through a recipe. Upon Swap state update, daemon pushes new subset of available instructions to Client.
 
