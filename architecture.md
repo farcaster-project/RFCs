@@ -153,12 +153,20 @@ Daemon serves Client the list of available 'instructions' to move forward with t
 Client pass User's instructions to the Daemon. That is, Client MAY at the User's discretion fire one of the possible protocol transitions at each moment in time. A subset of transitions MAY require signed protocol messages and/or signed blockchain transactions as input. After Client's instruction, Daemon MUST undertake the actions associated with the fired transition, and update Swap state accordingly.
 
 ## Swap State
+The Swap state encodes the step of the protocol execution the user is currently in, and it is handled by the Daemon. For each given state, zero or more transitions are enabled as a function of a list of valid inputs. Inputs can be: (i) events, (ii) inter-daemon messages, (iii) instructions, or (iv) daemon loopback messages. When a swap state receives an input, a transition to a new state MAY produce outputs. Outputs can be: (i) jobs, (ii) inter-daemon messages, (iii) instruction enabled, or (iv) daemon loopback messages.
 
-The Swap state encodes the step of the protocol execution the user is currently in, and it is handled by the Daemon. For each given State zero or more transitions are enabled as a function of a list of valid inputs. Inputs can be: (i) events, (ii) inter-daemon messages, or (iii) instructions. When a swap state receives an input, a transition to a new state MAY produce outputs. Outputs can be: (i) jobs, (ii) inter-daemon messages, or (iii) instruction availability.
+Valid transitions from one state to other states are described by the protocol. Upon Swap state update, daemon MUST push the new subset of available instructions to Client.
 
-Valid transitions from one state to other states are described through a recipe. Upon Swap state update, daemon pushes new subset of available instructions to Client.
+For each swap state, only a subset of inputs is valid. The daemon MUST contextually filter all of its inputs before applying them. Filtering can happen in parallel for every stream of inputs. All filtered stream are then combined, each element of this final stream are applied one by one on the current state.
 
-After each transition the swap state SHOULD be saved on disk. The daemon SHOULD be able to start with a given state and a given recipe. By ensuring that daemon outputs can be replayed safely, like jobs, the work already performed since the last saved state can be replayed safely.
+The first task of the combined input stream MUST be a save on disk. After each transition the swap state MUST be saved on disk as the last checkpoint. The daemon MUST be able to start with a given checkpoint, a saved stream of inputs and a protocol.
+
+The swap state can be viewed as an ordered set of inputs. On a crash the daemon MUST be able to load the last checkpoint and apply the stream of inputs (saved and incoming inputs) uncontained in the loaded checkpoint.
+
+By ensuring that daemon output messages can be replayed safely, like jobs, the work already performed since the last saved checkpoint can be replayed safely.
+
+![](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/input-streams.png)
+
 
 ### Recovery from saved state between components
 #### Inter-daemon
