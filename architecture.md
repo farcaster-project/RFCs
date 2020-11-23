@@ -51,7 +51,7 @@ The aim of this segregation is to improve flexibility and extensibility added by
 
 Each swap components is represented as a black box that consumes input messages and produces output messages. Each input and output message has a type, components consume certain types of messages only, e.g. the client doesn't consume messages produced by syncers.
 
-![](https://github.com/farcaster-project/RFCs/raw/master/images/global-arch.jpg)
+![](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/arch-global.png)
 
 It is worth noting that this diagram only show one syncer, but a syncer per blockchain is required.
 
@@ -64,7 +64,8 @@ Daemon's main function is to manage the safe progression of the execution of the
 The Daemon MUST be fully aware of the complete State of the cross-chain-swap execution. To achieve that it MUST listen to: 
 - on-chain events from both chains via Syncers communication,
 - swap-counterparty protocol messages via inter-daemon communication, 
-- user's instructions via Client communication
+- user's instructions via Client communication, and
+- self-produced input messages
 
 The Daemon MUST create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a petrinet model of the protocol may be used to create a runtime environment that executes the user's respective role in the protocol, by only authorizing firing valid enabled protocol transitions.
 
@@ -116,31 +117,28 @@ A Daemon does not interact with a blockchain fullnode directly. A
 
 A Syncer handles 'job' requests from a Daemon and MAY produce a set of 'events' according to the type of 'job' it receives.
 
-## Recovery from saved state between components
-### Inter-daemon
-Daemon to Daemon communication MUST have a mechanism to reconnect and safely and gracefully recover from the latest saved state. This is the most critical recovery of the protocol as recovering to the wrong state MAY permit counter-party to steal funds.
+### Loopback: self-generated input messages
+The daemon MAY generate self-addressed messages. Those messages MAY be used to trigger transitions only based on daemon's state.
 
-### Client-Daemon
-Both Daemon and Client MUST implement mechanisms to restablish their connection and safely recover from a previously saved state.
-
-### Syncer-Daemon
-Daemon MUST implement mechanisms to reconnect to Syncer and safely recover from its previously saved state and from the extra information queried from Syncer about events while Daemon was disconnected.
 
 ## Syncer
-A syncer is specific to a blockchain and can handle a list of 'jobs' directly related to that blockchain. Those 'jobs' will be completed in different manners depending on the blockchain type.
+A syncer is specific to a blockchain and can handle a list of 'jobs' directly related to that blockchain. Those 'jobs' will be completed in different manners depending on the blockchain type and/or the blockchain state. The logic inside syncers allow the daemon to abstract a part of the logic needed to interact with a blockchain with a define interface composed of 'jobs' and 'events'.
 
 ### Jobs
-
-A syncer is responsible to handle 'jobs'. To achieve that goal a syncer is connected to a blockchain, through a full node or equivalent, and uses e.g. RPC calls and 0MQ notification streams to produce 'events'.
+A syncer is responsible to handle 'jobs' messages, its inputs. To achieve that goal a syncer is connected to a blockchain, through a full node or equivalent, and uses e.g. RPC calls and 0MQ notification streams to produce 'events' messages, its outputs.
 
 Jobs MUST follow those rules:
-* The same job MUST be publishable multiple times without causing consequential side effects
+* The same job MUST be publishable multiple times without causing contradictory side effects
 * A job published more than once MUST always produce an equivalent set of events
+* Jobs MUST have a defined lifetime
 
 ### Events
+Events are produced by syncers in response to certain type of 'jobs'. A job MAY produce multiple 'events'. When a 'job' produces two different set of 'events' depending on when the 'job' is handled by the syncer those two sets MUST have an equivalent impact on the state at any point in time.
 
-Events are produced by syncers in response to certain type of 'jobs'. A job MAY produce multiple 'events'. When a 'job' produces two different set of 'events' depending on when the 'job' is handled by the syncer those two set MUST be
-equivalent.
+#### Equivalent event sets
+Let's define a `new height` job, this job produces `height changed` events upon new block and reorgs. Let's define $X$ as the current block height. The job is sent to the syncer, initial plus two events are recieved, for $X$, $X+1$, and $X+2$ new heights. At time $t$ the latest state is for $X+2$. If the daemon crashes at $X+1$ and restart, at time $t$ it MUST have recieved $X+1$ as initial event and $X+2$, the latest state is the same. And finally if the daemon crashes at time $t$ and restart, the initial event MUST contains $X+2$. Sets of events are different but equivalent for the daemon state.
+
+Let's define a `broadcast transaction` job for jobs that have side effects, this job produces as a success output a `transaction broadcasted` event. The daemon sends the job at time $t$ and recieves the successful `transaction broadcasted` event at time $t'$, if the daemon crashes between $t$ and $t'$, rebroadcasting the job MUST result to the same successful event, dispite the fact that the syncer will not broadcast the transaction to the full-node a second time.
 
 ## Client
 
@@ -162,3 +160,12 @@ Valid transitions from one state to other states are described through a recipe.
 
 After each transition the swap state SHOULD be saved on disk. The daemon SHOULD be able to start with a given state and a given recipe. By ensuring that daemon outputs can be replayed safely, like jobs, the work already performed since the last saved state can be replayed safely.
 
+### Recovery from saved state between components
+#### Inter-daemon
+Daemon to Daemon communication MUST have a mechanism to reconnect and safely and gracefully recover from the latest saved state. This is the most critical recovery of the protocol as recovering to the wrong state MAY permit counter-party to steal funds.
+
+#### Client-Daemon
+Both Daemon and Client MUST implement mechanisms to restablish their connection and safely recover from a previously saved state.
+
+#### Syncer-Daemon
+Daemon MUST implement mechanisms to reconnect to Syncer and safely recover from its previously saved state and from the extra information queried from Syncer about events while Daemon was disconnected.
