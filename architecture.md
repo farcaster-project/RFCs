@@ -55,11 +55,15 @@ Each swap components is represented as a black box that consumes input messages 
 
 It is worth noting that this diagram only show one syncer, but a syncer per blockchain is required.
 
+Below a string diagram formalization of the information flow.
+![](https://i.imgur.com/UdxbWui.png)
+
+
 ## Daemon
 
 The Daemon is the central component responsible for orchestrating the protocol execution. 
 
-Daemon's main function is to manage the safe progression of the execution of the cross-chain-swap in response to the extrinsic and intrinsic messages it receives -- respectively coming from itself and from the components it directly interacts with. 
+Daemon's main function is to manage the safe progression of the execution of the cross-chain-swap in response to the intrinsic and extrincic messages it receives -- respectively coming from itself and from the components it directly interacts with. 
 
 The Daemon MUST be fully aware of the complete State of the cross-chain-swap execution. To achieve that it MUST listen to: 
 - on-chain events from both chains via Syncers communication,
@@ -67,7 +71,7 @@ The Daemon MUST be fully aware of the complete State of the cross-chain-swap exe
 - user's instructions via Client communication, and
 - self-produced input messages
 
-The Daemon MUST create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a petrinet model of the protocol may be used to create a runtime environment that executes the user's respective role in the protocol, by only authorizing firing valid enabled protocol transitions.
+The Daemon MUST create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a petrinet model of the protocol may be used to constraint the runtime environment that executes the user's respective role in the protocol, by only authorizing firing valid enabled protocol transitions.
 
 ### Inter-daemon communication
 The Daemon has a bidirectional communication channel with the swap counterparty's daemon. This inter-daemon communication is used to pass signed messages in the correct order between the swap counterparties, such as the messages needed for:
@@ -79,11 +83,9 @@ The Daemon has a bidirectional communication channel with the swap counterparty'
 1. A valid Client Instruction message sent by the Client to the Daemon instructs the daemon to fire a given enabled protocol transition 
 2. Daemon consumes Client Instruction message and
 3. Daemon fires transitions that are in one-to-one correspondence with Client instructions
-4. Daemon's internal Swap state MAY be modified by firing protocol transitions
-5. if the Swap State was modified, Daemon MUST update Client by sending an Enabled Transitions message to the Client about the new enabled protocol transitions Client MAY next instruct to fire
+4. As a consequence of firing protocol transitions, Daemon's internal Swap state MAY be modified 
+5. If the Swap State was modified, Daemon MUST update Client by sending an Enabled Transitions message to the Client about the new enabled protocol transitions Client MAY next instruct to fire
 6. Client then MAY fire any of the new enabled protocol transition and progress on the protocol execution (back to step 1)
-
-A valid Client Instruction message fires an enabled protocol transition in the Daemon
 
 The figure below presents a petrinet summarizing client-daemon communication scheme.
 
@@ -113,7 +115,7 @@ updateFailure: Failure -> EnabledTransitions.
 ```
 
 ### Blockchain communication: Syncer-Daemon communication
-A Daemon does not interact with a blockchain fullnode directly. A 
+A Daemon does not interact with a blockchain fullnode directly. 
 
 A Syncer handles 'job' requests from a Daemon and MAY produce a set of 'events' according to the type of 'job' it receives.
 
