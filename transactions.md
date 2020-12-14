@@ -19,36 +19,36 @@ This RFC defines six Bitcoin transactions.
 
 ### Pre-lock
 
-The `pre-lock` transactoin (a) is an externally created transaction that serves two purposes:
+The `pre-lock (a)` transactoin is an externally created transaction that serves two purposes:
 
- 1. Force the creation of a SegWit UTXO for the `lock` transaction
+ 1. Force the creation of a SegWit UTXO for the `lock (b)` transaction
  2. Not make any assumption on where the funds come from
 
 The transaction can have `n` inputs and `m` outputs but MUST create 1 and only 1 P2WPKH (SegWit v0) UTXO for the given address during initialization. [we miss a ref. on the graph for this lock condition]
 
-The P2WPKH rational is too have a better support, this can be moved to a SegWit v2 P2TR latter when support is added in wallets.
+The P2WPKH rational is too have a better support, this can be moved to a SegWit v1 P2TR latter when support is added in wallets.
 
 ### Lock
 
-The `lock` transaction (b) consumes the SegWit UTXO from `pre-lock` and create a Taproot UTXO (i) with the locking script (SegWit v1) `OP_1 0x20 <Q pubkey>`:
+The `lock (b)` transaction consumes the SegWit UTXO from `pre-lock (a)` and create a Taproot UTXO `(i)` with the locking script (SegWit v1) `OP_1 0x20 <Q pubkey>`:
 
 ```
               Q                        | the Taproot tweaked key
               |
     ----------------------
     |                    |
-    P           Script Merkle root     | P: the internal key, MuSig2 setup
+    P           Script Merkle root     | P: the internal key, a MuSig2 setup
                          |
-                   TapLeaf script      | script: the time-locked refund script
+              TapLeaf cancel script    | SegWit v1 script
 ```
 
-`P`, the internal key, is a MuSig2 setup used by the `buy` (c) transaction for transmitting the adaptor signature.
+`P`, the internal key, is a MuSig2 setup used by the `buy (c)` transaction for transmitting the adaptor signature.
 
-`TapLeaf script`, the refund script, is a 2-of-2 multisig with timelock contrain used by the `cancel` (d) transaction.
+`TapLeaf cancel script`, the cancel script, is a 2-of-2 multisig with timelock constrain used by the `cancel (d)` transaction.
 
-> It is worth noting that it might be possible to make a cooperative refund, allowing to not reveal the `TapLeaf script` on-chain for better privacy and smaller fees.
+> It is worth noting that it might be possible to make a cooperative cancel, allowing to not reveal the `TapLeaf script` on-chain for better privacy and smaller fees.
 
-`TapLeaf script`:
+`TapLeaf cancel script`:
 
 ```
 <num> [TIMEOUTOP]
@@ -59,11 +59,19 @@ NUMEQUAL
 
 `[TIMEOUTOP]` is either `CHECKSEQUENCEVERIFY` or `CHECKLOCKTIMEVERIFY`.
 
+or this might be replaced by
+
+```
+<num> [TIMEOUTOP]
+EQUALVERIFY DROP
+<YetAnotherMuSig2Setup (Alice+Bob) PubKey> CHECKSIGVERIFY
+```
+
 ### Buy
 
 The `buy` transaction is available as soon as the local confirmation security threshold is reached by the buyer.
 
-It consumes the `lock`'s Taproot output with just a signature (MuSig2+adaptor), revealing the secret spend key to the counterparty.
+It consumes the `lock`'s Taproot output `(i)` with just a signature (MuSig2+adaptor), revealing the secret spend key to the counterparty.
 
 ### Cancel
 
@@ -79,23 +87,47 @@ with `<input>`: an input that fulfills the spending conditions set by `<script>`
 <Bob's signature> <Alice's signature>
 ```
 
+The `cancel (d)` transaction creates a Taproot UTXO `(ii)` with the locking script (SegWit v1) `OP_1 0x20 <Q' pubkey>`:
+
+```
+              Q'                       | the Taproot tweaked key
+              |
+    ----------------------
+    |                    |
+    P'          Script Merkle root     | P': the internal key, a MuSig2 setup
+                         |
+              TapLeaf punish script    | SegWit v1 script
+```
+
+`P'`, the internal key, is a MuSig2 setup used by the `refund (e)` transaction for transmitting the second adaptor signature.
+
+`TapLeaf punish script`, the punish script, is a single Alice's signature with timelock constrain used by the `punish` (f) transaction.
+
+`TapLeaf punish script`:
+
+```
+<num> [TIMEOUTOP]
+EQUALVERIFY DROP
+<Alice's PubKey> CHECKSIGVERIFY
+```
+
 ### Refund
 
-TODO
+The `refund` transaction is available as soon as the local confirmation security threshold is reached by the seller [use better definition here than seller].
+
+It consumes the `cancel`'s Taproot output `(ii)` with just a signature (MuSig2+adaptor), revealing the second secret spend key to the counterparty, effectively doing the refund.
 
 ### Punish
 
-TODO
+The script-path witness has the same structure as the `buy` transaction with `<input>`:
 
-### Privacy concerns
-
-Bitcoin transaction must be designed in a way where if Taproot is used with a single signature to spend an output, it MUST not be possible to differanciate between `c` and `d`, and between `e` and `f`.
-
-But in most cases `c` and `d` will be different because `d` will be used with the TapLeaf script.
+```
+<Alice's signature>
+```
 
 ## Monero
 
-Two external Monero transactions are defined: (a) the `lock` transaction and (b) the `spend` transaction. The spend transaction consumes the protocol created output from the `lock` transaction by complying with the condition (i).
+Two external Monero transactions are defined: (a) the `lock` transaction and (b) the `spend` transaction. The spend transaction consumes the protocol created output from the `lock` transaction by complying with the condition `(i)`.
 
 ![Monero transaction graph](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/xmr-transactions.png)
 
@@ -113,3 +145,13 @@ The codition (i) is defined during the protocol initialization phase as a shared
 ### Spend
 
 The Monero spend transaction (b) allow the final owner of the funds to move them into an address with nobody else knowledge of the private view key for better anonymity. This step is not necessary from a security point of view but required for good privacy.
+
+The spend transaction has to follow the minimum Monero output age policy (10 blocks).
+
+## Notes on Privacy
+
+Bitcoin transaction must be designed in a way where if Taproot is used with a single signature to spend an output, it MUST not be possible to differanciate between `c` and `d`, and between `e` and `f`.
+
+But in most cases `c` and `d` will be different because `d` will be used with the TapLeaf script.
+
+Also, when a script-path sepnd is choosen, the script and the control block should looks common with other protocol such as Lightning Network to increase the anonymity pool.
