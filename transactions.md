@@ -26,7 +26,7 @@ The `pre-lock (a)` transactoin is an externally created transaction that serves 
 
 The transaction can have `n` inputs and `m` outputs but MUST create 1 and only 1 P2WPKH (SegWit v0) UTXO for the given address during initialization. [we miss a ref. on the graph for this lock condition]
 
-The P2WPKH rational is too have a better support, this can be moved to a SegWit v1 P2TR latter when support is added in wallets.
+The P2WPKH rationale is too have a better support, this can be moved to a SegWit v1 P2TR later when support is added in wallets.
 
 ### Lock
 
@@ -44,7 +44,7 @@ The `lock (b)` transaction consumes the SegWit UTXO from `pre-lock (a)` and crea
 
 `P`, the internal key, is a MuSig2 setup used by the `buy (c)` transaction for transmitting the adaptor signature.
 
-`TapLeaf cancel script`, the cancel script, is a 2-of-2 multisig with timelock constrain used by the `cancel (d)` transaction.
+`TapLeaf cancel script`, the cancel script, is a 2-of-2 multisig with timelock constraint used by the `cancel (d)` transaction.
 
 > It is worth noting that it might be possible to make a cooperative cancel, allowing to not reveal the `TapLeaf script` on-chain for better privacy and smaller fees.
 
@@ -101,7 +101,7 @@ The `cancel (d)` transaction creates a Taproot UTXO `(ii)` with the locking scri
 
 `P'`, the internal key, is a MuSig2 setup used by the `refund (e)` transaction for transmitting the second adaptor signature.
 
-`TapLeaf punish script`, the punish script, is a single Alice's signature with timelock constrain used by the `punish` (f) transaction.
+`TapLeaf punish script`, the punish script, is a single signature (Alice's) with timelock constraint used by the `punish` (f) transaction.
 
 `TapLeaf punish script`:
 
@@ -133,9 +133,9 @@ Two external Monero transactions are defined: (a) the `lock` transaction and (b)
 
 ### Lock
 
-The Monero lock transaction (a) is performed by an external wallet and MUST send the full negociated amount in the address attached to (i). The transaction MUST NOT be broadcasted too early in the protocol, otherwise funds will be lost.
+The Monero lock transaction (a) is performed by an external wallet and MUST send the full negotiated amount in the address attached to (i). The transaction MUST NOT be broadcasted too early in the protocol, otherwise funds will be lost.
 
-The codition (i) is defined during the protocol initialization phase as a shared secret between the two participants as:
+The condition (i) is defined during the protocol initialization phase as a shared secret between the two participants as:
 
     k_s = k_s^a + k_s^b (mod l)    | the private spend key of the address
     k_v = k_v^a + k_v^b (mod l)    | the private view key of the address
@@ -144,14 +144,14 @@ The codition (i) is defined during the protocol initialization phase as a shared
 
 ### Spend
 
-The Monero spend transaction (b) allow the final owner of the funds to move them into an address with nobody else knowledge of the private view key for better anonymity. This step is not necessary from a security point of view but required for good privacy.
+The Monero spend transaction (b) allows the final owner of the funds to move them into an address without revealing the private view key to anyone else for better anonymity. This step is not necessary from a security point of view but required for good privacy.
 
 The spend transaction has to follow the minimum Monero output age policy (10 blocks).
 
 ## Notes on Privacy
 
-Bitcoin transaction must be designed in a way where if Taproot is used with a single signature to spend an output, it MUST not be possible to differanciate between `c` and `d`, and between `e` and `f`.
+Bitcoin transaction must be designed in a way where if Taproot is used with a single signature to spend an output, it MUST not be possible to differentiate between `c` and `d`, and between `e` and `f`.
 
 But in most cases `c` and `d` will be different because `d` will be used with the TapLeaf script.
 
-Also, when a script-path sepnd is choosen, the script and the control block should looks common with other protocol such as Lightning Network to increase the anonymity pool.
+Also, when a script-path spend is chosen, the script and the control block should look indistinguishable from a common protocol such as Lightning Network to increase the anonymity pool.
