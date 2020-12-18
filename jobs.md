@@ -7,100 +7,72 @@
 
 [TOC]
 
-# Jobs
+# Tasks
 
-Available jobs are specific to syncers and their parameters can vary depending on the related blockchain.
+Tasks are available from any syncer, yet their parameters vary depending on the network. Parameters are provided for Bitcoin and Monero to demonstrate how the protocol would be implemented. Any codebase working with Bitcoin or Monero SHOULD use the following definitions.
 
-This RFC lists available jobs that MUST be supported by a Bitcoin syncer and a Monero syncer and their respective outputs: events.
+This RFC lists available tasks that MUST be supported by syncers, unless noted otherwise, and their respective outputs: events. A task produces zero or more events during its lifetime.
 
-A job produces zero or more events during its lifetime.
+Every task is accompanied with an `id`, a positive integer which fits into the 32-bit signed integer space. This integer has no rules on its generation or any pattern required by its usage. Every emitted event has its own `id` field corresponding to the task which caused it.
 
-A job MUST be reproducible without contradictory side effets.
+The `error` event is valid for every single task, and it takes the task's ID and provides an integer `code`, as well as optionally a string `message`.
 
-## Bitcoin Jobs
+This document frequently references epochs, whose definition is dependent on the protocol in question. For Bitcoin and Monero, the epoch is the block height. For systems without the context of a block height, Unix timestamps SHOULD be used.
 
-### Watch Transaction
-Bitcoin job `watch transaction` allows a daemon to ask a syncer for getting noticed with a `transaction seen` event.
+## Watch Height
 
-Upon job reception a syncer MUST check if the job is already completed and return, if not the syncer MUST start a background task until the job is completed.
+`watch_height` asks the syncer for notifications about updates to the blockchain's height. This task MUST be implemented for any coin with a blockchain. This task MAY be implementated for any coin without a blockchain. If it is not implemented, an error event must be sent in response to any attempt to start this task.
 
-The job is completed after producing the `transaction seen` event or when reaching `maxlife`  epoch or block height.
+Required parameters are:
+* `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, barring another instance of this task, this task MUST be maintained. When another instance appears, syncers MAY only keep the most recent one.
 
-#### Parameters
+Parameters may be added to specify which blockchain, in order to support any network utilizing multiple.
 
-* `txid`: the transaction txid to watch
-* `confirmations`: number of block needed before producing the event, if 0 it produces the output when the transaction appears in the full-node mempool
-* `maxlife`: an epoch or block height after what the job can be discarded if not already completed, same semantic as Bitcoin CLTV
+When the height changes, a `height_changed` event is emitted. It contains:
+* `height`: Current blockchain height.
 
-#### Event
+Upon task reception, syncers MUST send a `height_changed` event immediately to signify the current height.
 
-`transaction seen`:
+## Watch Wallet
 
-* `txid`: the transaction txid
-* `block`: the block hash where the transaction is mined, zero value hash if in mempool
+`watch_wallet` asks the syncer for notifications about when a specified wallet receives funds.
 
+Required parameters are:
+* `confirmations`: Confirmation threshold to wait for before producing an event. If 0, the event is created as soon as a transaction is seen.
+* `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, this task MUST be maintained.
 
-## Monero Jobs
+For Bitcoin, the following additional parameters are defined:
+* `address`: The address to watch.
+Bitcoin also has this task return historical transactions, with a possible rate limit being implementation defined.
 
-### Watch Wallet
-Monero job `watch wallet` allows a daemon to ask a syncer for getting noticed when funds arrived in a specific view key pair.
+For Monero, the following parameters:
+* `public_spend`: The public spend key of the wallet.
+* `private_view`: The private view key of the wallet.
+* `past_blocks`: Previous blocks to scan for transactions sent to the specified wallet.
 
-Upon job reception a syncer MUST scan the last `lastblocks` blocks and return corresponding `funds arrived` events and MUST start a background task until the job is completed.
+Once a transaction is seen by the syncer, and passed the confirmation threshold, a `transaction_received` event is emitted. It contains:
+* `tx`: Transaction ID.
+* `amount`: Value of the amount sent to the specified wallet.
+Further fields may be defined depending on the coin. Any coin based on a blockchain MUST also have:
+* `block`: The hash of the block which contains this transaction. If the transaction has yet to be included in a block, a zero value hash is used.
 
-The job is completed after reaching the `maxlife` epoch or block height.
+## Watch Transaction
 
-#### Parameters
+`watch_transaction` asks a syncer for updates on the status of a transaction.
 
-* `privateview`: the private view key
-* `publicspend`: the public spend key
-* `confirmations`: number of block needed before producing the `funds arrived` event, if 0 it produces the event when the transaction appears in the full-node mempool
-* `lastblocks`: the number of last blocks to scan for transactions
-* `maxlife`: an epoch after what the job can be discarded or a block height, same semantic as Bitcoin CLTV
+Required parameters are:
+* `hash`: Transaction hash.
+* `confirmations`: Confirmation threshold to wait for before producing an event. If 0, the event is created as soon as a transaction is seen.
+* `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, this task MUST be maintained.
 
-#### Event
+Once a transaction is seen by the syncer, and passed the confirmation threshold, a `transaction_seen` event is emitted. It contains:
+* `confirmations`: Current confirmation threshold.
+Further fields may be defined depending on the coin. Any coin based on a blockchain MUST also have:
+* `block`: The hash of the block which contains this transaction. If the transaction has yet to be included in a block, a zero value hash is used.
 
-`funds arrived`:
+## Broadcast Transaction
 
-* `txid`: the transaction id
-* `amount`: the amount received
+`broadcast_transaction` tells a syncer to broadcast a transaction. The syncer MUST broadcast the transaction, even if it was already broadcasted.
 
-## Common
-
-### New height
-Job `new height` allows a daemon to ask a syncer for getting noticed on each height change until some block height or some epoch.
-
-Upon job reception a syncer MUST directly send an `height changed` event and MUST start a background task until the job is completed.
-
-The job is completed after reaching the block height or the epoch specified in the `maxlife` parameters.
-
-#### Parameters
-
-* `maxlife`: an epoch after what the job can be discarded or a block height, same semantic as Bitcoin CLTV
-
-#### Event
-
-`height changed`:
-
-* `height`: the new height number
-* `block`: the block hash
-
-### Broadcast Transaction
-Job `broadcast transaction` allows a daemon to ask a syncer for broadcasting a transaction.
-
-Upon job reception a syncer MUST check if the job is already completed and return, if not the syncer MUST handle the job and return.
-
-The job is completed after producing a `transaction broadcasted` event or a `broadcast failed` event.
-
-#### Parameters
-
-* `rawtx`: the raw transaction to broadcast
-
-#### Event
-
-`transaction broadcasted`:
-
-* `txid`: the transaction txid
-
-`broadcast failed`:
-
-* `error`: an error description
+The only parameter is:
+* `tx`: The raw transaction in its serialized format.
