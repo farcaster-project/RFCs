@@ -1,5 +1,8 @@
 # Bitcoin transactions temporal safety
 
+[![hackmd-github-sync-badge](https://hackmd.io/Gm-hicyeTpeTM6NoTrSM0Q/badge)](https://hackmd.io/Gm-hicyeTpeTM6NoTrSM0Q)
+
+
 ## Intend
 In the swap protocol publishing transactions to the bitcoin mempool (=transaction pool) reveals secret keys that are required to sweep the monero wallet. Therefore it is paramont to carefully evaluate the temporal safety bounds of publishing transactions, as they may:
 - be raced by valid and pre-signed protocol's transactions that are de facto double-spends or 
