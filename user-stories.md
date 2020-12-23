@@ -19,17 +19,19 @@ Taker and maker roles are dissociated from swap roles. They are used in the nego
 
 The Maker role offers a potential trade, the proposal can be a buy or sell for one asset pair, with fixed amounts or ranges, etc. There is no special limitation on what a proposal can be. A Taker can respond on a proposal.
 
-### Swap: Alice & Bob
-
-Because of the protocol asymetry property, we describe two swap roles: (1) Alice and (2) Bob.
-
 ### Blockchain: Arbitrating & Accordant
 
 We describe two blockchain roles: (1) Arbitrating and (2) Accordant. The former correspond to the chain where the constrain system lives, e.g. the Bitcoin blockchain, the latter is the accordant chain which has no extra on-chain capabilities requirement.
 
 Those roles are distributed by the outgoing blockchains' capabilities involved in the swap pair, e.g Monero cannot be the arbitrating chain.
 
-Alice MUST always move coins from the accordant chain to the arbitrating chain and Bob MUST always move coins from the arbitrating chain to the accordant chain.
+### Swap: Alice & Bob
+
+Because of the protocol asymetry property, we describe two swap roles: (1) Alice and (2) Bob.
+
+We define Alice's role as: Alice always move coins from the accordant chain to the arbitrating chain.
+
+We define Bob's role as: Bob always move coins from the arbitrating chain to the accordant chain.
 
 ## Phases
 
@@ -39,23 +41,64 @@ We distinguish between two phases: (1) negociation and (2) swap phases. The nego
 
 The negociation phase can be done on a forum, with an OTC, within an DEX, etc. This RFC only defines the interface between the negociation phase and the swap phase.
 
-The negociation is out of scope for this RFC but MUST result in agreement on the following set of parameters:
+We describe the responsability of the two negociation roles.
 
- * Blockchains used as an Unscripted-Scripted asset pair, e.g. XMR-BTC
- * Amount exchanged of each assets, e.g. 200 XMR and 1.3 BTC
- * Time parameters t1 and t2, i.e. protocol timelock parameters
- * (Do we agree also on a set of cryptographic parameter such as secondary base point for zkp, etc. ?)
+#### Maker
 
-[Maybe we miss other stuff too]
-bitcoin destination address? is it a parameter, not IMO, it's a local parameter for the Unscripted asset.
+The maker start his node in maker mode and register all the parameters an offer requires. The daemon setup an onion service and waits for an incoming connection. When ready, the daemon prints the 'public offer', the public offer contains all the parameters a taker needs to connect. The maker can then distribute the 'public offer' over his prefered channels.
 
-[Some of the stuff below should be part the of the initialization step in the swap phase.]
+##### Maker offer
+
+A maker offer is composed of:
+
+ * The Arbitrating-Accordant blockchain identifier, e.g. BTC-XMR
+ * The arbitrating blockchain asset amount
+ * The accordant blockchain asset amount
+ * The timelocks duration used during the swap
+ * The future maker swap role (Alice or Bob)
+
+##### Maker public offer
+
+A maker public offer is a maker offer plus daemon parameters such as the onion service or other options how to connects to the daemon.
+
+The maker public offer must be easily serializable and in a friendly sharing format.
+
+#### Taker
+
+A taker receives a public offer, visualize it and might accept it. If the taker wants to take the public offer he can try to connects to the maker and start the swap.
+
+#### Results of negociation phase
+
+The negociation is out of scope for this RFC but MUST result in:
+
+ * Daemons connected to eachother
+ * Agreement on the following set of parameters
+     * Blockchains used as an Arbitrating-Accordant asset pair, e.g. BTC-XMR
+     * Amount exchanged of each assets, e.g. 200 XMR and 1.3 BTC
+     * Transition from Maker-Taker roles into Alice-Bob roles
+     * Time parameters t1 and t2, i.e. protocol timelock parameters
 
 ### Swap phase
 
-[here we kind of assume that they are already connected in some way to eachother, maybe we should be more specific. also depends on the comm. channel we use between daemons!]
+The swap phase starts for each roles with a set of parameters:
 
-We can discribe the high level view of the swap phase with four steps:
+ * Blockchains used as an Arbitrating-Accordant asset pair, e.g. BTC-XMR
+ * Amount exchanged of each assets, e.g. 200 XMR and 1.3 BTC
+ * Time parameters t1 and t2, i.e. protocol timelock parameters
+ * The swap role played by the daemon
+
+plus for Alice's role:
+
+ * The destination Bitcoin address
+
+and for Bob's role:
+
+ * The refund Bitcoin address
+
+
+#### Steps
+
+We can describe the high level view of the swap phase with four steps:
 
  1. Initialization step
  2. Bitcoin locking step
