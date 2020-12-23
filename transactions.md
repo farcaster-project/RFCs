@@ -9,7 +9,7 @@
 
 # Transactions
 
-Dashed outline transactions are transaction created outside by external wallets.
+Dashed outline transactions are transaction created by external wallets, i.e. not the daemon nor the client.
 
 ## Bitcoin
 
@@ -42,7 +42,15 @@ The `lock (b)` transaction consumes the SegWit UTXO from `pre-lock (a)` and crea
               TapLeaf cancel script    | SegWit v1 script
 ```
 
-`P`, the internal key, is a MuSig2 setup used by the `buy (c)` transaction for transmitting the adaptor signature.
+`P`, the internal key, is a MuSig2 setup used by the `buy (c)` transaction for transmitting the adaptor signature:
+
+```
+P: Ab + Bb + Ta
+where
+Ab: Alice's buy key;
+Bb: Bob's buy key; and
+Ta: Alice's adaptor key
+```
 
 `TapLeaf cancel script`, the cancel script, is a 2-of-2 multisig with timelock constraint used by the `cancel (d)` transaction.
 
@@ -53,19 +61,13 @@ The `lock (b)` transaction consumes the SegWit UTXO from `pre-lock (a)` and crea
 ```
 <num> [TIMEOUTOP]
 EQUALVERIFY DROP
-<Alice's PubKey> CHECKSIG <Bob's PubKey> CHECKSIGADD m 
+<Alice's Ac PubKey> CHECKSIG <Bob's Bc PubKey> CHECKSIGADD m 
 NUMEQUAL
 ```
 
 `[TIMEOUTOP]` is either `CHECKSEQUENCEVERIFY` or `CHECKLOCKTIMEVERIFY`.
 
-or this might be replaced by
-
-```
-<num> [TIMEOUTOP]
-EQUALVERIFY DROP
-<YetAnotherMuSig2Setup (Alice+Bob) PubKey> CHECKSIGVERIFY
-```
+> It is worth noting that `CHECKLOCKTIMEVERIFY` will probably not work if we want to support RBF (Replace By Fee)
 
 ### Buy
 
@@ -84,7 +86,7 @@ with `<input>`: an input that fulfills the spending conditions set by `<script>`
 `<input>`:
 
 ```
-<Bob's signature> <Alice's signature>
+<Bob's Bc signature> <Alice's Ac signature>
 ```
 
 The `cancel (d)` transaction creates a Taproot UTXO `(ii)` with the locking script (SegWit v1) `OP_1 0x20 <Q' pubkey>`:
@@ -99,7 +101,15 @@ The `cancel (d)` transaction creates a Taproot UTXO `(ii)` with the locking scri
               TapLeaf punish script    | SegWit v1 script
 ```
 
-`P'`, the internal key, is a MuSig2 setup used by the `refund (e)` transaction for transmitting the second adaptor signature.
+`P'`, the internal key, is a MuSig2 setup used by the `refund (e)` transaction for transmitting the second adaptor signature:
+
+```
+P': Ar + Br + Tb
+where
+Ar: Alice's refund key;
+Br: Bob's refund key; and
+Tb: Bob's adaptor key
+```
 
 `TapLeaf punish script`, the punish script, is a single signature (Alice's) with timelock constraint used by the `punish` (f) transaction.
 
@@ -108,7 +118,7 @@ The `cancel (d)` transaction creates a Taproot UTXO `(ii)` with the locking scri
 ```
 <num> [TIMEOUTOP]
 EQUALVERIFY DROP
-<Alice's PubKey> CHECKSIGVERIFY
+<Alice's Ap PubKey> CHECKSIGVERIFY
 ```
 
 ### Refund
@@ -122,7 +132,7 @@ It consumes the `cancel`'s Taproot output `(ii)` with just a signature (MuSig2+a
 The script-path witness has the same structure as the `buy` transaction with `<input>`:
 
 ```
-<Alice's signature>
+<Alice's Ap signature>
 ```
 
 ## Monero
@@ -130,6 +140,8 @@ The script-path witness has the same structure as the `buy` transaction with `<i
 Two external Monero transactions are defined: (a) the `lock` transaction and (b) the `spend` transaction. The spend transaction consumes the protocol created output from the `lock` transaction by complying with the condition `(i)`.
 
 ![Monero transaction graph](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/xmr-transactions.png)
+
+> It is worth noting that all Monero transactions can be handled by external wallet. More precisely the latter by importing the private keys into an external software.
 
 ### Lock
 
@@ -155,3 +167,19 @@ Bitcoin transaction must be designed in a way where if Taproot is used with a si
 But in most cases `c` and `d` will be different because `d` will be used with the TapLeaf script.
 
 Also, when a script-path spend is chosen, the script and the control block should look indistinguishable from a common protocol such as Lightning Network to increase the anonymity pool.
+
+## Transaction fee
+
+On the arbitrating blockchain a chain of three transactions is created, the two last transactions must be are created in advance and their fees must be determined at creation.
+
+We describe in this chapter some heuristic to set the fees.
+
+Let's define $t(c, t)$, a function of time returning the fee for a transaction $t$ based on a coeficient $c$.
+
+If $c(\texttt{buy}) = 1$, then $c(\texttt{cancel}) > 1$, such that at time $t$ when `buy` and `cancel` are both available `cancel` should have a better probability to be mined.
+
+It is worth noting that we cannot control the coeficient $c$ between `refund` and `punish` as `punish` is control unilaterraly by Alice.
+
+## RBF (Replace By Fee)
+
+RBF (Replace By Fee) should be integrated into the protocol such that multiple version of some transaction can exist.
