@@ -7,8 +7,6 @@
   Created: 2020-11-11
 </pre>
 
-###### tags: `RFC` `architecture`
-
 [TOC]
 
 
@@ -66,25 +64,25 @@ The Daemon is the central component responsible for orchestrating the protocol e
 Daemon's main function is to manage the safe progression of the execution of the cross-chain-swap in response to the intrinsic and extrincic messages it receives -- respectively coming from itself and from the components it directly interacts with. 
 
 The Daemon MUST be fully aware of the complete State of the cross-chain-swap execution. To achieve that it MUST listen to: 
-- on-chain events from both chains via Syncers communication,
+- blockchain events from both chains via Syncers communication,
 - swap-counterparty protocol messages via inter-daemon communication, 
 - user's instructions via Client communication, and
 - self-produced input messages
 
-The Daemon MUST create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a petrinet model of the protocol may be used to constraint the runtime environment that executes the user's respective role in the protocol, by only authorizing firing valid enabled protocol transitions.
+The Daemon MUST create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a petrinet model of the protocol may be used to constraint the runtime environment that executes the user's respective swap role in the protocol, by only authorizing firing valid enabled protocol transitions.
 
 ### Inter-daemon communication
-The Daemon has a bidirectional communication channel with the swap counterparty's daemon. This inter-daemon communication is used to pass signed messages in the correct order between the swap counterparties, such as the messages needed for:
-- agreeing on the global swap parameters, 
-- safe initialization, 
+The Daemon has a bidirectional communication channel with the swap counterparty's daemon. This inter-daemon communication is used to pass messages in the correct order between the swap counterparties, such as the messages needed for:
+- agreeing on the global swap parameters,
+- safe initialization,
 - and safe protocol execution during swap period itself.
 
 ### Client-Daemon communication
 1. A valid Client Instruction message sent by the Client to the Daemon instructs the daemon to fire a given enabled protocol transition 
 2. Daemon consumes Client Instruction message and
 3. Daemon fires transitions that are in one-to-one correspondence with Client instructions
-4. As a consequence of firing protocol transitions, Daemon's internal Swap state MAY be modified 
-5. If the Swap State was modified, Daemon MUST update Client by sending an Enabled Transitions message to the Client about the new enabled protocol transitions Client MAY next instruct to fire
+4. As a consequence of firing protocol transitions, Daemon's internal Swap state MAY be modified
+5. If the Swap State was modified, Daemon MUST update Client by sending a State Digest message to the Client about the new enabled protocol transitions Client MAY next instruct to fire
 6. Client then MAY fire any of the new enabled protocol transition and progress on the protocol execution (back to step 1)
 
 The figure below presents a petrinet summarizing client-daemon communication scheme.
@@ -92,72 +90,44 @@ The figure below presents a petrinet summarizing client-daemon communication sch
 ![](https://i.imgur.com/PwdlQTF.png)
 
 
-
-```
-; run recoverState only once to initialize state!
-recoverState: () -> EnabledTransitions.
-
-userCommand: () -> ClientInstructionQueue.
-
-clientInstruction: EnabledTransitions ClientInstructionQueue -> CheckEnabled.
-
-isEnabled: CheckEnabled -> Enabled.
-notEnabled: CheckEnabled -> Failure.
-
-fireTransition: Enabled -> ApplyEffects.
-
-success: ApplyEffects -> Successful.
-failure: ApplyEffects -> Failure.
-
-updateSuccess: Successful -> EnabledTransitions.
-updateFailure: Failure -> EnabledTransitions.
-
-```
-
 ### Blockchain communication: Syncer-Daemon communication
 A Daemon does not interact with a blockchain fullnode directly. 
 
-A Syncer handles 'job' requests from a Daemon and MAY produce a set of 'events' according to the type of 'job' it receives.
+A Syncer handles 'tasks' requests from a Daemon and MAY produce a set of 'blockchain events' according to the type of 'task' it receives.
 
 ### Loopback: self-generated input messages
-The daemon MAY generate self-addressed messages. Those messages MAY be used to trigger transitions only based on daemon's state.
-
+The daemon MAY generate self-addressed messages. Those messages MAY be used to trigger transitions only based on daemon's state. Those transitions can e.g. be the absence of counter-party communication during a periode of time.
 
 ## Syncer
-A syncer is specific to a blockchain and can handle a list of 'jobs' directly related to that blockchain. Those 'jobs' will be completed in different manners depending on the blockchain type and/or the blockchain state. The logic inside syncers allow the daemon to abstract a part of the logic needed to interact with a blockchain with a define interface composed of 'jobs' and 'events'.
+A syncer is specific to a blockchain and can handle a list of 'tasks' directly related to that blockchain. Those 'tasks' will be completed in different manners depending on the blockchain type and/or the blockchain state. The logic inside syncers allow the daemon to abstract a part of the logic needed to interact with a blockchain with a define interface composed of 'tasks' and 'blockchain events'.
 
-### Jobs
-A syncer is responsible to handle 'jobs' messages, its inputs. To achieve that goal a syncer is connected to a blockchain, through a full node or equivalent, and uses e.g. RPC calls and 0MQ notification streams to produce 'events' messages, its outputs.
+### Tasks
+A syncer is responsible to handle 'tasks' messages, its inputs. To achieve that goal a syncer is connected to a blockchain, through a full node or equivalent, and uses e.g. RPC calls and 0MQ notification streams to produce 'blockchain events' messages, its outputs.
 
-Jobs MUST follow those rules:
-* The same job MUST be publishable multiple times without causing contradictory side effects
-* A job published more than once MUST always produce an equivalent set of events
-* Jobs MUST have a defined lifetime
+Tasks MUST follow those rules:
+* The same task MUST be publishable multiple times without causing contradictory side effects
+* A task published more than once MUST always produce an equivalent set of events
+* Tasks MUST have a defined lifetime
 
-### Events
-Events are produced by syncers in response to certain type of 'jobs'. A job MAY produce multiple 'events'. When a 'job' produces two different set of 'events' depending on when the 'job' is handled by the syncer those two sets MUST have an equivalent impact on the state at any point in time.
-
-#### Equivalent event sets
-Let's define a `new height` job, this job produces `height changed` events upon new block and reorgs. Let's define $X$ as the current block height. The job is sent to the syncer, initial plus two events are recieved, for $X$, $X+1$, and $X+2$ new heights. At time $t$ the latest state is for $X+2$. If the daemon crashes at $X+1$ and restart, at time $t$ it MUST have recieved $X+1$ as initial event and $X+2$, the latest state is the same. And finally if the daemon crashes at time $t$ and restart, the initial event MUST contains $X+2$. Sets of events are different but equivalent for the daemon state.
-
-Let's define a `broadcast transaction` job for jobs that have side effects, this job produces as a success output a `transaction broadcasted` event. The daemon sends the job at time $t$ and recieves the successful `transaction broadcasted` event at time $t'$, if the daemon crashes between $t$ and $t'$, rebroadcasting the job MUST result to the same successful event, dispite the fact that the syncer will not broadcast the transaction to the full-node a second time.
+### Blockchain Events
+Blockchain Events are produced by syncers in response to certain type of 'tasks'. A task MAY produce multiple 'blockchain events'. When a 'task' produces two different set of 'blockchain events' depending on when the 'task' is handled by the syncer those two sets MUST have an equivalent impact on the state at any point in time.
 
 ## Client
 
 The client is the only component aware of the user's private keys and acts as a "swap wallet", signing the blockchain transactions and piloting the swap through 'instructions'.
 
-Instruction availability messages and instructions are asynchronous and may fail, the daemon MUST handle missing instructions from a client and MAY modify the Swap state in response.
+Instruction messages are asynchronous and may fail, the daemon MUST handle missing instructions from a client and MAY modify the Swap state in response.
 
 Client and Daemon MUST have an initialization protocol allowing one or the other to recover from a past Swap state.
 
-Daemon serves Client the list of available 'instructions' to move forward with the swap protocol execution through 'instruction availibility' messages.
+Daemon updates Client with State Digest messages to move forward with the swap protocol execution.
 
 Client pass User's instructions to the Daemon. That is, Client MAY at the User's discretion fire one of the possible protocol transitions at each moment in time. A subset of transitions MAY require signed protocol messages and/or signed blockchain transactions as input. After Client's instruction, Daemon MUST undertake the actions associated with the fired transition, and update Swap state accordingly.
 
 ## Swap State
-The Swap state encodes the step of the protocol execution the user is currently in, and it is handled by the Daemon. For each given state, zero or more transitions are enabled as a function of a list of valid inputs. Inputs can be: (i) events, (ii) inter-daemon messages, (iii) instructions, or (iv) daemon loopback messages. When a swap state receives an input, a transition to a new state MAY produce outputs. Outputs can be: (i) jobs, (ii) inter-daemon messages, (iii) instruction enabled, or (iv) daemon loopback messages.
+The Swap state encodes the step of the protocol execution the user is currently in, and it is handled by the Daemon. For each given state, zero or more transitions are enabled as a function of a list of valid inputs. Inputs can be: (i) blockchain events, (ii) protocol messages, (iii) client instructions, or (iv) daemon loopback messages. When a swap state receives an input, a transition to a new state MAY produce outputs. Outputs can be: (i) syncer tasks, (ii) protocol messages, (iii) client state digest messages, or (iv) daemon loopback messages.
 
-Valid transitions from one state to other states are described by the protocol. Upon Swap state update, daemon MUST push the new subset of available instructions to Client.
+Valid transitions from one state to other states are described by the protocol. Upon Swap state update, daemon MUST update the Client through State Digest messages.
 
 For each swap state, only a subset of inputs is valid. The daemon MUST contextually filter all of its inputs before applying them. Filtering can happen in parallel for every stream of inputs. All filtered stream are then combined, each element of this final stream are applied one by one on the current state.
 
@@ -165,10 +135,9 @@ The first task of the combined input stream MUST be a save on disk. After each t
 
 The swap state can be viewed as an ordered set of inputs. On a crash the daemon MUST be able to load the last checkpoint and apply the stream of inputs (saved and incoming inputs) uncontained in the loaded checkpoint.
 
-By ensuring that daemon output messages can be replayed safely, like jobs, the work already performed since the last saved checkpoint can be replayed safely.
+By ensuring that daemon output messages can be replayed safely, like tasks, the work already performed since the last saved checkpoint can be replayed safely.
 
 ![](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/input-streams.png)
-
 
 ### Recovery from saved state between components
 #### Inter-daemon
