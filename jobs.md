@@ -76,3 +76,10 @@ Further fields may be defined depending on the coin. Any coin based on a blockch
 
 The only parameter is:
 * `tx`: The raw transaction in its serialized format.
+
+# Blockchain Events
+
+## Equivalent blockchain event sets
+Let's define a `new height` task, this task produces `height changed` blockchain events upon new block and reorgs. Let's define $X$ as the current block height. The task is sent to the syncer, initial plus two events are recieved, for $X$, $X+1$, and $X+2$ new heights. At time $t$ the latest state is for $X+2$. If the daemon crashes at $X+1$ and restart, at time $t$ it MUST have recieved $X+1$ as initial event and $X+2$, the latest state is the same. And finally if the daemon crashes at time $t$ and restart, the initial blockchain event MUST contains $X+2$. Sets of events are different but equivalent for the daemon state.
+
+Let's define a `broadcast transaction` task for tasks that have side effects, this job produces as a success output a `transaction broadcasted` blockchain event. The daemon sends the task at time $t$ and recieves the successful `transaction broadcasted` event at time $t'$, if the daemon crashes between $t$ and $t'$, rebroadcasting the task MUST result to the same successful event, dispite the fact that the syncer will not broadcast the transaction to the full-node a second time.
