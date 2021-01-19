@@ -19,14 +19,14 @@ This RFC defines six Bitcoin transactions.
 
 ### Pre-lock
 
-The `pre-lock (a)` transactoin is an externally created transaction that serves two purposes:
+The `pre-lock (a)` transaction is an externally created transaction that serves two purposes:
 
  1. Force the creation of a SegWit UTXO for the `lock (b)` transaction
  2. Not make any assumption on where the funds come from
 
 The transaction can have `n` inputs and `m` outputs but MUST create 1 and only 1 P2WPKH (SegWit v0) UTXO for the given address during initialization. [we miss a ref. on the graph for this lock condition]
 
-The P2WPKH rationale is too have a better support, this can be moved to a SegWit v1 P2TR later when support is added in wallets.
+The P2WPKH rationale is to have a better support, this can be moved to a SegWit v1 P2TR later when support is added in wallets.
 
 ### Lock
 
@@ -77,7 +77,7 @@ It consumes the `lock`'s Taproot output `(i)` with just a signature (MuSig2+adap
 
 ### Cancel
 
-The script-path witness that consume `lock`'s P2TR UTXO:
+The script-path witness that consumes `lock`'s P2TR UTXO:
 
     <nitems> <len> <input> <len> <script> <len> <c>
 
