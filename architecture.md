@@ -26,7 +26,7 @@ The following table summarizes different aspects of each component.
 
 |                 | `swap-client`                    | `swap-daemon`                                        | `chain-syncer`     |
 |-----------------|----------------------------------|------------------------------------------------------|--------------------|
-| definition   | a program that controls the daemon and display the current state | a program that executes the core protocol in a state machine | a program that talks with a specific blockchain |
+| definition   | a program that controls the daemon and displays the current state | a program that executes the core protocol in a state machine | a program that talks with a specific blockchain |
 | cryptographic keys & secrets | private & public    | public only                                          | public only        |
 | client/user  | end-user                         | `swap-client`, counterparty `swap-daemon`                | `swap-daemon`        |
 | availability          | present at the start and to sign | mostly online, channel of communication between parties | always online      |
@@ -61,7 +61,7 @@ Below a string diagram formalization of the information flow.
 
 The Daemon is the central component responsible for orchestrating the protocol execution. 
 
-Daemon's main function is to manage the safe progression of the execution of the cross-chain-swap in response to the intrinsic and extrincic messages it receives -- respectively coming from itself and from the components it directly interacts with. 
+Its main function is to manage the safe progression of the execution of the cross-chain-swap in response to the intrinsic and extrinsic messages it receives -- respectively coming from itself and from the components it directly interacts with. 
 
 The Daemon MUST be fully aware of the complete State of the cross-chain-swap execution. To achieve that it MUST listen to: 
 - blockchain events from both chains via Syncers communication,
@@ -69,13 +69,13 @@ The Daemon MUST be fully aware of the complete State of the cross-chain-swap exe
 - user's instructions via Client communication, and
 - self-produced input messages
 
-The Daemon MUST create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a petrinet model of the protocol may be used to constraint the runtime environment that executes the user's respective swap role in the protocol, by only authorizing firing valid enabled protocol transitions.
+The Daemon MUST create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a petrinet model of the protocol may be used to constrain the runtime environment that executes the user's respective swap role in the protocol, by only authorizing firing valid enabled protocol transitions.
 
 ### Inter-daemon communication
 The Daemon has a bidirectional communication channel with the swap counterparty's daemon. This inter-daemon communication is used to pass messages in the correct order between the swap counterparties, such as the messages needed for:
 - agreeing on the global swap parameters,
 - safe initialization,
-- and safe protocol execution during swap period itself.
+- and safe protocol execution during the swap period itself.
 
 ### Client-Daemon communication
 1. A valid Client Instruction message sent by the Client to the Daemon instructs the daemon to fire a given enabled protocol transition 
@@ -96,7 +96,7 @@ A Daemon does not interact with a blockchain fullnode directly.
 A Syncer handles 'tasks' requests from a Daemon and MAY produce a set of 'blockchain events' according to the type of 'task' it receives.
 
 ### Loopback: self-generated input messages
-The daemon MAY generate self-addressed messages. Those messages MAY be used to trigger transitions only based on daemon's state. Those transitions can e.g. be the absence of counter-party communication during a periode of time.
+The daemon MAY generate self-addressed messages. Those messages MAY be used to trigger transitions only based on daemon's state. Those transitions can e.g. represent the absence of counter-party communication during a period of time.
 
 ## Syncer
 A syncer is specific to a blockchain and can handle a list of 'tasks' directly related to that blockchain. Those 'tasks' will be completed in different manners depending on the blockchain type and/or the blockchain state. The logic inside syncers allow the daemon to abstract a part of the logic needed to interact with a blockchain with a define interface composed of 'tasks' and 'blockchain events'.
@@ -122,14 +122,14 @@ Client and Daemon MUST have an initialization protocol allowing one or the other
 
 Daemon updates Client with State Digest messages to move forward with the swap protocol execution.
 
-Client pass User's instructions to the Daemon. That is, Client MAY at the User's discretion fire one of the possible protocol transitions at each moment in time. A subset of transitions MAY require signed protocol messages and/or signed blockchain transactions as input. After Client's instruction, Daemon MUST undertake the actions associated with the fired transition, and update Swap state accordingly.
+Client passes User instructions to the Daemon. That is, Client MAY at the User's discretion fire one of the possible protocol transitions at each moment in time. A subset of transitions MAY require signed protocol messages and/or signed blockchain transactions as input. After Client's instruction, Daemon MUST undertake the actions associated with the fired transition, and update Swap state accordingly.
 
 ## Swap State
 The Swap state encodes the step of the protocol execution the user is currently in, and it is handled by the Daemon. For each given state, zero or more transitions are enabled as a function of a list of valid inputs. Inputs can be: (i) blockchain events, (ii) protocol messages, (iii) client instructions, or (iv) daemon loopback messages. When a swap state receives an input, a transition to a new state MAY produce outputs. Outputs can be: (i) syncer tasks, (ii) protocol messages, (iii) client state digest messages, or (iv) daemon loopback messages.
 
 Valid transitions from one state to other states are described by the protocol. Upon Swap state update, daemon MUST update the Client through State Digest messages.
 
-For each swap state, only a subset of inputs is valid. The daemon MUST contextually filter all of its inputs before applying them. Filtering can happen in parallel for every stream of inputs. All filtered stream are then combined, each element of this final stream are applied one by one on the current state.
+For each swap state, only a subset of inputs is valid. The daemon MUST contextually filter all of its inputs before applying them. Filtering can happen in parallel for every stream of inputs. All filtered streams are then combined, each element of this final stream are applied one by one on the current state.
 
 The first task of the combined input stream MUST be a save on disk. After each transition the swap state MUST be saved on disk as the last checkpoint. The daemon MUST be able to start with a given checkpoint, a saved stream of inputs and a protocol.
 
