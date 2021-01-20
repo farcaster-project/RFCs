@@ -17,11 +17,11 @@ Every task is accompanied with an `id`, a positive integer which fits into the 3
 
 The `error` event is valid for every single task, and it takes the task's ID and provides an integer `code`, as well as optionally a string `message`.
 
-This document frequently references epochs, whose definition is dependent on the protocol in question. For Bitcoin and Monero, the epoch is the block height. For systems without the context of a block height, Unix timestamps SHOULD be used.
+This document frequently references epochs, whose definition is dependent on the protocol in question. For Bitcoin, Monero, and other blockchain-based systems, the epoch is the block height. For systems without the context of a block height, Unix timestamps SHOULD be used.
 
-## Watch Height
+## 0: Watch Height
 
-`watch_height` asks the syncer for notifications about updates to the blockchain's height. This task MUST be implemented for any coin with a blockchain. This task MAY be implementated for any coin without a blockchain. If it is not implemented, an error event must be sent in response to any attempt to start this task.
+`watch_height` asks the syncer for notifications about updates to the blockchain's height. This task MUST be implemented for any coin with a blockchain. This task MAY be implementeted for any coin without a blockchain. If it is not implemented, an error event must be sent in response to any attempt to start this task.
 
 Required parameters are:
 * `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, barring another instance of this task, this task MUST be maintained. When another instance appears, syncers MAY only keep the most recent one.
@@ -33,9 +33,9 @@ When the height changes, a `height_changed` event is emitted. It contains:
 
 Upon task reception, syncers MUST send a `height_changed` event immediately to signify the current height.
 
-## Watch Wallet
+## 1: Watch Address
 
-`watch_wallet` asks the syncer for notifications about when a specified wallet receives funds.
+`watch_address` asks the syncer for notifications about when a specified address receives funds.
 
 Required parameters are:
 * `confirmations`: Confirmation threshold to wait for before producing an event. If 0, the event is created as soon as a transaction is seen.
@@ -43,34 +43,38 @@ Required parameters are:
 
 For Bitcoin, the following additional parameters are defined:
 * `address`: The address to watch.
-Bitcoin also has this task return historical transactions, with a possible rate limit being implementation defined.
+* `past_blocks`: Previous blocks to scan for transactions sent to the specified address.
+Bitcoin also has this task return historical transactions, with a possible rate limit being implementation-dependent.
 
 For Monero, the following parameters:
-* `public_spend`: The public spend key of the wallet.
-* `private_view`: The private view key of the wallet.
-* `past_blocks`: Previous blocks to scan for transactions sent to the specified wallet.
+* `public_spend`: The public spend key of the address.
+* `private_view`: The private view key of the address.
+* `past_blocks`: Previous blocks to scan for transactions sent to the specified address.
 
 Once a transaction is seen by the syncer, and passed the confirmation threshold, a `transaction_received` event is emitted. It contains:
 * `tx`: Transaction ID.
-* `amount`: Value of the amount sent to the specified wallet.
+* `amount`: Value of the amount sent to the specified address.
+
 Further fields may be defined depending on the coin. Any coin based on a blockchain MUST also have:
+
 * `block`: The hash of the block which contains this transaction. If the transaction has yet to be included in a block, a zero value hash is used.
 
-## Watch Transaction
+## 2: Watch Transaction
 
 `watch_transaction` asks a syncer for updates on the status of a transaction.
 
 Required parameters are:
 * `hash`: Transaction hash.
 * `confirmations`: Confirmation threshold to wait for before producing an event. If 0, the event is created as soon as a transaction is seen.
-* `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, this task MUST be maintained.
+* `confirmation-bound`: Upper bound on the confirmation count until which the syncer should report updates on the block depth of the transaction. This task MUST be maintained until this threshold is reached or until until `lifetime` has passed.
+* `lifetime`: Epoch at which the syncer SHOULD drop this task. This task MUST be maintained until this threshold is reached or until until `confirmation-bound` has been reached. 
 
 Once a transaction is seen by the syncer, and passed the confirmation threshold, a `transaction_seen` event is emitted. It contains:
 * `confirmations`: Current confirmation threshold.
 Further fields may be defined depending on the coin. Any coin based on a blockchain MUST also have:
 * `block`: The hash of the block which contains this transaction. If the transaction has yet to be included in a block, a zero value hash is used.
 
-## Broadcast Transaction
+## 3: Broadcast Transaction
 
 `broadcast_transaction` tells a syncer to broadcast a transaction. The syncer MUST broadcast the transaction, even if it was already broadcasted.
 
@@ -80,6 +84,6 @@ The only parameter is:
 # Blockchain Events
 
 ## Equivalent blockchain event sets
-Let's define a `new height` task, this task produces `height changed` blockchain events upon new block and reorgs. Let's define $X$ as the current block height. The task is sent to the syncer, initial plus two events are recieved, for $X$, $X+1$, and $X+2$ new heights. At time $t$ the latest state is for $X+2$. If the daemon crashes at $X+1$ and restart, at time $t$ it MUST have recieved $X+1$ as initial event and $X+2$, the latest state is the same. And finally if the daemon crashes at time $t$ and restart, the initial blockchain event MUST contains $X+2$. Sets of events are different but equivalent for the daemon state.
+Let's define a `new height` task, this task produces `height changed` blockchain events upon new block and reorgs. Let's define $X$ as the current block height. The task is sent to the syncer, initial plus two events are received, for $X$, $X+1$, and $X+2$ new heights. At time $t$ the latest state is for $X+2$. If the daemon crashes at $X+1$ and restarts, at time $t$ it MUST have received $X+1$ as initial event and $X+2$, the latest state is the same. And finally if the daemon crashes at time $t$ and restarts, the initial blockchain event MUST contains $X+2$. Sets of events are different but equivalent for the daemon state.
 
-Let's define a `broadcast transaction` task for tasks that have side effects, this job produces as a success output a `transaction broadcasted` blockchain event. The daemon sends the task at time $t$ and recieves the successful `transaction broadcasted` event at time $t'$, if the daemon crashes between $t$ and $t'$, rebroadcasting the task MUST result to the same successful event, dispite the fact that the syncer will not broadcast the transaction to the full-node a second time.
+Let's define a `broadcast transaction` task for tasks that have side effects, this job produces as a success output a `transaction broadcasted` blockchain event. The daemon sends the task at time $t$ and recieves the successful `transaction broadcasted` event at time $t'$, if the daemon crashes between $t$ and $t'$, rebroadcasting the task MUST result in the same successful event, despite the fact that the syncer will not broadcast the transaction to the full-node a second time.
