@@ -1,4 +1,4 @@
-# User Stories
+# User Stories / High Level Protocol
 
 [![hackmd-github-sync-badge](https://hackmd.io/pym9JPVlRK-RfQGOUv26aQ/badge)](https://hackmd.io/pym9JPVlRK-RfQGOUv26aQ)
 
@@ -13,21 +13,21 @@
 
 ## Roles
 
-### Negociation: Taker & Maker
+### Negotiation: Taker & Maker
 
-Taker and maker roles are dissociated from swap roles. They are used in the negociation phase. A Taker can latter be transformed into an Alice or Bob role when moving from the negociation phase into the swap phase, and vice versa.
+Taker and maker roles are dissociated from swap roles. They are used in the negotiation phase. A taker can later be transformed into an Alice or Bob role when moving from the negotiation phase into the swap phase, and vice versa.
 
-The Maker role offers a potential trade, the proposal can be a buy or sell for one asset pair, with fixed amounts or ranges, etc. There is no special limitation on what a proposal can be. A Taker can respond on a proposal.
+The maker role offers a potential trade, the proposal can be a buy or sell for one asset pair, with fixed amounts or ranges, etc. There is no special limitation on what a proposal can be. A taker can respond on a proposal.
 
 ### Blockchain: Arbitrating & Accordant
 
-We describe two blockchain roles: (1) Arbitrating and (2) Accordant. The former correspond to the chain where the constrain system lives, e.g. the Bitcoin blockchain, the latter is the accordant chain which has no extra on-chain capabilities requirement.
+We describe two blockchain roles: (1) Arbitrating and (2) Accordant. The former corresponds to the chain where the constraint system lives, e.g. the Bitcoin blockchain, the latter is the accordant chain which has no extra on-chain capabilities requirement.
 
 Those roles are distributed by the outgoing blockchains' capabilities involved in the swap pair, e.g Monero cannot be the arbitrating chain.
 
 ### Swap: Alice & Bob
 
-Because of the protocol asymetry property, we describe two swap roles: (1) Alice and (2) Bob.
+Because of the protocol asymmetry property, we describe two swap roles: (1) Alice and (2) Bob.
 
 We define Alice's role as: Alice always move coins from the accordant chain to the arbitrating chain.
 
@@ -35,17 +35,17 @@ We define Bob's role as: Bob always move coins from the arbitrating chain to the
 
 ## Phases
 
-We distinguish between two phases: (1) negociation and (2) swap phases. The negociation implies Taker and Maker roles, the swap phase implies Alice and Bob roles.
+We distinguish between two phases: (1) negotiation and (2) swap phases. The negotiation implies taker and maker roles, the swap phase implies Alice and Bob roles.
 
-### Negociation phase
+### Negotiation phase
 
-The negociation phase can be done on a forum, with an OTC, within an DEX, etc. This RFC only defines the interface between the negociation phase and the swap phase.
+The negotiation phase can be done on a forum, with an OTC, within an DEX, etc. This RFC only defines the interface between the negotiation phase and the swap phase.
 
-We describe the responsability of the two negociation roles.
+We describe the responsibility of the two negotiation roles.
 
 #### Maker
 
-The maker start his node in maker mode and register all the parameters an offer requires. The daemon setup an onion service and waits for an incoming connection. When ready, the daemon prints the 'public offer', the public offer contains all the parameters a taker needs to connect. The maker can then distribute the 'public offer' over his prefered channels.
+The maker starts her node in maker mode and registers all the parameters an offer requires. The daemon creates an onion service and waits for an incoming connection. When ready, the daemon prints the 'public offer'. The public offer contains all the parameters a taker needs to connect. The maker can then distribute the 'public offer' over her preferred channels.
 
 ##### Maker offer
 
@@ -54,24 +54,24 @@ A maker offer is composed of:
  * The Arbitrating-Accordant blockchain identifier, e.g. BTC-XMR
  * The arbitrating blockchain asset amount
  * The accordant blockchain asset amount
- * The timelocks duration used during the swap
+ * The timelock durations used during the swap
  * The future maker swap role (Alice or Bob)
 
 ##### Maker public offer
 
-A maker public offer is a maker offer plus daemon parameters such as the onion service or other options how to connects to the daemon.
+A maker public offer is a maker offer plus daemon parameters, such as the onion service or other options detailing how to connect to the daemon.
 
 The maker public offer must be easily serializable and in a friendly sharing format.
 
 #### Taker
 
-A taker receives a public offer, visualize it and might accept it. If the taker wants to take the public offer he can try to connects to the maker and start the swap.
+A taker receives a public offer, visualizes it and might accept it. If the taker wants to take the public offer he can try to connect to the maker and start the swap.
 
-#### Results of negociation phase
+#### Results of negotiation phase
 
-The negociation is out of scope for this RFC but MUST result in:
+The negotiation is out of scope for this RFC but MUST result in:
 
- * Daemons connected to eachother
+ * Daemons connected to each other
  * Agreement on the following set of parameters
      * Blockchains used as an Arbitrating-Accordant asset pair, e.g. BTC-XMR
      * Amount exchanged of each assets, e.g. 200 XMR and 1.3 BTC
@@ -105,20 +105,44 @@ We can describe the high level view of the swap phase with four steps:
  3. Monero locking step
  4. Swap step (or exchange step?)
 
-We describe a basic user experience with a atomic swap GUI client for Alice and Bob.
+We describe a basic user experience with an atomic swap GUI client for Alice and Bob.
 
 ![](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/gui-mocks.png)
 
+##### 1. Initialization Step (1-2 in diagram)
+Alice and Bob exchange the initialization parameters specified in [Inter-daemon protocol messages](/M0uYws_5S7K6k1j5l8b6qw?view)
+and sign the multisig transactions
+###### Messages exchanged: 
+- Bob → Alice: [`send_initialization_parameters_bob`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_initialization_parameters_bob)
+- Alice → Bob: [`send_initialization_parameters_alice`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_initialization_parameters_alice)
+##### 2. Bitcoin Locking Step (3 in diagram)
+
+After the parameters are exchanged, Bob acquires Alice's signatures for the refund path and locks the bitcoin. Bob signs the `BTX_buy` transaction and sends the transaction with his signature to Alice.
+###### Messages exchanged: 
+- Bob → Alice: [`send_bitcoin_transactions`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_bitcoin_transactions)
+- Alice → Bob: [`send_bitcoin_transaction_signatures`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_bitcoin_transaction_signatures)
+##### 3. Monero Locking Step (4 in diagram)
+Once Alice has received sufficient confirmations for Bob's `BTX_lock` to feel safe and has received the signed `BTX_buy` transaction from Bob, Alice proceeds to lock her monero.
+###### Messages exchanged: 
+- Bob → Alice: [`send_bitcoin_buy_transaction`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_bitcoin_buy_transaction)
+##### 4. Swap Step (5-6 in diagram)
+Once Bob has received sufficient confirmations for Alice's `XTX_lock` to feel safe, Bob sends Alice the secret `s`, which Alice requires to execute the first branch of the `SWAPLOCK` script via `BTX_buy`. Alice then signs the `BTX_buy` transaction and publishes it, leaking her Monero key share. 
+###### Messages exchanged: 
+- Bob → Alice: [`send_bitcoin_buy_secret`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_bitcoin_buy_secret)
+
 #### Alice's role
 
-Alice, who owns accordant blockchain's coins, e.g. Monero, is TODO
+Alice, who initially owns accordant blockchain's coins, e.g. Monero, is TODO
+> [name=Lederstrumpf]
+> [color=violet]
+> @h4sh3d it's unclear what the `role`s sections are intended to achieve 
 
 ##### Reputation problem
 
-Because of the protocol asymetry, Alice always locks her coins later in the swap process, that implies she gets an option to buy without costs. One way to resolve this issue is to introduce a reputation system between participants, but this is hard in a decentralized setup.
+Because of the protocol asymmetry, Alice always locks her coins later in the swap process, that implies she gets an option to buy without costs. One way to resolve this issue is to introduce a reputation system between participants, but this is hard in a decentralized setup.
 
-The reputation problem is not linked to the negociation role took by Alice's role, if she's a Taker she can cancel for free on any prices and if she's a Maker she can propose any prices and cancel for free if someone tries to take it.
+The reputation problem is not linked to the negotiation role assumed by Alice's daemon: If she's a Taker she can cancel for free on any prices and if she's a Maker she can propose any prices and cancel for free if someone tries to take it.
 
 #### Bob's role
 
-Bob, who owns arbitrating blockchain's coins, e.g. Bitcoin, is TODO
+Bob, who initially owns arbitrating blockchain's coins, e.g. Bitcoin, is TODO
