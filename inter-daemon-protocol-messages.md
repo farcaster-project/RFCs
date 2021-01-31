@@ -1,6 +1,13 @@
 # Inter-daemon protocol messages
-> [name=Lederstrumpf][color=violet]
-Only protocol messages for now: may want to add price negotiation messages later. We may also want optional messages sent during the later phases of the swap (2-4), but those would strictly be courtesy messages.
+[![hackmd-github-sync-badge](https://hackmd.io/pym9JPVlRK-RfQGOUv26aQ/badge)](https://hackmd.io/pym9JPVlRK-RfQGOUv26aQ)
+
+
+<pre>
+  State: draft
+  Created: 2021-01-20
+</pre>
+
+[TOC]
 
 This RFC specifies the inter-daemon communication messages, segregated by Bob's and Alice's daemons. These messages follow the protocol execution specified in [Bitcoin--Monero Cross-chain Atomic Swap](https://github.com/h4sh3d/xmr-btc-atomic-swap/blob/master/whitepaper/xmr-btc.pdf). The applicable swap phases are documented in [User Stories / High Level Protocol](/pym9JPVlRK-RfQGOUv26aQ).
 
