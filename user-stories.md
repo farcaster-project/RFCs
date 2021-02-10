@@ -78,6 +78,62 @@ The negotiation is out of scope for this RFC but MUST result in:
      * Transition from Maker-Taker roles into Alice-Bob roles
      * Time parameters t1 and t2, i.e. protocol timelock parameters
 
+![](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/negociation-phase-mocks.png)
+
+##### A. Maker and Taker role choice
+The swap client is started in one of these two modes: (i) Maker or (ii) Taker.
+
+##### B. Maker: create an offer
+When started in maker mode, the client will ask the user a list of required parameters. When completed the client starts the daemon.
+
+##### C. Taker: paste a public offer
+When started in taker mode, the client prompt the user a public offer.
+
+##### D. Maker: start and display the public offer
+When daemon is ready, the client display the public offer and waits on incoming connection.
+
+##### E. Taker: visualize a public offer
+The pasted public offer is parsed and displayed to the user for verification and acceptance. If the user wants to take it, the daemon is started and connects to the daemon specified in the public offer.
+
+#### CLI version
+This section provides an incomplete example for the CLI version.
+
+Maker starting his node:
+```
+$ swap-cli --make
+> Pair: BTC-XMR
+> BTC: 0.3
+> XMR: 10
+> Timelock 1: 4
+> Timelock 2: 10
+> Role ([A]lice,[B]ob): A
+
+Exchange 0.3 BTC for 10 XMR? [y/N] y
+
+Starting daemon in Maker mode...
+Your public offer:
+FxdquLnGbMMK9KsnW5P49hKb4vvKCjgjxJTd9tPE1PJr4f6LyLM
+
+Waiting for incoming connection...
+```
+
+Taker visualizing a public offer and accepting the deal:
+```
+$ swap-cli --take --offer FxdquLnGbMMK9KsnW5P49hKb4vvKCjgjxJTd9tPE1PJr4f6LyLM
+Public offer
+> Pair: BTC-XMR
+> BTC: 0.3
+> XMR: 10
+> Timelock 1: 4
+> Timelock 2: 10
+> Your role: Bob
+> Counterparty role: Alice
+
+Exchange 10 XMR for 0.3 BTC? [y/N] y
+
+Connecting to counterparty daemon...
+```
+
 ### Swap phase
 
 The swap phase starts for each roles with a set of parameters:
@@ -130,19 +186,8 @@ Once Bob has received sufficient confirmations for Alice's `XTX_lock` to feel sa
 ###### Messages exchanged: 
 - Bob → Alice: [`send_bitcoin_buy_secret`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_bitcoin_buy_secret)
 
-#### Alice's role
-
-Alice, who initially owns accordant blockchain's coins, e.g. Monero, is TODO
-> [name=Lederstrumpf]
-> [color=violet]
-> @h4sh3d it's unclear what the `role`s sections are intended to achieve 
-
-##### Reputation problem
+## Reputation problem
 
 Because of the protocol asymmetry, Alice always locks her coins later in the swap process, that implies she gets an option to buy without costs. One way to resolve this issue is to introduce a reputation system between participants, but this is hard in a decentralized setup.
 
 The reputation problem is not linked to the negotiation role assumed by Alice's daemon: If she's a Taker she can cancel for free on any prices and if she's a Maker she can propose any prices and cancel for free if someone tries to take it.
-
-#### Bob's role
-
-Bob, who initially owns arbitrating blockchain's coins, e.g. Bitcoin, is TODO
