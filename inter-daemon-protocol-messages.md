@@ -22,8 +22,8 @@ This RFC specifies the inter-daemon communication messages, segregated by Bob's 
 - `B_b`: `base58`
 - `B_b_s`: `base58`
 - `B_b_r`: `base58`
-- `k_b_v`: `edward25519` scalar 
-- `K_b_s`: `edward25519` curve point 
+- `k_b_v`: `edward25519 scalar`
+- `K_b_s`: `edward25519 curve point`
 - `z_b`: `DLEQ proof`
 - `h_s`: `SHA256`
 
@@ -35,14 +35,14 @@ This RFC specifies the inter-daemon communication messages, segregated by Bob's 
 - `BTX_lock`: `BTC transaction`
 - `BTX_refund`:`BTC transaction`
 - `BTX_spend`:`BTC transaction`
-- `sig_refund_bob`: `ECDSA signature`
+- `sig_btx_refund_bob`: `ECDSA signature`
 ### `send_bitcoin_buy_transaction`
 `send_bitcoin_buy_transaction` sends the [`BTX_buy`](https://hackmd.io/YfMko2WPR9iITsw4MsLcPA#Buy) transaction with Bob's signature for it
 #### Type
 `void | bool (message delivery status)`
 #### Data
 - `BTX_buy`:`BTC transaction`
-- `sig_buy_bob`: `ECDSA signature`
+- `sig_btx_buy_bob`: `ECDSA signature`
 ### `send_bitcoin_buy_secret`
 `send_bitcoin_buy_secret` sends the secret `s` Alice requires to trigger the `TRUE` branch of the `SWAPLOCK` script
 #### Type
@@ -58,8 +58,8 @@ This RFC specifies the inter-daemon communication messages, segregated by Bob's 
 - `B_a`: `base58`
 - `B_a_s`: `base58`
 - `B_a_r`: `base58`
-- `k_a_v`: `edward25519` scalar 
-- `K_a_s`: `edward25519` curve point 
+- `k_a_v`: `edward25519 scalar`
+- `K_a_s`: `edward25519 curve point`
 - `z_a`: `DLEQ proof`
 ### `send_bitcoin_transaction_signatures`
 `send_bitcoin_transaction_signatures` provides Bob with Alice's signatures of [`BTX_refund`](https://hackmd.io/YfMko2WPR9iITsw4MsLcPA#Refund) and `BTX_spend`
