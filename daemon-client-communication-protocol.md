@@ -25,12 +25,12 @@ From a security perspective, an import distinction between the client and the da
 ## Instructions
 
 There are three types of instructions:
-1. Cryptographic material
+1. Cryptographic material: relevant during the initialization phase
    - signatures (partial and finalized)
    - keys (public keys and Monero private view keys)
    - MuSig2 protocol messages
    - Zero knowledge proofs of DEL across groups
-2. Transaction messages following [PSBT standard](https://github.com/bitcoin/bitcoin/blob/master/doc/psbt.md) (`TODO`: decide on whether we actually want to follow this standard)
+2. Transaction messages following [PSBT standard](https://github.com/bitcoin/bitcoin/blob/master/doc/psbt.md) & [BIP 174](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki) (`TODO`: decide on whether we actually want to follow this standard): relevant during all swap phases
 3. Control flow messages
    - accept a step in the swap process
    - swap cancel by the user
@@ -121,3 +121,18 @@ Only called by Alice's daemon: provides Alice's daemon with a signature on the u
 
 ## State digests
 State digests are messages sent by the daemon to the client to relay all information needed to construct the client interface and update the swap state. These messages both allow the client to display the correct actions a user can perform and create the necessary instructions consumed daemon to continue the swap protocol.
+### Format (ROUGH SKETCH)
+- current marking of Petri net representation of swap (i.e. vector of token counts per slot)?
+- and/or transitions available for firing (superfluous if we send the current marking, but that route requires more data transfer & calculation on the client's part )
+> [name=Lederstrumpf][color=violet]
+> I would prefer sending markings, in lieu of baking in the transitions as a stripped down representation - my expectation is that while requiring more functionality on the client's part, it will be easier to keep in sync with daemon development down the line, and safer to reason about.
+- data required for signatures (data required for firing a given transition)
+
+### `send_state_digest`
+Provides the client with the current state digest. By applying the fired transitions to the current petri net of the client, the client can infer which transitions are available to fire.
+#### Type
+`void | bool (message delivery status)`
+#### Data
+- `fired_transitions`: `[U8]` (vector of # of firings per transition since last state digest)
+- `marking_hash`: `SHA256` (hash of the current marking so that client can verify it applied the transitions correctly)
+- `fireable_transition_data`: `{transition index -> required data}` (map of fireable transitions to the data that the client requires to produce the authentication the daemon requires to fire it, such as transaction signatures)
