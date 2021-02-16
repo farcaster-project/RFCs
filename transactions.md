@@ -17,7 +17,7 @@ This RFC defines the Bitcoin transactions. These transactions can be constructed
 
  * **ECDSA Scripts**, with SegWit v0 outputs and ECDSA signatures
  * **Taproot Schnorr Scripts**, with SegWit v1 outputs and Schnorr signatures and on-chain multi-signature using TapLeaf scripts
- * **Taproot Schnorr MuSig2**, with SegWit v1 outputs and Schnorr signatures and MuSig2 off-chain multi-signature scheme
+ * **Taproot Schnorr MuSig2**, with SegWit v1 outputs and Schnorr signatures and MuSig2 off-chain multi-signature protocol
 
 The latter is the prefered option for privacy but depends on features activation on the Bitcoin chain and MuSig2 protocol. This RFC describe for each transaction the three approaches.
 
@@ -59,20 +59,42 @@ ELSE
     <num> [TIMEOUTOP] DROP
     2 <Alice's Ac PubKey> <Bob's Bc PubKey> 2 CHECKMULTISIG
 ENDIF
-```
 
 where
-
-```
-Ab: Alice's buy key;
-Bb: Bob's buy key;
-Ac: Alice's cancel key; and
-Bc: Bob's cancel key;
+    Ab: Alice's buy key;
+    Bb: Bob's buy key;
+    Ac: Alice's cancel key; and
+    Bc: Bob's cancel key;
 ```
 
 #### Taproot Schnorr Scripts
 
-TODO
+The `lock (b)` creates a (SegWit v1) Taproot UTXO `(ii)` with the locking script `OP_1 0x20 <Q pubkey>`:
+
+```
+              Q                       | the Taproot tweaked key
+              |
+    ----------------------
+    |                    |
+    P           Script Merkle root    | P: an internal key where DLog is unknown
+                         |
+            /---------------------------\
+    TapLeaf buy script        TapLeaf cancel script    | SegWit v1 scripts
+```
+
+with `TapLeaf buy script`:
+
+```
+<Alice's Ab + Ta PubKey> CHECKSIG <Bob's Bb PubKey> CHECKSIGADD m 
+NUMEQUAL
+
+where
+    Ab: Alice's buy key;
+    Bb: Bob's buy key; and
+    Ta: Alice's adaptor key
+```
+
+and `TapLeaf cancel script` is the same as in MuSig2.
 
 #### Taproot MuSig2
 
@@ -110,13 +132,10 @@ where
 EQUALVERIFY DROP
 <Alice's Ac PubKey> CHECKSIG <Bob's Bc PubKey> CHECKSIGADD m 
 NUMEQUAL
-```
 
 where
-
-```
-Ac: Alice's cancel key; and
-Bc: Bob's cancel key;
+    Ac: Alice's cancel key; and
+    Bc: Bob's cancel key;
 ```
 
 ### Buy
@@ -135,11 +154,25 @@ and leaks the adaptor on `<Alice's Ab signature>` to Bob.
 
 #### Taproot Schnorr Scripts
 
-TODO
+The script-path witness that consumes `lock`'s P2TR UTXO:
+
+```
+<nitems> <len> <input> <len> <script> <len> <c>
+```
+
+with `<input>`: an input that fulfills the spending conditions set by `<script>`, and `<c>` the control block;
+
+where `<script>` is the `TapLeaf buy script`;
+
+and `<input>`:
+
+```
+<Bob's Bb signature> <Alice's Ab + Ta signature>
+```
 
 #### Taproot MuSig2
 
-It consumes the `lock`'s Taproot output `(ii)` with one signature (MuSig2+adaptor), and leaks the adaptor  to Bob.
+It consumes the `lock`'s Taproot output `(ii)` with one valid signature for `<Q>` the Taproot tweaked key, generated with `<P>` (MuSig2+adaptor), revealing the second secret spend key to the counterparty (Bob), effectively doing the swap.
 
 ### Cancel
 
@@ -162,19 +195,44 @@ ELSE
     <num> [TIMEOUTOP] DROP
     <Alice's Ap PubKey> CHECKSIG
 ENDIF
-```
 
 where
-
-```
-Ar: Alice's refund key;
-Br: Bob's refund key; and
-Ap: Alice's punish key;
+    Ar: Alice's refund key;
+    Br: Bob's refund key; and
+    Ap: Alice's punish key;
 ```
 
 #### Taproot Schnorr Scripts
 
-TODO
+The script-path witness that consumes `lock`'s P2TR UTXO is the same as in MuSig2.
+
+It creates a Taproot UTXO `(iii)` with the locking script (SegWit v1) `OP_1 0x20 <Q' pubkey>`:
+
+
+```
+              Q'                      | the Taproot tweaked key
+              |
+    ----------------------
+    |                    |
+    P'          Script Merkle root    | P': an internal key where DLog is unknown
+                         |
+            /---------------------------\
+  TapLeaf refund script        TapLeaf punish script    | SegWit v1 scripts
+```
+
+with `TapLeaf refund script`:
+
+```
+<Alice's Ar PubKey> CHECKSIG <Bob's Br + Tb PubKey> CHECKSIGADD m 
+NUMEQUAL
+
+where
+    Ar: Alice's refund key;
+    Br: Bob's refund key; and
+    Tb: Bob's adaptor key
+```
+
+and `TapLeaf punish script` is the same as in MuSig2.
 
 #### Taproot MuSig2
 
@@ -223,6 +281,9 @@ where
 <num> [TIMEOUTOP]
 EQUALVERIFY DROP
 <Alice's Ap PubKey> CHECKSIGVERIFY
+
+where
+    Ap: Alice's punish key;
 ```
 
 ### Refund
@@ -241,11 +302,25 @@ and leaks the adaptor on `<Bob's Br signature>` to Alice.
 
 #### Taproot Schnorr Scripts
 
-TODO
+The script-path witness that consumes `cancel`'s P2TR UTXO:
+
+```
+<nitems> <len> <input> <len> <script> <len> <c>
+```
+
+with `<input>`: an input that fulfills the spending conditions set by `<script>`, and `<c>` the control block;
+
+where `<script>` is the `TapLeaf refund script`;
+
+and `<input>`:
+
+```
+<Bob's Br + Tb signature> <Alice's Ar signature>
+```
 
 #### Taproot MuSig2
 
-It consumes the `cancel`'s Taproot output `(iii)` with just a signature (MuSig2+adaptor), revealing the second secret spend key to the counterparty (Alice), effectively doing the refund.
+It consumes the `cancel`'s Taproot output `(iii)` with one valid signature for `<Q'>` the Taproot tweaked key, generated with `<P'>` (MuSig2+adaptor), revealing the second secret spend key to the counterparty (Alice), effectively doing the refund.
 
 ### Punish
 
@@ -259,13 +334,19 @@ It consumes the `cancel`'s output `(iii)` with:
 <Alice's Ap signature> FALSE <script>
 ```
 
-#### Taproot Schnorr Scripts
+#### Taproot Schnorr Scripts & Taproot MuSig2
 
-TODO
+The script-path witness that consumes `cancel`'s P2TR UTXO:
 
-#### Taproot MuSig2
+```
+<nitems> <len> <input> <len> <script> <len> <c>
+```
 
-The script-path witness has the same structure as the `buy` transaction with `<input>`:
+with `<input>`: an input that fulfills the spending conditions set by `<script>`, and `<c>` the control block;
+
+where `<script>` is the `TapLeaf punish script`;
+
+and `<input>`:
 
 ```
 <Alice's Ap signature>
