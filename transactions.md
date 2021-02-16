@@ -379,7 +379,7 @@ The spend transaction has to follow the minimum Monero output age policy (10 blo
 
 ### Notes on Privacy
 
-Bitcoin transaction must be designed in a way where if Taproot is used with a single signature to spend an output, it MUST not be possible to differentiate between `c` and `d`, and between `e` and `f`.
+Bitcoin transaction must be designed in a way where if Taproot and MuSig2 are used with a single signature to spend an output, it MUST not be possible to differentiate between `c` and `d`, and between `e` and `f`.
 
 But in most cases `c` and `d` will be different because `d` will be used with the TapLeaf script.
 
@@ -391,12 +391,91 @@ On the arbitrating blockchain a chain of three transactions is created, the two 
 
 We describe in this chapter some heuristic to set the fees.
 
-Let's define `t(c, t)`, a function of time returning the fee for a transaction `t` based on a coeficient `c`.
+Let's define `f(tx, c)`, a function returning the fee over time for a transaction `tx` based on a coeficient `c`.
 
-If `c(buy) = 1`, then `c(cancel) > 1`, such that at time `t` when `buy` and `cancel` are both available `cancel` should have a better probability to be mined.
+If `c(buy) = 1`, then `c(cancel) > 1`, such that at time `t` when `buy` and `cancel` are both available `cancel` has a higher probability to be mined.
 
-It is worth noting that we cannot control the coeficient `c` between `refund` and `punish` as `punish` is control unilaterraly by Alice.
+It is worth noting that we cannot control the coeficients `c` between `refund` and `punish` as `punish` is control unilaterraly by Alice.
 
-### RBF (Replace By Fee)
+#### RBF (Replace By Fee)
 
-RBF (Replace By Fee) should be integrated into the protocol such that multiple version of some transaction can exist.
+RBF (Replace By Fee) should be integrated into the protocol such that multiple version of some transaction can exist and transactions can be cooperatively bumped to get into the blockchain within the temporal safety window.
+
+### Bitcoin transactions temporal safety
+
+In the swap protocol publishing transactions to the bitcoin mempool (=transaction pool) reveals secret keys that are required to sweep the monero wallet. Therefore it is paramount to carefully evaluate the temporal safety bounds of publishing transactions, as they may:
+
+ - be raced by valid and pre-signed protocol's transactions that are de facto double-spends or 
+ - reverted by blockchain reorgs
+
+#### Protocol
+
+Here we offer a simple protocol that may be used for publishing each transaction to the Bitcoin blockchain without putting funds at risk.
+
+The swap participant has a temporal safety parameter, `delta_irreversible`, in blocks. If a transaction is mined at block `t`, at `t + delta_irreversible`, the participant assumes that her transaction is irreversible.
+
+##### Funding
+
+After the atomic swap protocol initialization successfully completes, Bob can publish the funding transaction. Bob publishes the funding transaction, that is later mined at block height `t(funding)`. 
+
+At `t(funding) + delta_irreversible` Alice assumes Bob's transaction is irreversible, and may move on with the protocol execution. That is, Alice can publish her buy transaction. 
+
+##### Buy
+
+However Alice should not wait too long for publishing the buy transaction as the cancellation path may become available, and then a race condition (double spend) between the swap (buy transaction) and the cancellation (cancel transaction) paths becomes possible. 
+
+The safety parameter to prevent race conditions (=double spends) is `delta_race`, in blocks.
+
+The cancellation path becomes valid at time `t(funding) + delta(cancel)$`. Thus Alice has to publish her buy transaction the latest at 
+
+    t(funding) + delta(cancel) - delta_race
+
+
+In sum, Alice's safety window to publish the buy transaction is from 
+
+    t(funding) + delta_irreversible
+
+to
+
+    t(funding) + delta(cancel) - delta_race
+
+where
+
+    delta_irreversible < delta_race < delta(cancel)
+
+A reasonable guesstimate:
+
+    delta_race ~= 10 x delta_irreversible
+
+
+Note that `delta_irreversible` and `delta_race` must be proportional to the amount transacted. Additionally `delta_race` is proportional to mempool congestion.
+
+The same logic applies on the cancelation path.
+
+##### Cancel
+
+Cancel transaction should be published as soon as it becomes valid, that is, after 
+
+    t(funding) + delta(cancel)
+
+The block height at which cancel transaction is mined is `t(cancel)`
+
+##### Refund
+
+Refund transaction safety window for publication 
+
+    t(cancel) + delta_irreversible
+
+to
+
+    t(cancel) + delta(punish) - delta_race
+
+It can be argued that the higher bound of the refund transaction window can be extended, not deliberately and safely, but in emergency cases where Bob could not be online. The refund transaction must be published before the punish transaction gets mined, as they consume the same output from the cancel transaction.
+
+The counter argument is that if Bob publishes the refund transaction then Alice can retrieve the secret key and will get the monero, and might as well get the bitcoin if she wins the race.
+
+While if she only gets the bitcoin, and the monero stays locked, Bob could setup a new swap to unlock the already locked monero (no cost for Alice) and propose a nice reward to Alice for revealing her private key. That is a fairly graceful failure.
+
+##### Punish
+
+Punish transaction should be published as soon as it becomes valid, that is, after `t(cancel) + delta(punish)`
