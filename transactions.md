@@ -94,7 +94,20 @@ where
     Ta: Alice's adaptor key
 ```
 
-and `TapLeaf cancel script` is the same as in MuSig2.
+and `TapLeaf cancel script`, the cancel script, a 2-of-2 multisig with timelock constraint used by the `cancel (d)` transaction.
+
+`TapLeaf cancel script`:
+
+```
+<num> [TIMEOUTOP]
+EQUALVERIFY DROP
+<Alice's Ac PubKey> CHECKSIG <Bob's Bc PubKey> CHECKSIGADD m 
+NUMEQUAL
+
+where
+    Ac: Alice's cancel key; and
+    Bc: Bob's cancel key;
+```
 
 #### Taproot MuSig2
 
@@ -121,22 +134,7 @@ where
     Ta: Alice's adaptor key
 ```
 
-`TapLeaf cancel script`, the cancel script, is a 2-of-2 multisig with timelock constraint used by the `cancel (d)` transaction.
-
-> It is worth noting that it might be possible to make a cooperative cancel, allowing to not reveal the `TapLeaf script` on-chain for better privacy and smaller fees.
-
-`TapLeaf cancel script`:
-
-```
-<num> [TIMEOUTOP]
-EQUALVERIFY DROP
-<Alice's Ac PubKey> CHECKSIG <Bob's Bc PubKey> CHECKSIGADD m 
-NUMEQUAL
-
-where
-    Ac: Alice's cancel key; and
-    Bc: Bob's cancel key;
-```
+`TapLeaf cancel script`, the cancel script, as described in *Taproot Schnorr Scripts*.
 
 ### Buy
 
@@ -144,7 +142,7 @@ The `buy` transaction is available as soon as the local confirmation security th
 
 #### ECDSA Scripts
 
-It consumes the `lock`'s output `(ii)` with:
+Consumes the `lock`'s output `(ii)` with:
 
 ```
 0 <Bob's Bb signature> <Alice's Ab signature> TRUE <script>
@@ -172,7 +170,7 @@ and `<input>`:
 
 #### Taproot MuSig2
 
-It consumes the `lock`'s Taproot output `(ii)` with one valid signature for `<Q>` the Taproot tweaked key, generated with `<P>` (MuSig2+adaptor), revealing the second secret spend key to the counterparty (Bob), effectively doing the swap.
+Consumes the `lock`'s Taproot output `(ii)` with one valid signature for `<Q>` the Taproot tweaked key, generated with `<P>` (MuSig2+adaptor), revealing the second secret spend key to the counterparty (Bob), effectively doing the swap.
 
 ### Cancel
 
@@ -180,7 +178,7 @@ The `cancel (d)` transaction consumes the `lock`'s output `(ii)` and creates the
 
 #### ECDSA Scripts
 
-It consumes the `lock`'s output `(ii)` with:
+Consumes the `lock`'s output `(ii)` with:
 
 ```
 0 <Bob's Bc signature> <Alice's Ac signature> FALSE <script>
@@ -204,9 +202,21 @@ where
 
 #### Taproot Schnorr Scripts
 
-The script-path witness that consumes `lock`'s P2TR UTXO is the same as in MuSig2.
+The script-path witness that consumes `lock`'s P2TR UTXO:
 
-It creates a Taproot UTXO `(iii)` with the locking script (SegWit v1) `OP_1 0x20 <Q' pubkey>`:
+```
+<nitems> <len> <input> <len> <script> <len> <c>
+```
+
+with `<input>`: an input that fulfills the spending conditions set by `<script>`, and `<c>` the control block.
+
+and `<input>`:
+
+```
+<Bob's Bc signature> <Alice's Ac signature>
+```
+
+Creates a Taproot UTXO `(iii)` with the locking script (SegWit v1) `OP_1 0x20 <Q' pubkey>`:
 
 
 ```
@@ -232,25 +242,24 @@ where
     Tb: Bob's adaptor key
 ```
 
-and `TapLeaf punish script` is the same as in MuSig2.
+and `TapLeaf punish script`, the punish script, a single signature (Alice's) with timelock constraint used by the `punish (f)` transaction.
+
+`TapLeaf punish script`:
+
+```
+<num> [TIMEOUTOP]
+EQUALVERIFY DROP
+<Alice's Ap PubKey> CHECKSIGVERIFY
+
+where
+    Ap: Alice's punish key;
+```
 
 #### Taproot MuSig2
 
-The script-path witness that consumes `lock`'s P2TR UTXO:
+The script-path witness that consumes `lock`'s P2TR UTXO is the same as described in *Taproot Schnorr Scripts*.
 
-```
-<nitems> <len> <input> <len> <script> <len> <c>
-```
-
-with `<input>`: an input that fulfills the spending conditions set by `<script>`, and `<c>` the control block.
-
-and `<input>`:
-
-```
-<Bob's Bc signature> <Alice's Ac signature>
-```
-
-and creates a Taproot UTXO `(iii)` with the locking script (SegWit v1) `OP_1 0x20 <Q' pubkey>`:
+Creates a Taproot UTXO `(iii)` with the locking script (SegWit v1) `OP_1 0x20 <Q' pubkey>`:
 
 ```
               Q'                       | the Taproot tweaked key
@@ -273,18 +282,7 @@ where
     Tb: Bob's adaptor key
 ```
 
-`TapLeaf punish script`, the punish script, is a single signature (Alice's) with timelock constraint used by the `punish` (f) transaction.
-
-`TapLeaf punish script`:
-
-```
-<num> [TIMEOUTOP]
-EQUALVERIFY DROP
-<Alice's Ap PubKey> CHECKSIGVERIFY
-
-where
-    Ap: Alice's punish key;
-```
+`TapLeaf punish script`, the punish script, as described in *Taproot Schnorr Scripts*.
 
 ### Refund
 
@@ -292,7 +290,7 @@ The `refund (e)` transaction is available as soon as the local confirmation secu
 
 #### ECDSA Scripts
 
-It consumes the `cancel (d)`'s output `(iii)` with:
+Consumes the `cancel (d)`'s output `(iii)` with:
 
 ```
 0 <Bob's Br signature> <Alice's Ar signature> FALSE <script>
@@ -320,7 +318,7 @@ and `<input>`:
 
 #### Taproot MuSig2
 
-It consumes the `cancel`'s Taproot output `(iii)` with one valid signature for `<Q'>` the Taproot tweaked key, generated with `<P'>` (MuSig2+adaptor), revealing the second secret spend key to the counterparty (Alice), effectively doing the refund.
+Consumes the `cancel`'s Taproot output `(iii)` with one valid signature for `<Q'>` the Taproot tweaked key, generated with `<P'>` (MuSig2+adaptor), revealing the second secret spend key to the counterparty (Alice), effectively doing the refund.
 
 ### Punish
 
@@ -328,7 +326,7 @@ The `punish (f)` transaction consumes `cancel (d)`'s output `(iii)` and transfer
 
 #### ECDSA Scripts
 
-It consumes the `cancel`'s output `(iii)` with:
+Consumes the `cancel`'s output `(iii)` with:
 
 ```
 <Alice's Ap signature> FALSE <script>
