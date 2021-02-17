@@ -5,11 +5,17 @@
   Created: 2020-12-11
 </pre>
 
-[TOC]
-
 # Transactions
 
-Dashed outline transactions are transaction created by external wallets, i.e. not the daemon nor the client.
+## Overview
+
+The protocol implemented in Farcaster is blockchain agnostic, thus a strict list of features is required for the arbitrating blockchain involved in the swap (see User Stories / High Level Protocol). This RFC describes a concrete implementation of the protocol with Bitcoin as the arbitrating blockchain and Monero as the accordant blockchain.
+
+We distinguish here transactions created and controlled by the protocol itself and external transactions. Dashed outline transactions are transaction created by external wallets, i.e. not the daemon nor the client.
+
+## Table of Contents
+
+[TOC]
 
 ## Bitcoin
 
@@ -28,8 +34,6 @@ The latter is the prefered option for privacy but depends on features activation
 > It is worth noting that `CHECKLOCKTIMEVERIFY` will probably not work if we want to support RBF (Replace By Fee)
 
 #### Bitcoin transaction graph
-
-**TODO** fix the figure
 
 ![Bitcoin transaction graph](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/btc-transactions.png)
 
@@ -54,7 +58,7 @@ The `lock (b)` creates a (SegWit v0) UTXO `(ii)` with the locking script:
 
 ```
 IF
-    2 <Alice's Ab PubKey> <Bob's Bb PubKey> 2 CHECKMULTISIG
+    2 <Alice's Ab PubKey> <Bob's Bb(Ta) PubKey> 2 CHECKMULTISIG
 ELSE
     <num> [TIMEOUTOP] DROP
     2 <Alice's Ac PubKey> <Bob's Bc PubKey> 2 CHECKMULTISIG
@@ -63,8 +67,9 @@ ENDIF
 where
     Ab: Alice's buy key;
     Bb: Bob's buy key;
-    Ac: Alice's cancel key; and
-    Bc: Bob's cancel key;
+    Ac: Alice's cancel key;
+    Bc: Bob's cancel key; and
+    Ta: Alice's adaptor key
 ```
 
 #### Taproot Schnorr Scripts
@@ -85,7 +90,7 @@ The `lock (b)` creates a (SegWit v1) Taproot UTXO `(ii)` with the locking script
 with `TapLeaf buy script`:
 
 ```
-<Alice's Ab + Ta PubKey> CHECKSIG <Bob's Bb PubKey> CHECKSIGADD m 
+<Alice's Ab PubKey> CHECKSIG <Bob's Bb(Ta) PubKey> CHECKSIGADD m 
 NUMEQUAL
 
 where
@@ -138,17 +143,17 @@ where
 
 ### Buy
 
-The `buy` transaction is available as soon as the local confirmation security threshold is reached by the buyer.
+The `buy` transaction is available as soon as the local confirmation security threshold is reached by Alice.
 
 #### ECDSA Scripts
 
 Consumes the `lock`'s output `(ii)` with:
 
 ```
-0 <Bob's Bb signature> <Alice's Ab signature> TRUE <script>
+0 <Bob's Bb(Ta) signature> <Alice's Ab signature> TRUE <script>
 ```
 
-and leaks the adaptor on `<Alice's Ab signature>` to Bob.
+and leaks the adaptor `Ta` on `<Bob's Bb(Ta) signature>` to Bob.
 
 #### Taproot Schnorr Scripts
 
@@ -165,8 +170,10 @@ where `<script>` is the `TapLeaf buy script`;
 and `<input>`:
 
 ```
-<Bob's Bb signature> <Alice's Ab + Ta signature>
+<Bob's Bb(Ta) signature> <Alice's Ab signature>
 ```
+
+and leaks the adaptor `Ta` on `<Bob's Bb(Ta) signature>` to Bob.
 
 #### Taproot MuSig2
 
@@ -188,7 +195,7 @@ and creates a (SegWit v0) UTXO `(iii)` with the locking script:
 
 ```
 IF
-    2 <Alice's Ar PubKey> <Bob's Br PubKey> 2 CHECKMULTISIG
+    2 <Alice's Ar(Tb) PubKey> <Bob's Br PubKey> 2 CHECKMULTISIG
 ELSE
     <num> [TIMEOUTOP] DROP
     <Alice's Ap PubKey> CHECKSIG
@@ -196,8 +203,9 @@ ENDIF
 
 where
     Ar: Alice's refund key;
-    Br: Bob's refund key; and
-    Ap: Alice's punish key;
+    Br: Bob's refund key;
+    Ap: Alice's punish key; and
+    Tb: Bob's adaptor key
 ```
 
 #### Taproot Schnorr Scripts
@@ -233,7 +241,7 @@ Creates a Taproot UTXO `(iii)` with the locking script (SegWit v1) `OP_1 0x20 <Q
 with `TapLeaf refund script`:
 
 ```
-<Alice's Ar PubKey> CHECKSIG <Bob's Br + Tb PubKey> CHECKSIGADD m 
+<Alice's Ar(Tb) PubKey> CHECKSIG <Bob's Br PubKey> CHECKSIGADD m
 NUMEQUAL
 
 where
@@ -293,10 +301,10 @@ The `refund (e)` transaction is available as soon as the local confirmation secu
 Consumes the `cancel (d)`'s output `(iii)` with:
 
 ```
-0 <Bob's Br signature> <Alice's Ar signature> FALSE <script>
+0 <Bob's Br signature> <Alice's Ar(Tb) signature> FALSE <script>
 ```
 
-and leaks the adaptor on `<Bob's Br signature>` to Alice.
+and leaks the adaptor `Tb` on `<Alice's Ar(Tb) signature>` to Alice.
 
 #### Taproot Schnorr Scripts
 
@@ -313,8 +321,10 @@ where `<script>` is the `TapLeaf refund script`;
 and `<input>`:
 
 ```
-<Bob's Br + Tb signature> <Alice's Ar signature>
+<Bob's Br signature> <Alice's Ar(Tb) signature>
 ```
+
+and leaks the adaptor `Tb` on `<Alice's Ar(Tb) signature>` to Alice.
 
 #### Taproot MuSig2
 
