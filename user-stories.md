@@ -1,15 +1,20 @@
-# User Stories / High Level Protocol
 
 [![hackmd-github-sync-badge](https://hackmd.io/pym9JPVlRK-RfQGOUv26aQ/badge)](https://hackmd.io/pym9JPVlRK-RfQGOUv26aQ)
-
 
 <pre>
   State: draft
   Created: 2020-11-11
 </pre>
 
-[TOC]
+# User Stories / High Level Protocol
 
+## Overview
+
+This RFC describe the roles and phases of a swap and presents simple user stories, mockups and basic cli example.
+
+## Table of Contents
+
+[TOC]
 
 ## Roles
 
@@ -186,8 +191,8 @@ Once Bob has received sufficient confirmations for Alice's `XTX_lock` to feel sa
 ###### Messages exchanged: 
 - Bob → Alice: [`send_bitcoin_buy_secret`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_bitcoin_buy_secret)
 
-## Reputation problem
+## Reputation asymmetry
 
 Because of the protocol asymmetry, Alice always locks her coins later in the swap process, that implies she gets an option to buy without costs. One way to resolve this issue is to introduce a reputation system between participants, but this is hard in a decentralized setup.
 
-The reputation problem is not linked to the negotiation role assumed by Alice's daemon: If she's a Taker she can cancel for free on any prices and if she's a Maker she can propose any prices and cancel for free if someone tries to take it.
+The reputation asymmetry is not linked to the negotiation role assumed by Alice's daemon: If she's a Taker she can cancel for free on any prices and if she's a Maker she can propose any prices and cancel for free if someone tries to take it.
