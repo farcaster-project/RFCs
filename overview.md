@@ -24,3 +24,6 @@ Specifies the instructions that daemon makes available to clients for piloting t
 
 ## [06. Transactions](/YfMko2WPR9iITsw4MsLcPA)
 Specifies the Bitcoin and Monero transactions involved in a swap with their temporal safety. Variants of Bitcoin transactions are described depending on the SegWit version and multi-signature protocol used.
+
+## [07. Cryptographic Setup](https://hackmd.io/ElXeBEuTQ1Opa0g9yHJszQ)
+Specifies the cryptographic primitives used to transfer secrets through transactions with adaptor signatures and specifies the cryptographic setup required at the beginning of a swap to guarentee funds safety.
