@@ -1,14 +1,16 @@
 
 <pre>
   State: draft
-  Created: 2020-12-11
+  Created: 2021-2-17
 </pre>
 
 # Introduction
 
 ## Overview
 
-TODO
+Farcaster is software stack implementing an atomic swap protocol designed in such a way that blockchains can be connected to securely exchange assets. The RFCs are as blockchain agnostic as possible and when Bitcoin or Monero blockchains are mentionned, they can be replaced by other blockchains fulfilling the same prerequisites.
+
+We created these RFCs to structure our codebase an maximize potential inter-operability with other project or platform of exchange.
 
 ## Table of Contents
 
@@ -71,7 +73,7 @@ TODO
    * A negociation role; The role a deamon can fulfills during the negociation phase. As a taker the daemon will display an offer and connects to the associated counter-party daemon.
 
 * #### *Blockchain role*:
-   * The protocol describe two blockchain roles: arbitrating and accordant. A blockchain may be compatible with both role, e.g. Bitcoin, some only with the accordant role, e.g. Monero, depending on their on-chain capabilities.
+   * The protocol describe two blockchain roles: arbitrating and accordant. A blockchain may be compatible with both role, e.g. Bitcoin, some only with the accordant role, e.g. Monero, depending on their on-chain capabilities. A *swap* is always performed between on arbitrating blockchain instance and one accordant blockchain instance.
 
 * #### *Arbitrating blockchain*:
    * A blockchain compatible with the arbitrating blockchain role, e.g. Bitcoin.
