@@ -81,4 +81,15 @@ We created these RFCs to structure our codebase an maximize potential inter-oper
 * #### *Accordant blockchain*:
    * A blockchain compatible with the accordant blockchain role, e.g. Monero.
 
+* #### *Offer*:
+   * An offer is created by a *maker* and sets the arbitrating/accordant blockchain pair, the amounts of assets exchanged, the *timelock parameters* used for the swap, and the swap roles for the maker and taker in the following swap phase.
+
+* #### *Public offer*:
+   * A public offer is derived from the maker offer and contains *daemon*'s information such as public IP/Tor onion service. A public offer is serializable in a shareable friendly format. It is the maker responsability to propagate the public offer on channel based on his own preferences.
+
+* #### *Timelock parameters*:
+   * Two arbitrating blockchain timelocks are needed in the protocol, they are denominated under the name Timelock parameters and are part of the *public offer*.
+
+
+
 
