@@ -1,77 +1,247 @@
-# Inter-daemon protocol messages
 [![hackmd-github-sync-badge](https://hackmd.io/pym9JPVlRK-RfQGOUv26aQ/badge)](https://hackmd.io/pym9JPVlRK-RfQGOUv26aQ)
-
 
 <pre>
   State: draft
   Created: 2021-01-20
 </pre>
 
+# Protocol messages
+
+## Overview
+
+This RFC specifies the inter-daemon communication messages, segregated by protocol swap phase roles (see [High Level Overview]()). These messages are based on the protocol execution specified in *'Bitcoin-Monero Cross-chain Atomic Swap'* [[1](#references)] with better optimization and greater generalization over blockchains in mind.
+
+## Table of Contents
+
 [TOC]
 
-This RFC specifies the inter-daemon communication messages, segregated by Bob's and Alice's daemons. These messages follow the protocol execution specified in [Bitcoin--Monero Cross-chain Atomic Swap](https://github.com/h4sh3d/xmr-btc-atomic-swap/blob/master/whitepaper/xmr-btc.pdf). The applicable swap phases are documented in [User Stories / High Level Protocol](/pym9JPVlRK-RfQGOUv26aQ).
 
-## Bob
-### `send_initialization_parameters_bob`
-`send_initialization_parameters` provides Alice with the Bobs's Bitcoin addresses ($B_b$, $B_b^s$, $B_b^r$), Monero keys ($k_b^v$, $K_b^s$), $z_b$, and $h_s$
+## Messages
+
+### The `commit_alice_session_params` Message
+
+**Send by**: Alice
+
+`commit_alice_session_params` forces Alice to commit to the result of her cryptographic setup before receiving Bob's setup. This is done to remove adaptive behavior.
 
 #### Type
-`void | bool (message delivery status)`
-> [name=Lederstrumpf][color=violet] In my view, this should be void, unless we return the success/failure of message delivery
-#### Data
-- `B_b`: `base58`
-- `B_b_s`: `base58`
-- `B_b_r`: `base58`
-- `k_b_v`: `edward25519 scalar`
-- `K_b_s`: `edward25519 curve point`
-- `z_b`: `DLEQ proof`
-- `h_s`: `SHA256`
+TODO
 
-### `send_bitcoin_transactions`
-`send_unsigned_bitcoin_transactions` sends the lock, refund and spend transactions from Bob to Alice, as well as Bob's signature for the refund transaction.
-#### Type
-`void | bool (message delivery status)`
 #### Data
-- `BTX_lock`: `BTC transaction`
-- `BTX_refund`:`BTC transaction`
-- `BTX_spend`:`BTC transaction`
-- `sig_btx_refund_bob`: `ECDSA signature`
-### `send_bitcoin_buy_transaction`
-`send_bitcoin_buy_transaction` sends the [`BTX_buy`](https://hackmd.io/YfMko2WPR9iITsw4MsLcPA#Buy) transaction with Bob's signature for it
+- `b`: `sha256 hash` Commitment to `b` curve point
+- `c`: `sha256 hash` Commitment to `c` curve point
+- `r`: `sha256 hash` Commitment to `r` curve point
+- `p`: `sha256 hash` Commitment to `p` curve point
+- `T`: `sha256 hash` Commitment to `T` curve point
+- `k_v`: `sha256 hash` Commitment to `k_v` scalar
+- `K_s`: `sha256 hash` Commitment to `K_s` curve point
+
+#### TLV Data
+
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: b]`
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: c]`
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: r]`
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: p]`
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: T]`
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: k_v]`
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: K_s]`
+
+### The `commit_bob_session_params` Message
+
+**Send by**: Bob
+
+`commit_bob_session_params` forces Bob to commit to the result of his cryptographic setup before receiving Alice's setup. This is done to remove adaptive behavior.
+
 #### Type
-`void | bool (message delivery status)`
+TODO
+
 #### Data
-- `BTX_buy`:`BTC transaction`
-- `sig_btx_buy_bob`: `ECDSA signature`
-### `send_bitcoin_buy_secret`
-`send_bitcoin_buy_secret` sends the secret `s` Alice requires to trigger the `TRUE` branch of the `SWAPLOCK` script
+- `b`: `sha256 hash` Commitment to `b` curve point
+- `c`: `sha256 hash` Commitment to `c` curve point
+- `r`: `sha256 hash` Commitment to `r` curve point
+- `T`: `sha256 hash` Commitment to `T` curve point
+- `k_v`: `sha256 hash` Commitment to `k_v` scalar
+- `K_s`: `sha256 hash` Commitment to `K_s` curve point
+
+#### TLV Data
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: b]`
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: c]`
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: r]`
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: T]`
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: k_v]`
+- `[u16: sha256_hash_len]`
+- `[sha256_hash_len * byte: K_s]`
+
+### The `reveal_alice_session_params` Message
+
+**Send by**: Alice
+
+`reveal_alice_session_params` reveals the parameters commited by the `commit_alice_session_params` message.
+
 #### Type
-`void | bool (message delivery status)`
+TODO
+
 #### Data
-- `s`: `U256`
-## Alice
-### `send_initialization_parameters_alice`
-`send_initialization_parameters` provides Bob with Alice's Bitcoin addresses ($B_a$, $B_a^s$, $B_a^r$), Monero keys ($k_a^v$, $K_a^s$), and $z_a$ 
+- `b`: `secp256k1 curve point` The buy `Ab` public key
+- `c`: `secp256k1 curve point` The cancel `Ac` public key
+- `r`: `secp256k1 curve point` The refund `Ar` public key
+- `p`: `secp256k1 curve point` The punish `Ap` public key
+- `T`: `secp256k1 curve point` The `Ta` adaptor public key
+- `Address`: `base58` The destination Bitcoin address
+- `k_v`: `edward25519 scalar` The `K_v^a` spend private key
+- `K_s`: `edward25519 curve point` The `K_s^a` view public key
+- `z`: `DLEQ proof` The cross-group discrete logarithm zero-knowledge proof
+
+#### TLV Data
+- `[u16: secp256k1_point_len]`
+- `[secp256k1_point_len * byte: b]`
+- `[u16: secp256k1_point_len]`
+- `[secp256k1_point_len * byte: c]`
+- `[u16: secp256k1_point_len]`
+- `[secp256k1_point_len * byte: r]`
+- `[u16: secp256k1_point_len]`
+- `[secp256k1_point_len * byte: p]`
+- `[u16: secp256k1_point_len]`
+- `[secp256k1_point_len * byte: T]`
+- `[u16: Address_len]`
+- `[Address_len * byte: Address]`
+- `[u16: ed25519_scalar_len]`
+- `[ed25519_scalar_len * byte: k_v]`
+- `[u16: ed25519_point_len]`
+- `[ed25519_point_len * byte: K_s]`
+- `[u16: z_len]`
+- `[z_len * byte: z_b]`
+
+### The `reveal_bob_session_params` Message
+
+**Send by**: Bob
+
+`reveal_bob_session_params` reveals the parameters commited by the `commit_bob_session_params` message.
+
 #### Type
-`void | bool (message delivery status)`
+TODO
+
 #### Data
-- `B_a`: `base58`
-- `B_a_s`: `base58`
-- `B_a_r`: `base58`
-- `k_a_v`: `edward25519 scalar`
-- `K_a_s`: `edward25519 curve point`
-- `z_a`: `DLEQ proof`
-### `send_bitcoin_transaction_signatures`
-`send_bitcoin_transaction_signatures` provides Bob with Alice's signatures of [`BTX_refund`](https://hackmd.io/YfMko2WPR9iITsw4MsLcPA#Refund) and `BTX_spend`
+- `b`: `secp256k1 curve point` The buy `Bb` public key
+- `c`: `secp256k1 curve point` The cancel `Bc` public key
+- `r`: `secp256k1 curve point` The refund `Br` public key
+- `T`: `secp256k1 curve point` The `Tb` adaptor public key
+- `Address`: `base58` The refund Bitcoin address
+- `k_v`: `edward25519 scalar` The `K_v^b` spend private key
+- `K_s`: `edward25519 curve point` The `K_s^b` view public key
+- `z`: `DLEQ proof` The cross-group discrete logarithm zero-knowledge proof
+
+#### TLV Data
+- `[u16: secp256k1_point_len]`
+- `[secp256k1_point_len * byte: b]`
+- `[u16: secp256k1_point_len]`
+- `[secp256k1_point_len * byte: c]`
+- `[u16: secp256k1_point_len]`
+- `[secp256k1_point_len * byte: r]`
+- `[u16: secp256k1_point_len]`
+- `[secp256k1_point_len * byte: T]`
+- `[u16: Address_len]`
+- `[Address_len * byte: Address]`
+- `[u16: ed25519_scalar_len]`
+- `[ed25519_scalar_len * byte: k_v]`
+- `[u16: ed25519_point_len]`
+- `[ed25519_point_len * byte: K_s]`
+- `[u16: z_len]`
+- `[z_len * byte: z_b]`
+
+### The `core_arbitrating_setup` Message
+
+**Send by**: Bob
+
+`core_arbitrating_setup` sends the `lock (b)`, `cancel (d)` and `refund (e)` arbritrating transactions from Bob to Alice, as well as Bob's signature for the `cancel (d)` transaction.
+
 #### Type
-`void | bool (message delivery status)`
+TODO
+
 #### Data
-- `signature_refund_alice`: `ECDSA signature`
-- `signature_spend_alice`: `ECDSA signature`
-## Either party
-### Abort
-`abort` is an `OPTIONAL` courtesy message from either swap partner to inform the counterparty that they have aborted the swap with an `OPTIONAL` message body to provide the reason
+- `lock`: `BTC transaction` The arbitrating `lock (b)` transaction
+- `cancel`: `BTC transaction` The arbitrating `cancel (d)` transaction
+- `refund`: `BTC transaction` The arbitrating `refund (e)` transaction
+- `cancel_sig`: `ECDSA signature` The `Bc` `cancel (d)` signature
+
+#### TLV Data
+- `[u16: lock_len]`
+- `[lock_len * byte: lock]`
+- `[u16: cancel_len]`
+- `[cancel_len * byte: cancel]`
+- `[u16: refund_len]`
+- `[refund_len * byte: refund]`
+- `[u16: cancel_sig_len]`
+- `[cancel_sig_len * byte: cancel_sig]`
+
+### The `refund_procedure_signatures` Message
+
+**Send by**: Alice
+
+`refund_procedure_signatures` is intended to transmit Alice's signature for the `cancel (d)` transaction and Alice's adaptor signature for the `refund (e)` transaction. Uppon reception Bob must validate the signatures.
+
 #### Type
-`error`
+TODO
+
+#### Data
+- `cancel_sig`: `ECDSA signature` The `Ac` `cancel (d)` signature
+- `refund_adaptor_sig`: `ECDSA signature` The `Ar(Tb)` `refund (e)` adaptor signature
+
+#### TLV Data
+- `[u16: cancel_sig_len]`
+- `[cancel_sig_len * byte: cancel_sig]`
+- `[u16: refund_adaptor_sig_len]`
+- `[refund_adaptor_sig_len * byte: refund_adaptor_sig]`
+
+### The `buy_procedure_signature` Message
+
+**Send by**: Bob
+
+`buy_procedure_signature`is intended to transmit Bob's adaptor signature for the `buy (c)` transaction and the transaction itself. Uppon reception Alice must validate the transaction and the adaptor signature.
+
+#### Type
+TODO
+
+#### Data
+- `buy`: `BTC transaction` The arbitrating `buy (c)` transaction
+- `buy_adaptor_sig`: `ECDSA signature` The `Bb(Ta)` `buy (c)` adaptor signature
+
+#### TLV Data
+- `[u16: buy_len]`
+- `[buy_len * byte: buy]`
+- `[u16: buy_adaptor_sig_len]`
+- `[buy_adaptor_sig_len * byte: buy_adaptor_sig]`
+
+### The `abort` Message
+
+**Send by**: Alice|Bob
+
+`abort` is an `OPTIONAL` courtesy message from either swap partner to inform the counterparty that they have aborted the swap with an `OPTIONAL` message body to provide the reason.
+
+Uppon reception the daemon must engage the cancel path if necessary and should respond with an `abort` message.
+
+#### Type
+TODO
+
 #### Data
 - OPTIONAL `body`: error code | string
+
+#### TLV DATA
+- `[u16: error_len]`
+- `[error_len * byte: error_body]`
+
+## References
+
+ * [[1] Bitcoin-Monero Cross-chain Atomic Swap](https://eprint.iacr.org/2020/1126)
