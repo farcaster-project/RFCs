@@ -156,29 +156,41 @@ We describe a basic user experience with an atomic swap GUI client for Alice and
 
 ![](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/gui-mocks.png)
 
-##### 1. Initialization Step (1-2 in diagram)
-Alice and Bob exchange the initialization parameters specified in [Inter-daemon protocol messages](/M0uYws_5S7K6k1j5l8b6qw?view)
-and sign the multisig transactions
+##### 1. Initialization Step (1 in diagram)
+Alice and Bob start the pre-initialization. They exchange and verify parameters specified in [Protocol messages](/M0uYws_5S7K6k1j5l8b6qw?view) RFC. If the validation successfully terminates, the client moves to the next step.
 
-###### Messages exchanged: 
-- Bob → Alice: [`send_initialization_parameters_bob`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_initialization_parameters_bob)
-- Alice → Bob: [`send_initialization_parameters_alice`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_initialization_parameters_alice)
+###### Messages exchanged:
 
-##### 2. Bitcoin Locking Step (3 in diagram)
-After the parameters are exchanged, Bob acquires Alice's signatures for the refund path and locks the bitcoin. Bob signs the `BTX_buy` transaction and sends the transaction with his signature to Alice.
+*First round, commit to values*
 
-###### Messages exchanged: 
-- Bob → Alice: [`send_bitcoin_transactions`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_bitcoin_transactions)
-- Alice → Bob: [`send_bitcoin_transaction_signatures`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_bitcoin_transaction_signatures)
+> Messages can arrive in any order
+
+- Alice → Bob: [`commit_alice_session_params`]()
+- Bob → Alice: [`commit_bob_session_params`]()
+
+*Second round, reveal values*
+
+> Messages can arrive in any order
+
+- Alice → Bob: [`reveal_alice_session_params`]()
+- Bob → Alice: [`reveal_bob_session_params`]()
+
+##### 2. Bitcoin Locking Step (2-3 in diagram)
+After the parameters are exchanged and validated, Bob ask the user for funding. Uppon funds reception Bob creates the transactions, signs the cancel path and sends them to Aline with `core_arbitrating_setup` protocol message. He acquires Alice's signatures for the cancel path. The bitcoin are locked when Bob is able to trigger the cancel path and refund the assets, i.e. after reception of `refund_procedure_signatures` protocol message.
+
+###### Messages exchanged:
+
+- Bob → Alice: [`core_arbitrating_setup`]()
+- Alice → Bob: [`refund_procedure_signatures`]()
 
 ##### 3. Monero Locking Step (4 in diagram)
-Once Alice has received sufficient confirmations for Bob's `BTX_lock` to feel safe and has received the signed `BTX_buy` transaction from Bob, Alice proceeds to lock her monero.
-
-###### Messages exchanged: 
-- Bob → Alice: [`send_bitcoin_buy_transaction`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_bitcoin_buy_transaction)
+Once Alice has received sufficient confirmations for Bob's `lock (b)` transaction to feel safe, Alice proceeds to lock her monero with the Monero `lock (a)` transaction.
 
 ##### 4. Swap Step (5-6 in diagram)
-Once Bob has received sufficient confirmations for Alice's `XTX_lock` to feel safe, Bob sends Alice the secret `s`, which Alice requires to execute the first branch of the `SWAPLOCK` script via `BTX_buy`. Alice then signs the `BTX_buy` transaction and publishes it, leaking her Monero key share. 
+Once Bob has received sufficient confirmations for the Monero `lock (a)` transaction to feel safe, Bob sends Alice the `buy (c)` encrypted signature, which Alice requires to execute the first branch of the `lock (b)` transaction output script via the `buy (c)` transaction.
 
-###### Messages exchanged: 
-- Bob → Alice: [`send_bitcoin_buy_secret`](https://hackmd.io/M0uYws_5S7K6k1j5l8b6qw?view#send_bitcoin_buy_secret)
+Alice then signs the `buy (c)` transaction to complete it and publishes it, leaking her Monero key share and finalizing her swap at the same time. Bob sees the `buy (c)` transaction in the mempool, extract the Monero key share and display it to the user.
+
+###### Message exchanged:
+
+- Bob → Alice: [`buy_procedure_signature`]()
