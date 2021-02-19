@@ -1,5 +1,3 @@
-# Farcaster Architecture
-
 [![hackmd-github-sync-badge](https://hackmd.io/vTCjO2-ySr6SB7ObuJMhnA/badge)](https://hackmd.io/vTCjO2-ySr6SB7ObuJMhnA)
 
 <pre>
@@ -7,8 +5,15 @@
   Created: 2020-11-11
 </pre>
 
-[TOC]
+# Farcaster Architecture
 
+## Overview
+
+TODO
+
+## Table of Contents
+
+[TOC]
 
 ## Global Architecture
 
