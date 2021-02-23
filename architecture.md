@@ -7,7 +7,7 @@
 
 ## Overview
 
-TODO
+This RFC describe the overall architecture and how the software stack of Farcaster is organized. Description of the swap state organization and its recovery process and an high level overview of the three main components: client, daemon, and syncers.
 
 ## Table of Contents
 
