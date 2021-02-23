@@ -7,11 +7,16 @@
 
 ## Introduction
 
-This RFC describes the high level concepts associated to the protocol such as roles and phases of a swap.
+This RFC describes the high level concepts associated to the protocol such as roles and phases of a swap. Roles apply to blockchains and participants during the phases, phases split the protocol in two parts: negociation and swap.
 
 ## Table of Contents
 
-[TOC]
+  * [Phases](#phases)
+  * [Roles](#roles)
+    * [Blockchain: Arbitrating & Accordant](#blockchain-arbitrating--accordant)
+    * [Negotiation: Taker & Maker](#negotiation-taker--maker)
+    * [Swap: Alice & Bob](#swap-alice--bob)
+  * [Reputation asymmetry](#reputation-asymmetry)
 
 ## Phases
 
