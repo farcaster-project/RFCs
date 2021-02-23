@@ -9,11 +9,21 @@
 
 ## Overview
 
-This RFC specifies the inter-daemon communication messages, segregated by protocol swap phase roles (see [High Level Overview]()). These messages are based on the protocol execution specified in *'Bitcoin-Monero Cross-chain Atomic Swap'* [[1](#references)] with better optimization and greater generalization over blockchains in mind.
+This RFC specifies the inter-daemon communication messages, segregated by protocol swap phase roles (see [01. High Level Overview](./01-high-level-overview.md)). These messages are based on the protocol execution specified in *'Bitcoin-Monero Cross-chain Atomic Swap'* [[1](#references)] with better optimization and greater generalization over blockchains in mind.
 
 ## Table of Contents
 
-[TOC]
+  * [Inter-daemon communication](#inter-daemon-communication)
+  * [Messages](#messages)
+    * [The `commit_alice_session_params` Message](#the-commit_alice_session_params-message)
+    * [The `commit_bob_session_params` Message](#the-commit_bob_session_params-message)
+    * [The `reveal_alice_session_params` Message](#the-reveal_alice_session_params-message)
+    * [The `reveal_bob_session_params` Message](#the-reveal_bob_session_params-message)
+    * [The `core_arbitrating_setup` Message](#the-core_arbitrating_setup-message)
+    * [The `refund_procedure_signatures` Message](#the-refund_procedure_signatures-message)
+    * [The `buy_procedure_signature` Message](#the-buy_procedure_signature-message)
+    * [The `abort` Message](#the-abort-message)
+  * [References](#references)
 
 ## Inter-daemon communication
 
