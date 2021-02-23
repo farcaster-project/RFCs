@@ -12,10 +12,10 @@ This RFC describe the syncer interface: `tasks` and `blockchain events`. Through
 ## Table of Contents
 
   * [Tasks](#tasks)
-    * [The `watch_height` Task](#blockchain-arbitrating--accordant)
-    * [The `watch_address` Task](#negotiation-taker--maker)
-    * [The `watch_transaction` Task](#swap-alice--bob)
-    * [The `broadcast_transaction` Task](#swap-alice--bob)
+    * [The `watch_height` Task](#the-watch_height-task)
+    * [The `watch_address` Task](#the-watch_address-task)
+    * [The `watch_transaction` Task](#the-watch_transaction-task)
+    * [The `broadcast_transaction` Task](#the-broadcast_transaction-task)
   * [Blockchain Events](#blockchain-events)
     * [Equivalence of Event Sets](#equivalence-of-event-sets)
 
