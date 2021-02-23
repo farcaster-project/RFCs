@@ -1,4 +1,3 @@
-
 <pre>
   State: draft
   Created: 2021-2-17
@@ -12,11 +11,18 @@ This RFC specifies the cryptographic primitives used to transfer secrets through
 
 ## Table of Contents
 
-[TOC]
+  * [Cryptographic Keys](#cryptographic-keys)
+    * [Alice](#alice)
+    * [Bob](#bob)
+  * [Adaptor Signatures](#adaptor-signatures)
+    * [ECDSA Scripts](#ecdsa-scripts)
+    * [Taproot Schnorr Scripts](#taproot-schnorr-scripts)
+  * [Cross-group Discrete Logarithm Proof](#cross-group-discrete-logarithm-proof)
+  * [References](#references)
 
 ## Cryptographic Keys
 
-We use the two swap roles as described in User Stories Alice and Bob, to describe the cryptographic keys needed by each of them.
+We use the two swap roles as described in User Stories, Alice and Bob, to describe the cryptographic keys needed by each of them.
 
 ### Alice
 
@@ -58,7 +64,7 @@ We describe an adaptor signature interface and two instantiations, one for ECDSA
 
 An adaptor signature scheme extend a standard signature (`Gen`, `Sign`, `Vrfy`) scheme with:
 
- * `EncGen`: An encrypted key generation algorithm, in this protocol the encryption key generation is linked to the cross-group DLEQ proof.
+ * `EncGen`: An encryption key generation algorithm, in this protocol the encryption key generation is linked to the cross-group DLEQ proof.
 
  * `EncSig`: Encrypt a signature and return an adaptor signature. This RFC uses the public key tweaking method.
 
