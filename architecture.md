@@ -75,11 +75,6 @@ Each swap components is represented as a black box that consumes input messages 
 
 It is worth noting that this diagram (Fig. 2) only show one syncer, but a syncer per blockchain is required. Conceptually even more than one syncer per blockchain make sense if you don't run or trust the syncer you are using, in that case one can aggregate and compare different data sources and detect discrepancies.
 
-```
-Below a string diagram formalization of the information flow.
-![](https://i.imgur.com/UdxbWui.png)
-```
-
 ## Daemon
 The Daemon is the central component responsible for orchestrating the protocol execution. 
 
