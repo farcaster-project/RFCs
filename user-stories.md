@@ -43,7 +43,7 @@ A maker offer is composed of:
 
 ##### Maker's public offer
 
-A maker public offer is an extended maker offer with daemon's network parameters, such as the onion service or other options detailing how to connect to the daemon.
+A maker public offer is an extended maker offer with daemon's network parameters, such as the onion service or other options detailing how to connect to the daemon. The public offer must specify the node's long-term identifier and must contain a valid signature.
 
 The maker public offer must be as user friedly as possible, as it is the responsability to the user to share this public offer with potential counter-party via maker's prefered communication channels.
 
