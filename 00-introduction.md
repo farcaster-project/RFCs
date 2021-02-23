@@ -14,7 +14,9 @@ We created these RFCs to structure our codebase an maximize potential inter-oper
 
 ## Table of Contents
 
-[TOC]
+  * [Blockchain Prerequisites](#blockchain-prerequisites)
+  * [What is an Atomic Swap](#what-is-an-atomic-swap)
+  * [Glossary and Terminology Guide](#glossary-and-terminology-guide)
 
 ## Blockchain Prerequisites
 
