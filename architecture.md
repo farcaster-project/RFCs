@@ -11,7 +11,20 @@ This RFC describe the overall architecture and how the software stack of Farcast
 
 ## Table of Contents
 
-[TOC]
+  * [Global Architecture](#global-architecture)
+    * [Client & Daemon segregation rationale](#client--daemon-segregation-rationale)
+    * [Components interaction](#components-interaction)
+  * [Daemon](#daemon)
+    * [Counter-party daemon communication](#counter-party-daemon-communication)
+    * [Blockchain communication](#blockchain-communication)
+    * [Client-Daemon communication](#client-daemon-communication)
+    * [Loopback: self-generated input messages](#loopback-self-generated-input-messages)
+  * [Syncer](#syncer)
+  * [Client](#client)
+  * [Swap State](#swap-state)
+    * [Recover state](#recover-state)
+    * [Update state](#update-state)
+    * [Recovery process between components](#recovery-process-between-components)
 
 ## Global Architecture
 
