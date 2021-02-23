@@ -3,7 +3,7 @@
   Created: 2021-01-20
 </pre>
 
-# Protocol messages
+# Protocol Messages
 
 ## Overview
 
