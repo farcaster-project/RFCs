@@ -1,6 +1,3 @@
-
-[![hackmd-github-sync-badge](https://hackmd.io/pym9JPVlRK-RfQGOUv26aQ/badge)](https://hackmd.io/pym9JPVlRK-RfQGOUv26aQ)
-
 <pre>
   State: draft
   Created: 2021-02-03
@@ -21,14 +18,31 @@ This RFC specifies the messages exchanged between a user's client and their own 
 ```
 As sketched in the above graphic, the `client`→`daemon` route consists of instructions from the client to daemon that lead to a state transition of an ongoing swap, and the `daemon`→`client` route consists of state digests sent to the client whenever a new choice becomes available to the client. Both instructions and state digests follow the [TLV format specified in the Lightning RFCs](https://github.com/lightningnetwork/lightning-rfc/blob/master/01-messaging.md#type-length-value-format).
 
+
 ### Security considerations
 > [name=Lederstrumpf][color=violet] Possibly, this has been written elsewhere already, or would find a better home in another RFC
+
+> [name=h4sh3d][color=orange] Good that this is here, we keep it. It is referenced from the arch. global RFC now
 
 From a security perspective, an important distinction between the client and the daemon is that the daemon only knows public keys - private keys are the privy treasure of the client. Nonetheless, the daemon MUST be viewed as a trusted component, since it exclusively verifies the correctness of the counterparty's data, controls the swap state, and can misreport progression of the swap to the client whenever the progress does not require a signature from the client. For instance, if the client is Bob who initially owns BTC in a swap, and the refund path is invoked, if the client signs the `BTX_spend` transaction and instructs the daemon to relay it, a malicious daemon could abstain from relaying it, resulting in a loss of funds for Bob, if he does not detect this error and submit the signed transaction via an alternate route before Alice can submit the `BTX_claim` transaction to punish Bob.
 
 ## Table of Contents
 
 [TOC]
+
+## Behaviour
+
+1. A valid client `Instruction` message sent by the client to the daemon instructs the daemon to fire a given enabled protocol transition 
+2. Daemon consumes client `Instruction` message and
+3. Daemon fires transitions that are in one-to-one correspondence with client instructions
+4. As a consequence of firing protocol transitions, daemon's internal swap state may be modified
+5. If the swap state was modified, daemon must update client by sending a `State Digest` message to the client about the new enabled protocol transitions client may next instruct to fire
+6. Client then may fire any of the new enabled protocol transition and progress on the protocol execution (back to step 1)
+
+The figure below presents a petrinet summarizing client-daemon communication scheme.
+
+![Petri net representation of client and daemon interactions](https://i.imgur.com/PwdlQTF.png)
+*Fig 1. Petri net representation of client and daemon interactions*
 
 ## Instructions
 
