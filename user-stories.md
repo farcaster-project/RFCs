@@ -34,15 +34,16 @@ The maker starts her node in maker mode and registers all the parameters an offe
 
 A maker offer is composed of:
 
- * The Arbitrating-Accordant blockchain identifier, e.g. BTC-XMR
+ * The Arbitrating/Accordant blockchain identifier, e.g. BTC-XMR; *Must indentify: blockchain chain and asset traded. E.g. bitcoin on mainnet or bitcoin on testnet. This can be done through a `chain_hashes` parameter.*
  * The arbitrating blockchain asset amount
  * The accordant blockchain asset amount
  * The timelock durations used during the swap
- * The future maker swap role (Alice or Bob)
+ * The fee calculation strategy; *This might be static, within a range, or define as a function*
+ * The future maker swap role (Alice or Bob); *Taker role is derived from this as the protocol always have one Alice and one Bob*
 
 ##### Maker's public offer
 
-A maker public offer is a maker offer plus daemon parameters, such as the onion service or other options detailing how to connect to the daemon.
+A maker public offer is an extended maker offer with daemon's network parameters, such as the onion service or other options detailing how to connect to the daemon.
 
 The maker public offer must be as user friedly as possible, as it is the responsability to the user to share this public offer with potential counter-party via maker's prefered communication channels.
 
@@ -52,14 +53,19 @@ A taker receives a public offer, parses and visualizes it and might accept it. I
 
 #### Results of negotiation phase
 
-The negotiation is out of scope for this RFC but MUST result in:
+At the end of the negotiation phase, participants must result with:
 
  * Daemons connected to each other
- * Agreement on the following set of parameters
+ * Validated set of parameters containing:
      * Blockchains used as an Arbitrating-Accordant asset pair, e.g. BTC-XMR
      * Amount exchanged of each assets, e.g. 200 XMR and 1.3 BTC
      * Transition from Maker-Taker roles into Alice-Bob roles
      * Time parameters t1 and t2, i.e. protocol timelock parameters
+     * Fee strategy for arbitrating transactions
+
+#### GUI Mockups
+
+We present a simple user interface for starting with the role of a maker or a taker and the steps that must follow each choice.
 
 ![](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/negociation-phase-mocks.png)
 
@@ -91,6 +97,8 @@ $ swap-cli --make
 > XMR: 10
 > Timelock 1: 4
 > Timelock 2: 10
+> Fee strategy ([F]ixe, [R]ange, [D]ynamique): R
+> Fee range (sat/vB): 10-40
 > Role ([A]lice,[B]ob): A
 
 You chose Alice:
@@ -115,6 +123,7 @@ Public offer
 : XMR: 10
 : Timelock 1: 4
 : Timelock 2: 10
+: Fee range (sat/vB): 10-40
 : Your role: Bob
 : Counterparty role: Alice
 
@@ -133,6 +142,7 @@ The swap phase starts for each roles with a common set of parameters:
  * Blockchains used as an Arbitrating-Accordant asset pair, e.g. BTC-XMR
  * Amount exchanged of each assets, e.g. 200 XMR and 1.3 BTC
  * Time parameters t1 and t2, i.e. protocol timelock parameters
+ * The fee strategy and its chosen parameters
  * The swap role played by the daemon
 
 plus for Alice's role:
