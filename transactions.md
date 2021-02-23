@@ -1,5 +1,3 @@
-[![hackmd-github-sync-badge](https://hackmd.io/YfMko2WPR9iITsw4MsLcPA/badge)](https://hackmd.io/YfMko2WPR9iITsw4MsLcPA)
-
 <pre>
   State: draft
   Created: 2020-12-11
@@ -9,13 +7,26 @@
 
 ## Overview
 
-The protocol implemented in Farcaster is blockchain agnostic, thus a strict list of features is required for the arbitrating blockchain involved in the swap (see User Stories / High Level Protocol). This RFC describes a concrete implementation of the protocol with Bitcoin as the arbitrating blockchain and Monero as the accordant blockchain.
+The protocol implemented in Farcaster is blockchain agnostic, thus a strict list of features is required for the arbitrating blockchain involved in the swap (see [00. Introduction](00-introduction.md) and [01. High Level Overview](01-high-level-overview.md)). This RFC describes a concrete implementation of the protocol with Bitcoin as the arbitrating blockchain and Monero as the accordant blockchain.
 
-We distinguish here transactions created and controlled by the protocol itself and external transactions. Dashed outline transactions are transaction created by external wallets, i.e. not the daemon nor the client.
+We distinguish transactions created and controlled by the protocol itself and external transactions. Dashed outline transactions are transaction created by external wallets, i.e. not the daemon nor the client.
 
 ## Table of Contents
 
-[TOC]
+  * [Bitcoin](#bitcoin)
+    * [Pre-lock](#pre-lock)
+    * [Lock](#lock)
+    * [Buy](#buy)
+    * [Cancel](#cancel)
+    * [Refund](#refund)
+    * [Punish](#punish)
+  * [Monero](#monero)
+    * [Lock](#lock)
+    * [Spend](#spend)
+  * [Miscellaneous](#miscellaneous)
+    * [Notes on Privacy](#notes-on-privacy)
+    * [Transaction fee](#transaction-fee)
+    * [Bitcoin transactions temporal safety](#bitcoin-transactions-temporal-safety)
 
 ## Bitcoin
 
@@ -407,9 +418,9 @@ If `c(buy) = 1`, then `c(cancel) > 1`, such that at time `t` when `buy` and `can
 
 It is worth noting that we cannot control the coeficients `c` between `refund` and `punish` as `punish` is control unilaterraly by Alice.
 
-#### RBF (Replace By Fee)
+#### Replace By Fee (RBF)
 
-RBF (Replace By Fee) should be integrated into the protocol such that multiple version of some transaction can exist and transactions can be cooperatively bumped to get into the blockchain within the temporal safety window.
+Replace By Fee (RBF) should be integrated into the protocol such that multiple version of some transaction can exist and transactions can be cooperatively bumped to get into the blockchain within the temporal safety window.
 
 ### Bitcoin transactions temporal safety
 
