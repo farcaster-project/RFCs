@@ -3,7 +3,7 @@
   Created: 2020-11-11
 </pre>
 
-# Farcaster Architecture
+# 03. Farcaster Architecture
 
 ## Overview
 
