@@ -1,6 +1,9 @@
 # Swap State
 
-The daemon handles the swap state and its state transitions on behalf of the client, and following its instructions. The swap state indicates the step on the protocol execution the user is currently in. For each given state, zero or more state transitions are enabled as a function of a list of time-ordered daemon execution logs. That is, depending on the protocol execution path taken, these are the next available actions.
+## Daemon state
+The daemon encodes the swap state-space as a petrinet. The marking of the petrinet encodes the swap state. Only swap states resulting from a valid protocol execution are included in the state-space.
+
+The daemon handles the swap state and its state transitions on behalf of the client, and following its instructions. The swap state indicates the step on the protocol execution the user is currently in.  For each given state, zero or more state transitions are enabled as a function of a list of time-ordered daemon execution logs. That is, depending on the protocol execution path taken, these are the next available user actions.
 
 ## Execution logs
 The execution logs includes incoming messages to the daemon and outgoing messages emited by the daemon. 
@@ -8,9 +11,8 @@ The execution logs includes incoming messages to the daemon and outgoing message
 Incoming: (i) blockchain events, (ii) protocol messages, (iii) client instructions, or (iv) daemon loopback messages. 
 Outgoing: (i) syncer tasks, (ii) protocol messages, (iii) client state digest messages, or (iv) daemon loopback messages.
 
-## State update
-Upon receving incoming messages or sending outgoing messages, the daemon receives incoming messages, a transition to a new state may produce outputs. 
-Valid transitions from one state to another are constrained by the protocol. Upon swap state update, daemon must update the client through state digest messages.
+## State transition
+Upon swap state transition, daemon must update the client through state digest messages, including proposals for the next client instruction.
 
 For each swap state, only a subset of inputs is valid. The daemon must contextually filter all of its inputs before applying them. Filtering can happen in parallel for every stream of inputs. All filtered streams are then combined, each element of this final stream are applied to the current state.
 
@@ -76,12 +78,6 @@ where `σt−1` is the previous state and `σt` is the final state, and `Δlogs`
 The protocol state may be encoded as markings of a petrinet.
 
 In practice the code may be implemented as a fold operation over a stream of events taking a petrinet marking as initial state that internally outputs the new marking (which encodes the new protocol state). Then tap the wire after the fold operation to monitor the state.
-
-## Daemon state-space
-The daemon encodes the entire swap state-space as a petrinet. The marking of the petrinet encodes the state swap state.
-
-## Client state-space
-The client state-space is the subset of the swap state the client requires in order to present and control the daemon. It can be thought of as the subset of petrinet places that are common to both daemon and client.
 
 ## Recovery process between components
 The recovery process is different depending the components. Client and daemon are trusted, the prerequisits are not the same as e.g. inter-daemon.
