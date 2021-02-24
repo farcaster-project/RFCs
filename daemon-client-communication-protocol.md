@@ -8,16 +8,16 @@
 ## Overview
 
 This RFC specifies the messages exchanged between the user's swap client and its own daemon.
-As sketched elsewhere, the `client`→`daemon` route consists of (a) `instructions` from the client to daemon that control the state transition of an ongoing swap, and (b) the `daemon`→`client` route consists of `state digests` sent to the client encoding the `daemon`'s swap state tailored specific to client's control and presentation functionality. The `client` must  present control choices to the end-user during the unfolding of the protocol execution.
+As sketched elsewhere, the `client`→`daemon` route consists of (a) `instructions` from the client to daemon that control the state transition of an ongoing swap, and (b) the `daemon`→`client` route consists of `state digests` sent to the client encoding the `daemon`'s swap state tailored specific to client's control and presentation functionality. The `client` must  present control choices to the end-user during the progrssion of the protocol execution.
 
 ```
-  sk,pk       instructions     pk
- -----------  ------------> -------------
- | client  |                | daemon    |
- -----------  <-----------  -------------
-              state digests
+                                  sk,pk       instructions     pk
+                                 -----------  ------------> -------------
+                                 | client  |                | daemon    |
+                                 -----------  <-----------  -------------
+                                              state digests
 ```
-*Fig 1. Sketch of interaction between a client and a daemon. Note only client has access to private keys (pk)*
+*Fig 1. Sketch of interaction between a client and a daemon. Note only client has access to private keys (pk).*
 
 `instructions` and `state digests` messages must follow the *'Type-Length-Value Format (TLV format)'* defines in *'BOLT #1: Base Protocol'* [[1](#references)] standard from the Lightning Network specifications.
 
@@ -25,21 +25,6 @@ As sketched elsewhere, the `client`→`daemon` route consists of (a) `instructio
 
 [TOC]
 
-## Behaviour
-
-We describe the communication behaviour between a client and a daemon. Both have responsability to send the correct and valid messages based on their respective state and user action.
-
-1. A valid client `instruction` message sent by the client to the daemon instructs the daemon to fire a given enabled protocol transition 
-2. Daemon consumes client `instruction` message and
-3. Daemon fires transitions that are in one-to-one correspondence with client instructions
-4. As a consequence of firing protocol transitions, daemon's internal swap state may be modified
-5. If the swap state was modified, daemon must update client by sending a `state digest` message to the client about the new enabled protocol transitions client may next instruct to fire
-6. Client then may fire any of the new enabled protocol transition and progress on the protocol execution (back to step 1)
-
-The figure (Fig 2.) below presents a petrinet summarizing client-daemon communication scheme.
-
-![Petri net representation of client and daemon interactions](https://i.imgur.com/PwdlQTF.png)
-*Fig 2. Petri net representation of client and daemon interactions*
 
 ## Security considerations
 
@@ -53,20 +38,34 @@ For instance, if the client is Bob who initially owns BTC in a swap, and the can
 
 ## Instructions
 
-`instructions` must convey all required data a daemon has to fulfill his mission, not only the keys or the transactions' signatures but also the user intention of continuing the swap or aborting it.
+`instructions` must convey all required data a daemon needs to fulfill its mission, not only the keys or the transactions' signatures but also the user's commands for continuing the swap or cancelling it.
 
-We define three category of content found in instructions:
+We define three categories of content found in `instructions`:
 
 1. Results of cryptographic operation
    - Signatures (partial and finalized)
    - Keys (public keys and exceptional private 'view' keys)
-   - Off-chain multi signature protocol messages
-   - Zero knowledge proofs requires by the above protocols
+   - Off-chain multi signature protocol messages (e.g., musig2)
+   - Zero knowledge proofs requires by the above protocols (e.g., cross-group discreet log equality)
 2. Transactions; following *PSBT standard* & *BIP 174* [[2,3]](#references)
 3. Control flow operations
    - Accepting a step in the swap process
    - User canceling the swap
 
+#### Control flow operations
+
+We illustrate the effect client's control flow operations exert over a daemon, and its feedback loop back to the client. Both client and daemon have the responsability to exchange valid `instruction` and `state digest` messages based on their respective state and user actions. Please see the trust assumptions at [security considerations](#security-considerations).
+
+A protocol transition moves the protocol execution forward -- that is a step in the swap process. A subset of states that fulfills the predicates for enabling a given transition must be met, in order to be able to make the step in the swap process.
+
+Please find below a high-level summary of this interaction:
+
+1. A valid client `instruction` message sent by the client to the daemon controls the daemon to fire a given enabled protocol transition. 
+3. Daemon consumes client `instruction` control flow message and
+4. Daemon fires transitions that are in one-to-one correspondence with client instructions (if predicate conditions met)
+5. As a consequence of firing protocol transitions, daemon's internal swap state may be modified
+6. If the swap state was modified, daemon must update client by sending a `state digest` message to the client informing it about the new swap state and thus what enabled protocol transitions client may next instruct to fire
+7. Client then may fire any of the new enabled protocol transition and progress on the protocol execution (back to step 1)
 
 ### The `alice_session_params` Instruction
 
