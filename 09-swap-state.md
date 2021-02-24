@@ -1,7 +1,16 @@
 # Swap State
-The swap state encodes the step of the protocol execution the user is currently in, and it is handled by the daemon. For each given state, zero or more transitions are enabled as a function of a list of valid inputs. Inputs can be: (i) blockchain events, (ii) protocol messages, (iii) client instructions, or (iv) daemon loopback messages. When a swap state receives an input, a transition to a new state may produce outputs. Outputs can be: (i) syncer tasks, (ii) protocol messages, (iii) client state digest messages, or (iv) daemon loopback messages.
 
-Valid transitions from one state to other states are described by the protocol. Upon swap state update, daemon must update the client through state digest messages.
+The daemon handles the swap state and its state transitions on behalf of the client, and following its instructions. The swap state indicates the step on the protocol execution the user is currently in. For each given state, zero or more state transitions are enabled as a function of a list of time-ordered daemon execution logs. That is, depending on the protocol execution path taken, these are the next available actions.
+
+## Execution logs
+The execution logs includes incoming messages to the daemon and outgoing messages emited by the daemon. 
+
+Incoming: (i) blockchain events, (ii) protocol messages, (iii) client instructions, or (iv) daemon loopback messages. 
+Outgoing: (i) syncer tasks, (ii) protocol messages, (iii) client state digest messages, or (iv) daemon loopback messages.
+
+## State update
+Upon receving incoming messages or sending outgoing messages, the daemon receives incoming messages, a transition to a new state may produce outputs. 
+Valid transitions from one state to another are constrained by the protocol. Upon swap state update, daemon must update the client through state digest messages.
 
 For each swap state, only a subset of inputs is valid. The daemon must contextually filter all of its inputs before applying them. Filtering can happen in parallel for every stream of inputs. All filtered streams are then combined, each element of this final stream are applied to the current state.
 
@@ -12,7 +21,7 @@ The swap state can be viewed as an ordered set of inputs. On a crash the daemon 
 By ensuring that daemon output messages can be replayed safely, like tasks, the work already performed since the last saved checkpoint can be replayed safely.
 
 ## State digests
-State digests are messages sent by the daemon to the client to relay all information needed to construct the client interface and update the swap state. These messages both allow the client to display the correct actions a user can perform and create the necessary instructions consumed daemon to continue the swap protocol.
+State digests are messages sent by the daemon to the client. They relay the information needed to construct the client state. The client state determins what is presented to user interface, by exposing the currently valid user instructions. These messages both allow the client to display the correct actions a user can perform and create the necessary instructions consumed daemon to continue the swap protocol.
 
 **Format**:
 
@@ -64,11 +73,15 @@ There is a function, `update_state` or `u`,
 
 where `σt−1` is the previous state and `σt` is the final state, and `Δlogs` are the logs between `t-1` and `t`.
 
-Background on [petrinets](http://petrinet.org/) for the following.
-
 The protocol state may be encoded as markings of a petrinet.
 
 In practice the code may be implemented as a fold operation over a stream of events taking a petrinet marking as initial state that internally outputs the new marking (which encodes the new protocol state). Then tap the wire after the fold operation to monitor the state.
+
+## Daemon state-space
+The daemon encodes the entire swap state-space as a petrinet. The marking of the petrinet encodes the state swap state.
+
+## Client state-space
+The client state-space is the subset of the swap state the client requires in order to present and control the daemon. It can be thought of as the subset of petrinet places that are common to both daemon and client.
 
 ## Recovery process between components
 The recovery process is different depending the components. Client and daemon are trusted, the prerequisits are not the same as e.g. inter-daemon.
