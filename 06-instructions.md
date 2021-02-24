@@ -8,7 +8,7 @@
 ## Overview
 
 This RFC specifies the messages exchanged between the user's swap client and its own daemon.
-As sketched elsewhere, the `client`→`daemon` route consists of (a) `instructions` from the client to daemon that control the state transitions of an ongoing swap, and (b) the `daemon`→`client` route consists of `state digests` sent to the client encoding the `daemon`'s swap state tailored specific to client's control and presentation functionality. The `client` must  present control choices to the end-user during the progression of the protocol execution.
+As sketched below, the `client`→`daemon` route consists of (a) `instructions` from the client to daemon that control the state transitions of an ongoing swap, and (b) the `daemon`→`client` route consists of `state digests` sent to the client encoding the `daemon`'s swap state and proposing available instructions for client's control and presentation functionality. `state digest` messages include the backbone of instruction messages `state digests` are described in [09. Swap state](./09-swap-state.md) The `client` must  present control choices to the end-user during the progression of the protocol execution.
 
 ```
                                       sk,pk       instructions     pk
