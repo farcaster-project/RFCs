@@ -11,11 +11,11 @@ This RFC specifies the messages exchanged between the user's swap client and its
 As sketched elsewhere, the `client`→`daemon` route consists of (a) `instructions` from the client to daemon that control the state transition of an ongoing swap, and (b) the `daemon`→`client` route consists of `state digests` sent to the client encoding the `daemon`'s swap state tailored specific to client's control and presentation functionality. The `client` must  present control choices to the end-user during the progrssion of the protocol execution.
 
 ```
-                                  sk,pk       instructions     pk
-                                 -----------  ------------> -------------
-                                 | client  |                | daemon    |
-                                 -----------  <-----------  -------------
-                                              state digests
+                                      sk,pk       instructions     pk
+                                     -----------  ------------> -------------
+                                     | client  |                | daemon    |
+                                     -----------  <-----------  -------------
+                                                  state digests
 ```
 *Fig 1. Sketch of interaction between a client and a daemon. Note only client has access to private keys (pk).*
 
@@ -23,8 +23,21 @@ As sketched elsewhere, the `client`→`daemon` route consists of (a) `instructio
 
 ## Table of Contents
 
-[TOC]
-
+  * [Security considerations](#security-considerations)
+  * [Instructions](#instructions)
+    * [The `alice_session_params` Instruction](#the-alice_session_params-instruction)
+    * [The `bob_session_params` Instruction](#the-bob_session_params-instruction)
+    * [The `cosigned_arbitrating_cancel` Instruction](#the-cosigned_arbitrating_cancel-instruction)
+    * [The `signed_adapted_buy` Instruction](#the-signed_adapted_buy-instruction)
+    * [The `fully_signed_buy` Instruction](#the-fully_signed_buy-instruction)
+    * [The `signed_adapted_refund` Instruction](#the-signed_adapted_refund-instruction)
+    * [The `fully_signed_refund` Instruction](#the-fully_signed_refund-instruction)
+    * [The `signed_arbitrating_lock` Instruction](#the-signed_arbitrating_lock-instruction)
+    * [The `abort` Instruction](#the-abort-instruction)
+    * [The `next` Instruction](#the-next-instruction)
+  * [State digests](#state-digests)
+    * [The `state_digest` Message](#the-state_digest-message)
+  * [References](#references)
 
 ## Security considerations
 
