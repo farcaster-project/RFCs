@@ -24,7 +24,7 @@ Specifies the messages exchanged between daemons during a swap and the peer-to-p
 ### [05. Tasks & Blockchain Events](./05-tasks-and-events.md)
 Specifies the tasks that syncers make available to daemons for the monitoring of chain-state through blockchain events and the broadcasting of transactions.
 
-### [06. Instructions & State Digests](./06-instructions-and-digests.md)
+### [06. Instructions](./06-instructions.md)
 Specifies the instructions that daemon makes available to clients for piloting the swap and state digests send to clients by the daemon.
 
 ### [07. Cryptographic Setup](./07-cryptographic-setup.md)

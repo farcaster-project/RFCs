@@ -3,7 +3,7 @@
   Created: 2021-02-03
 </pre>
 
-# 06. Instructions & State Digests
+# 06. Instructions
 
 ## Overview
 
@@ -19,7 +19,7 @@ As sketched elsewhere, the `client`→`daemon` route consists of (a) `instructio
 ```
 *Fig 1. Sketch of interaction between a client and a daemon. Note only client has access to private keys (pk).*
 
-`instructions` and `state digests` messages must follow the *'Type-Length-Value Format (TLV format)'* defines in *'BOLT #1: Base Protocol'* [[1](#references)] standard from the Lightning Network specifications.
+`instructions` messages must follow the *'Type-Length-Value Format (TLV format)'* defines in *'BOLT #1: Base Protocol'* [[1](#references)] standard from the Lightning Network specifications.
 
 ## Table of Contents
 
@@ -35,8 +35,6 @@ As sketched elsewhere, the `client`→`daemon` route consists of (a) `instructio
     * [The `signed_arbitrating_lock` Instruction](#the-signed_arbitrating_lock-instruction)
     * [The `abort` Instruction](#the-abort-instruction)
     * [The `next` Instruction](#the-next-instruction)
-  * [State digests](#state-digests)
-    * [The `state_digest` Message](#the-state_digest-message)
   * [References](#references)
 
 ## Security considerations
@@ -249,25 +247,6 @@ The `next_code` may be used when next require a choice by the client.
  2. data:
     - [`u16`: `next_code`] OPTIONAL: A code conveying the type of execution progression
 
-
-## State digests
-State digests are messages sent by the daemon to the client to relay all information needed to construct the client interface and update the swap state. These messages both allow the client to display the correct actions a user can perform and create the necessary instructions consumed daemon to continue the swap protocol.
-
-**Format**:
-
-- Current marking of petri net representation of swap
-- Data required for firing a given transition
-
-### The `state_digest` Message
-Provides the client with the current swap state digest. By applying the fired transitions to the current petri net of the client, the client can infer which transitions are available to fire.
-
- 1. type: 33790 (`state_digest`)
- 2. data:
-    - [`u16`: `fired_transitions_len`]
-    - [`fired_transitions_len * type`: `fired_transitions`] Vector of # of firings per transition since last state digest
-    - [`sha256`: `marking_hash`] Hash of the current marking so that client can verify it applied the transitions correctly
-    - [`u16`: `fireable_transition_data_len`]
-    - [`fireable_transition_data_len * type`: `fireable_transition_data`] Map of fireable transitions to the data that the client requires to produce the authentication the daemon requires to fire it, such as transaction signatures
 
 ## References
 
