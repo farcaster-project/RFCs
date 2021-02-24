@@ -7,7 +7,8 @@
 
 ## Overview
 
-This RFC specifies the messages exchanged between a user's client and their own daemon.
+This RFC specifies the messages exchanged between the user's swap client and its own daemon.
+As sketched elsewhere, the `client`→`daemon` route consists of (a) `instructions` from the client to daemon that control the state transition of an ongoing swap, and (b) the `daemon`→`client` route consists of `state digests` sent to the client encoding the `daemon`'s swap state tailored specific to client's control and presentation functionality. The `client` must  present control choices to the end-user during the unfolding of the protocol execution.
 
 ```
   sk,pk       instructions     pk
@@ -16,15 +17,9 @@ This RFC specifies the messages exchanged between a user's client and their own 
  -----------  <-----------  -------------
               state digests
 ```
-As sketched in the above graphic, the `client`→`daemon` route consists of instructions from the client to daemon that lead to a state transition of an ongoing swap, and the `daemon`→`client` route consists of state digests sent to the client whenever a new choice becomes available to the client. Both instructions and state digests follow the [TLV format specified in the Lightning RFCs](https://github.com/lightningnetwork/lightning-rfc/blob/master/01-messaging.md#type-length-value-format).
+*Fig 1. Sketch of interaction between a client and a daemon. Note only client has access to private keys (pk)*
 
-
-### Security considerations
-> [name=Lederstrumpf][color=violet] Possibly, this has been written elsewhere already, or would find a better home in another RFC
-
-> [name=h4sh3d][color=orange] Good that this is here, we keep it. It is referenced from the arch. global RFC now
-
-From a security perspective, an important distinction between the client and the daemon is that the daemon only knows public keys - private keys are the privy treasure of the client. Nonetheless, the daemon MUST be viewed as a trusted component, since it exclusively verifies the correctness of the counterparty's data, controls the swap state, and can misreport progression of the swap to the client whenever the progress does not require a signature from the client. For instance, if the client is Bob who initially owns BTC in a swap, and the refund path is invoked, if the client signs the `BTX_spend` transaction and instructs the daemon to relay it, a malicious daemon could abstain from relaying it, resulting in a loss of funds for Bob, if he does not detect this error and submit the signed transaction via an alternate route before Alice can submit the `BTX_claim` transaction to punish Bob.
+`instructions` and `state digests` messages must follow the *'Type-Length-Value Format (TLV format)'* defines in *'BOLT #1: Base Protocol'* [[1](#references)] standard from the Lightning Network specifications.
 
 ## Table of Contents
 
@@ -32,135 +27,238 @@ From a security perspective, an important distinction between the client and the
 
 ## Behaviour
 
-1. A valid client `Instruction` message sent by the client to the daemon instructs the daemon to fire a given enabled protocol transition 
-2. Daemon consumes client `Instruction` message and
+We describe the communication behaviour between a client and a daemon. Both have responsability to send the correct and valid messages based on their respective state and user action.
+
+1. A valid client `instruction` message sent by the client to the daemon instructs the daemon to fire a given enabled protocol transition 
+2. Daemon consumes client `instruction` message and
 3. Daemon fires transitions that are in one-to-one correspondence with client instructions
 4. As a consequence of firing protocol transitions, daemon's internal swap state may be modified
-5. If the swap state was modified, daemon must update client by sending a `State Digest` message to the client about the new enabled protocol transitions client may next instruct to fire
+5. If the swap state was modified, daemon must update client by sending a `state digest` message to the client about the new enabled protocol transitions client may next instruct to fire
 6. Client then may fire any of the new enabled protocol transition and progress on the protocol execution (back to step 1)
 
-The figure below presents a petrinet summarizing client-daemon communication scheme.
+The figure (Fig 2.) below presents a petrinet summarizing client-daemon communication scheme.
 
 ![Petri net representation of client and daemon interactions](https://i.imgur.com/PwdlQTF.png)
-*Fig 1. Petri net representation of client and daemon interactions*
+*Fig 2. Petri net representation of client and daemon interactions*
+
+## Security considerations
+
+From a security perspective, an important distinction between the client and the daemon is that the daemon only knows public keys - private keys are the privy treasure of the client`(*)`. Nonetheless, the daemon MUST be viewed as a trusted component, since it exclusively verifies the correctness of the counterparty's data, controls the swap state, and can misreport progression of the swap to the client whenever the progress does not require a signature from the client.
+
+For instance, if the client is Bob who initially owns BTC in a swap, and the cancel path is invoked, if the client signs the `refund (e)` transaction and instructs the daemon to relay it, a malicious daemon could abstain from relaying it, resulting in a loss of funds for Bob, if he does not detect this error and submit the signed transaction via an alternate route before Alice can submit the `punish (f)` transaction to punish Bob `(**)`.
+
+`*` *With the exception of all privates keys needed to read the blockchain state, e.g. the private view key when the accordant blockchain is Monero.*
+
+`**` *For a better understanding of the transaction structure see [08. Transactions](./08-transactions.md).*
 
 ## Instructions
 
-There are three types of instructions:
-1. Cryptographic material: relevant during the initialization phase
-   - signatures (partial and finalized)
-   - keys (public keys and Monero private view keys)
-   - MuSig2 protocol messages
-   - Zero knowledge proofs of DLEQ across groups
-2. Transaction messages following [PSBT standard](https://github.com/bitcoin/bitcoin/blob/master/doc/psbt.md) & [BIP 174](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki) : relevant during all swap steps
-3. Control flow messages
-   - accept a step in the swap process
-   - swap cancel by the user
-   
-### Cryptographic material
-#### 1. Initialization step
-These are the messages that the client can send to the daemon in context of the initialization step.
-##### `send_initialization_parameters_{alice,bob}`
+`instructions` must convey all required data a daemon has to fulfill his mission, not only the keys or the transactions' signatures but also the user intention of continuing the swap or aborting it.
+
+We define three category of content found in instructions:
+
+1. Results of cryptographic operation
+   - Signatures (partial and finalized)
+   - Keys (public keys and exceptional private 'view' keys)
+   - Off-chain multi signature protocol messages
+   - Zero knowledge proofs requires by the above protocols
+2. Transactions; following *PSBT standard* & *BIP 174* [[2,3]](#references)
+3. Control flow operations
+   - Accepting a step in the swap process
+   - User canceling the swap
+
+
+### The `alice_session_params` Instruction
+
+**Send by**: Alice clients
+
 Provides the counter-party daemon with all the information required for the initialization step of a swap.
-###### Type
-X `(init)`
-###### Data
-- `B_{a,b}`: `base58`: the destination address for a success swap or the address used for initally locking the funds respectively.
-- `B_{a,b}_r`: `base58`: Bitcoin public key used for the recovery path
-- `k_{a,b}_v`: `edward25519` scalar: private view key share, needed by the counterparty daemon for calculating the full private view key $K^v$
-- `K_{a,b}_s`: `edward25519` curve point: public spend key, needed by the counterparty daemon for calculating the full public spend key $K^s$ and verifying the DLEQ proof
-- `dleq_proof_{a,b}`: `DLEQ proof`: DLEQ proof for the equal discrete logarithm of the client's Bitcoin key $B_i$ and their Monero public spend key share $K^s_i$
 
-###### TLV Data
-- `[u16: btc_addr_len]`
-- `[btc_addr_len * byte: B_{a,b}]`
-- `[u16: btc_addr_len]`
-- `[btc_addr_len * byte: B_{a,b}_r]`
-- `[u16: ed25519_scalar_len]`
-- `[ed25519_scalar_len * byte: k_{a,b}_v]`
-- `[u16: ed25519_point_len]`
-- `[ed25519_point_len * byte: K_{a,b}_v]`
-- `[u16: dleq_proof_len]`
-- `[dleq_proof_len * byte: dleq_proof_{a,b}]`
+> This message has the same format as the protocol message 33703 `areveal`, we have to check if two messages are needed or if we need only once and use it in two different context.
+> I bet there is missing data here that the daemon needs to know, which would justify two messages.
 
-#### 2. Bitcoin Locking Step
-##### `send_signed_btx_refund_bob`
-Only called by Bob's daemon: provides Bob's daemon with a signature on the unsigned `BTX_refund` transaction provided by the daemon via (`TODO`: link applicable state digest)
+ 1. type: ? (`alice_session_params`)
+ 2. data:
+    - [`u16`: `secp256k1_point_len`]
+    - [`secp256k1_point_len * byte`: `buy`] The buy `Ab` public key
+    - [`u16`: `secp256k1_point_len`]
+    - [`secp256k1_point_len * byte`: `cancel`] The cancel `Ac` public key
+    - [`u16`: `secp256k1_point_len`]
+    - [`secp256k1_point_len * byte`: `refund`] The refund `Ar` public key
+    - [`u16`: `secp256k1_point_len`]
+    - [`secp256k1_point_len * byte`: `punish`] The punish `Ap` public key
+    - [`u16`: `secp256k1_point_len`]
+    - [`secp256k1_point_len * byte`: `adaptor`] The `Ta` adaptor public key
+    - [`u16`: `address_len`]
+    - [`address_len * byte`: `address`] The destination Bitcoin address
+    - [`u16`: `ed25519_scalar_len`]
+    - [`ed25519_scalar_len * byte`: `view`] The `K_v^a` view private key
+    - [`u16`: `ed25519_point_len`]
+    - [`ed25519_point_len * byte`: `spend`] The `K_s^a` spend public key
+    - [`u16`: `proof_len`]
+    - [`proof * byte`: `proof`] The cross-group discrete logarithm zero-knowledge proof
 
-###### Type
-X + 1 (`sig_btx_refund_bob`)
-`X`
-###### 
-- `sig_btx_refund_bob`: `ECDSA signature`
-##### `send_signed_btx_spend_alice`
-Only called by Alice's daemon: provides Alice's daemon with a signature on the unsigned `BTX_spend` transaction provided by the daemon via (`TODO`: link applicable state digest)
-###### Type
-X + 2 (`sig_btx_spend_alice`)
-###### Data
-- `sig_btx_spend_alice`: `ECDSA signature`
-###### TLV Data
-- `[u16: sig_btx_len]`
-- `[sig_btx_len * type: sig_btx_spend_alice]`
-`sig_btx_spend_alice`: `ECDSA signat
-Only called by Alice's daemon: provides Alice's daemon with a signature on the unsigned `BTX_refund` transaction provided by the daemon via (`TODO`: link applicable state digest)
-###### Type
-X + 3 `(sig_btx_refund_alice)`
-###### Data
-- `sig_btx_refund_alice`: `ECDSA signature`
-###### TLV Data
-- `[u16: sig_btx_len]`
-- `[sig_btx_len * type: sig_btx_refund_alice]`
-#### 3. Monero Locking Step
-##### `send_signed_btx_buy_bob`
-Only called by Bob's daemon: provides Bob's daemon with a signature on the unsigned `BTX_buy` transaction provided by the daemon via (`TODO`: link applicable state digest)
-###### Type
-X + 4 `(sig_btx_buy_bob)`
-`void | boo
-- `sig_btx_buy_bob`: `ECDSA signature`
-###### TLV Data
-- `[u16: sig_btx_len]`
-- `[sig_btx_len * type: sig_btx_buy_bob]`
-##### `send_signed_xtx_lock_alice`
-Only called by Alice's daemon: provides Alice's daemon with a signature on the unsigned `XTX_lock` transaction provided by the daemon via (`TODO`: link applicable state digest)
-###### Type
-X + 5 `(sig_xtx_lock_alice)`
-###### Data
-- `sig_xtx_lock_alice`: `EdDSA signature`
-###### TLV Data
-- `[u16: sig_xtx_len]`
-- `[sig_xtx_len * type: sig_xtx_lock_alice]`
 
-#### 4. Swap Step
-##### `send_signed_btx_buy_alice`
-Only called by Alice's daemon: provides Alice's daemon with a signature on the unsigned `BTX_buy` transaction provided by the daemon via (`TODO`: link applicable state digest)
-###### Type
-X + 6 `sig_btx_buy_alice`
-###### Data
-- `sig_btx_buy_alice`: `ECDSA signature`
-###### TLV Data
-- `[u16: sig_btx_len]`
-- `[sig_btx_len * type: sig_btx_buy_alice]`
+### The `bob_session_params` Instruction
+
+**Send by**: Bob clients
+
+Provides the counter-party daemon with all the information required for the initialization step of a swap.
+
+> Same remarks have previous inst.
+
+ 1. type: ? (`bob_session_params`)
+ 2. data:
+    - [`u16`: `secp256k1_point_len`]
+    - [`secp256k1_point_len * byte`: `buy`] The buy `Bb` public key
+    - [`u16`: `secp256k1_point_len`]
+    - [`secp256k1_point_len * byte`: `cancel`] The cancel `Bc` public key
+    - [`u16`: `secp256k1_point_len`]
+    - [`secp256k1_point_len * byte`: `refund`] The refund `Br` public key
+    - [`u16`: `secp256k1_point_len`]
+    - [`secp256k1_point_len * byte`: `adaptor`] The `Tb` adaptor public key
+    - [`u16`: `address_len`]
+    - [`address_len * byte`: `address`] The refund Bitcoin address
+    - [`u16`: `ed25519_scalar_len`]
+    - [`ed25519_scalar_len * byte`: `view`] The `K_v^b` view private key
+    - [`u16`: `ed25519_point_len`]
+    - [`ed25519_point_len * byte`: `spend`] The `K_s^b` spend public key
+    - [`u16`: `proof_len`]
+    - [`proof * byte`: `proof`] The cross-group discrete logarithm zero-knowledge proof
+
+
+### The `cosigned_arbitrating_cancel` Instruction
+
+**Send by**: Alice|Bob clients
+
+Provides daemon with a signature on the unsigned `cancel (d)` transaction previously provided by the daemon via `state digest`.
+
+ 1. type: ? (`cosigned_arbitrating_cancel`)
+ 2. data:
+    - [`u16`: `cancel_sig_len`]
+    - [`cancel_sig_len * byte`: `cancel_sig`] The `Ac|Bc` `cancel (d)` signature
+
+
+### The `signed_adapted_buy` Instruction
+
+**Send by**: Bob clients
+
+Provides Bob's daemon with a signature on the unsigned `buy (c)` transaction previously provided by the daemon via `state digest`.
+
+ 1. type: ? (`signed_adapted_buy`)
+ 2. data:
+    - [`u16`: `buy_adaptor_sig_len`]
+    - [`buy_adaptor_sig_len * byte`: `buy_adaptor_sig`] The `Bb(Ta)` `buy (c)` adaptor signature
+
+
+### The `fully_signed_buy` Instruction
+
+**Send by**: Alice clients
+
+Provides Alice's daemon with the two signatures on the unsigned `buy (c)` transaction previously provided by the daemon via `state digest`, ready to be broadcasted.
+
+ 1. type: ? (`fully_signed_buy`)
+ 2. data:
+    - [`u16`: `buy_sig_len`]
+    - [`buy_sig_len * byte`: `buy_sig`] The `Ab` `buy (c)` signature
+    - [`u16`: `buy_adapted_sig_len`]
+    - [`buy_adapted_sig_len * byte`: `buy_adapted_sig`] The decrypted `Bb(Ta)` `buy (c)` adaptor signature
+
+### The `signed_adapted_refund` Instruction
+
+**Send by**: Alice clients
+
+Provides Alice's daemon with a signature on the unsigned `refund (e)` transaction previously provided by the daemon via `state digest`.
+
+ 1. type: ? (`signed_adapted_refund`)
+ 2. data:
+    - [`u16`: `refund_adaptor_sig_len`]
+    - [`refund_adaptor_sig_len * byte`: `refund_adaptor_sig`] The `Ar(Tb)` `refund (e)` adaptor signature
+
+
+### The `fully_signed_refund` Instruction
+
+**Send by**: Bob clients
+
+Provides Bob's daemon with the two signatures on the unsigned `refund (e)` transaction previously provided by the daemon via `state digest`, ready to be broadcasted.
+
+ 1. type: ? (`fully_signed_refund`)
+ 2. data:
+    - [`u16`: `refund_sig_len`]
+    - [`refund_sig_len * byte`: `refund_sig`] The `Br` `refund (e)` signature
+    - [`u16`: `refund_adapted_sig_len`]
+    - [`refund_adapted_sig_len * byte`: `refund__adapted_sig`] The decrypted `Ar(Tb)` `refund (e)` adaptor signature
+
+
+### The `signed_arbitrating_lock` Instruction
+
+**Send by**: Bob clients
+
+Provides Bob's daemon with the signature on the unsigned `lock (b)` transaction previously provided by the daemon via `state digest`, ready to be broadcasted with this signature.
+
+ 1. type: ? (`signed_arbitrating_lock`)
+ 2. data:
+    - [`u16`: `lock_sig_len`]
+    - [`lock_sig_len * byte`: `lock_sig`] The `Bf` `lock (b)` signature for unlocking the funding
+
+
+### The `signed_arbitrating_punish` Instruction
+
+**Send by**: Alice clients
+
+Provides Alice's daemon with the signature on the unsigned `punish (f)` transaction previously provided by the daemon via `state digest`, ready to be broadcasted with this signature.
+
+ 1. type: ? (`signed_arbitrating_punish`)
+ 2. data:
+    - [`u16`: `punish_sig_len`]
+    - [`punish_sig_len * byte`: `punish_sig`] The `Ap` `punish (f)` signature for unlocking the cancel transaction UTXO
+
+
+### The `abort` Instruction
+
+**Send by**: Alice|Bob clients
+
+Provides deamon the instruction to abort the swap, it is the daemon responsability to abort accordingly to the current state swap. By transmitting latter feedback via `state digest`, the client must be able to provide any missing signatures.
+
+ 1. type: ? (`abort`)
+ 2. data:
+    - [`u16`: `abort_code`] OPTIONAL: A code conveying the reason of the abort
+
+
+### The `next` Instruction
+
+**Send by**: Alice|Bob clients
+
+Provides deamon the instruction to follow the protocol swap, daemon can create locking steps during the protocol execution and require client to acknoledge the execution progression.
+
+The `next_code` may be used when next require a choice by the client.
+
+ 1. type: ? (`next`)
+ 2. data:
+    - [`u16`: `next_code`] OPTIONAL: A code conveying the type of execution progression
+
 
 ## State digests
 State digests are messages sent by the daemon to the client to relay all information needed to construct the client interface and update the swap state. These messages both allow the client to display the correct actions a user can perform and create the necessary instructions consumed daemon to continue the swap protocol.
-### Format (ROUGH SKETCH)
-- current marking of Petri net representation of swap (i.e. vector of token counts per slot)?
-- and/or transitions available for firing (superfluous if we send the current marking, but that route requires more data transfer & calculation on the client's part )
-> [name=Lederstrumpf][color=violet]
-> I would prefer sending markings, in lieu of baking in the transitions as a stripped down representation - my expectation is that while requiring more functionality on the client's part, it will be easier to keep in sync with daemon development down the line, and safer to reason about.
-- data required for signatures (data required for firing a given transition)
 
-### `send_state_digest`
-Provides the client with the current state digest. By applying the fired transitions to the current petri net of the client, the client can infer which transitions are available to fire.
-#### Type
-Y `(state_digest)`
-#### Data
-- `fired_transitions`: `[u16]` (vector of # of firings per transition since last state digest)
-- `marking_hash`: `SHA256` (hash of the current marking so that client can verify it applied the transitions correctly)
-- `fireable_transition_data`: `{transition index -> required data}` (map of fireable transitions to the data that the client requires to produce the authentication the daemon requires to fire it, such as transaction signatures)
-###### TLV Data
-- `[u16: ft_len]`
-- `[ft_len * type: fired_transitions]`
-- `[SHA256: marking_hash]`
-- `[u16: ftd_len]`
-- `[ftd_len * type: fireable_transition_data]`
+**Format**:
+
+- Current marking of petri net representation of swap
+- Data required for firing a given transition
+
+### The `state_digest` Message
+Provides the client with the current swap state digest. By applying the fired transitions to the current petri net of the client, the client can infer which transitions are available to fire.
+
+ 1. type: 33790 (`state_digest`)
+ 2. data:
+    - [`u16`: `fired_transitions_len`]
+    - [`fired_transitions_len * type`: `fired_transitions`] Vector of # of firings per transition since last state digest
+    - [`sha256`: `marking_hash`] Hash of the current marking so that client can verify it applied the transitions correctly
+    - [`u16`: `fireable_transition_data_len`]
+    - [`fireable_transition_data_len * type`: `fireable_transition_data`] Map of fireable transitions to the data that the client requires to produce the authentication the daemon requires to fire it, such as transaction signatures
+
+## References
+
+ * [[1] BOLT #1: Base Protocol](https://github.com/lightningnetwork/lightning-rfc/blob/master/01-messaging.md#type-length-value-format)
+ * [[2] PSBT standard](https://github.com/bitcoin/bitcoin/blob/master/doc/psbt.md)
+ * [[3] BIP 174](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki)
