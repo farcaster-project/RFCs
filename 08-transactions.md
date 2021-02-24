@@ -7,7 +7,7 @@
 
 ## Overview
 
-The protocol implemented in Farcaster is blockchain agnostic, thus a strict list of features is required for the arbitrating blockchain involved in the swap (see [00. Introduction](00-introduction.md) and [01. High Level Overview](01-high-level-overview.md)). This RFC describes a concrete implementation of the protocol with Bitcoin as the arbitrating blockchain and Monero as the accordant blockchain.
+The protocol implemented in Farcaster is blockchain agnostic, thus a strict list of features is required for the arbitrating blockchain involved in the swap (see [00. Introduction](./00-introduction.md) and [01. High Level Overview](./01-high-level-overview.md)). This RFC describes a concrete implementation of the protocol with Bitcoin as the arbitrating blockchain and Monero as the accordant blockchain.
 
 We distinguish transactions created and controlled by the protocol itself and external transactions. Dashed outline transactions are transaction created by external wallets, i.e. not the daemon nor the client.
 
@@ -46,7 +46,7 @@ The latter is the prefered option for privacy but depends on features activation
 
 #### Bitcoin transaction graph
 
-![Bitcoin transaction graph](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/btc-transactions.png)
+![Bitcoin transaction graph](./images/btc-transactions.png)
 
 ### Pre-lock
 
@@ -375,7 +375,7 @@ and `<input>`:
 
 Two external Monero transactions are defined: (a) the `lock` transaction and (b) the `spend` transaction. The spend transaction consumes the protocol created output from the `lock` transaction by complying with the condition `(i)`.
 
-![Monero transaction graph](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/xmr-transactions.png)
+![Monero transaction graph](./images/xmr-transactions.png)
 
 > It is worth noting that all Monero transactions can be handled by external wallet. More precisely the latter by importing the private keys into an external software.
 

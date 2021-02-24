@@ -9,7 +9,7 @@ Below is an index of the RFCs, loosely in the order we recommend studying them t
 ### [00. Introduction](./00-introduction.md)
 Introduction, Glossary and Terminology Guide that will help you familiarize with the Farcaster and Atomic swap terminology.
 
-### [01. High Level Overview](01-high-level-overview.md)
+### [01. High Level Overview](./01-high-level-overview.md)
 Describes the high level concepts associated to the protocol such as roles and phases implemented inside Farcaster.
 
 ### [02. User Stories](./02-user-stories.md)

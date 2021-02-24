@@ -69,7 +69,7 @@ At the end of the negotiation phase, participants must result with:
 
 We present a simple user interface for starting with the role of a maker or a taker and the steps that must follow each choice.
 
-![](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/negociation-phase-mocks.png)
+![Negotiation Mockups](./images/negotiation-phase-mocks.png)
 
 #### A. Maker and Taker role choice
 The swap client is started in one of these two modes: Maker or Taker.
@@ -166,10 +166,10 @@ We describe the high level view of the swap phase with four steps:
 
 We describe a basic user experience with an atomic swap GUI client for Alice and Bob. This is provided for educational purposes and to give an idea to the reader, the swap GUI client may look different.
 
-![](https://raw.githubusercontent.com/farcaster-project/RFCs/hackmd/images/gui-mocks.png)
+![GUI Mockups](./images/gui-mocks.png)
 
 #### 1. Initialization Step (1 in diagram)
-Alice and Bob start the pre-initialization. They exchange and verify parameters specified in [Protocol messages](/M0uYws_5S7K6k1j5l8b6qw?view) RFC. If the validation successfully terminates, the client moves to the next step.
+Alice and Bob start the pre-initialization. They exchange and verify parameters specified in [04. Protocol messages](./04-protocol-messages.md) RFC. If the validation successfully terminates, the client moves to the next step.
 
 ##### Messages exchanged:
 
@@ -177,23 +177,23 @@ Alice and Bob start the pre-initialization. They exchange and verify parameters 
 
 > Messages can arrive in any order
 
-- Alice → Bob: [`commit_alice_session_params`]()
-- Bob → Alice: [`commit_bob_session_params`]()
+- Alice → Bob: [`commit_alice_session_params`](./04-protocol-messages.md#the-commit_alice_session_params-message)
+- Bob → Alice: [`commit_bob_session_params`](./04-protocol-messages.md#the-commit_bob_session_params-message)
 
 *Second round, reveal values*
 
 > Messages can arrive in any order
 
-- Alice → Bob: [`reveal_alice_session_params`]()
-- Bob → Alice: [`reveal_bob_session_params`]()
+- Alice → Bob: [`reveal_alice_session_params`](./04-protocol-messages.md#the-reveal_alice_session_params-message)
+- Bob → Alice: [`reveal_bob_session_params`](./04-protocol-messages.md#the-reveal_bob_session_params-message)
 
 #### 2. Bitcoin Locking Step (2-3 in diagram)
 After the parameters are exchanged and validated, Bob ask the user for funding. Uppon funds reception Bob creates the transactions, signs the cancel path and sends them to Aline with `core_arbitrating_setup` protocol message. He acquires Alice's signatures for the cancel path. The bitcoin are locked when Bob is able to trigger the cancel path and refund the assets, i.e. after reception of `refund_procedure_signatures` protocol message.
 
 ##### Messages exchanged:
 
-- Bob → Alice: [`core_arbitrating_setup`]()
-- Alice → Bob: [`refund_procedure_signatures`]()
+- Bob → Alice: [`core_arbitrating_setup`](./04-protocol-messages.md#the-core_arbitrating_setup-message)
+- Alice → Bob: [`refund_procedure_signatures`](./04-protocol-messages.md#the-refund_procedure_signatures-message)
 
 #### 3. Monero Locking Step (4 in diagram)
 Once Alice has received sufficient confirmations for Bob's `lock (b)` transaction to feel safe, Alice proceeds to lock her monero with the Monero `lock (a)` transaction.
@@ -205,4 +205,4 @@ Alice then signs the `buy (c)` transaction to complete it and publishes it, leak
 
 ##### Message exchanged:
 
-- Bob → Alice: [`buy_procedure_signature`]()
+- Bob → Alice: [`buy_procedure_signature`](./04-protocol-messages.md#the-buy_procedure_signature-message)
