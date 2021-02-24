@@ -8,7 +8,7 @@
 ## Overview
 
 This RFC specifies the messages exchanged between the user's swap client and its own daemon.
-As sketched elsewhere, the `client`→`daemon` route consists of (a) `instructions` from the client to daemon that control the state transition of an ongoing swap, and (b) the `daemon`→`client` route consists of `state digests` sent to the client encoding the `daemon`'s swap state tailored specific to client's control and presentation functionality. The `client` must  present control choices to the end-user during the progrssion of the protocol execution.
+As sketched elsewhere, the `client`→`daemon` route consists of (a) `instructions` from the client to daemon that control the state transitions of an ongoing swap, and (b) the `daemon`→`client` route consists of `state digests` sent to the client encoding the `daemon`'s swap state tailored specific to client's control and presentation functionality. The `client` must  present control choices to the end-user during the progression of the protocol execution.
 
 ```
                                       sk,pk       instructions     pk
@@ -41,7 +41,7 @@ As sketched elsewhere, the `client`→`daemon` route consists of (a) `instructio
 
 ## Security considerations
 
-From a security perspective, an important distinction between the client and the daemon is that the daemon only knows public keys - private keys are the privy treasure of the client`(*)`. Nonetheless, the daemon MUST be viewed as a trusted component, since it exclusively verifies the correctness of the counterparty's data, controls the swap state, and can misreport progression of the swap to the client whenever the progress does not require a signature from the client.
+From a security perspective, an important distinction between the client and the daemon is that the daemon only knows public keys - private keys are the privy treasure of the client`(*)`. Nonetheless, the daemon MUST be viewed as a trusted component, since it exclusively verifies the correctness of the counterparty's data, controls the swap state, and can misreport progression of the swap to the client or mislead the client into invalid protocol states.
 
 For instance, if the client is Bob who initially owns BTC in a swap, and the cancel path is invoked, if the client signs the `refund (e)` transaction and instructs the daemon to relay it, a malicious daemon could abstain from relaying it, resulting in a loss of funds for Bob, if he does not detect this error and submit the signed transaction via an alternate route before Alice can submit the `punish (f)` transaction to punish Bob `(**)`.
 
@@ -69,16 +69,16 @@ We define three categories of content found in `instructions`:
 
 We illustrate the effect client's control flow operations exert over a daemon, and its feedback loop back to the client. Both client and daemon have the responsability to exchange valid `instruction` and `state digest` messages based on their respective state and user actions. Please see the trust assumptions at [security considerations](#security-considerations).
 
-A protocol transition moves the protocol execution forward -- that is a step in the swap process. A subset of states that fulfills the predicates for enabling a given transition must be met, in order to be able to make the step in the swap process.
+A protocol transition moves the protocol execution forward -- that is a step in the swap process. The set of states that fulfills the predicates for enabling a given transition must be met, in order to be able to carry out the step in the swap process.
 
 Please find below a high-level summary of this interaction:
 
 1. A valid client `instruction` message sent by the client to the daemon controls the daemon to fire a given enabled protocol transition. 
-3. Daemon consumes client `instruction` control flow message and
-4. Daemon fires transitions that are in one-to-one correspondence with client instructions (if predicate conditions met)
-5. As a consequence of firing protocol transitions, daemon's internal swap state may be modified
-6. If the swap state was modified, daemon must update client by sending a `state digest` message to the client informing it about the new swap state and thus what enabled protocol transitions client may next instruct to fire
-7. Client then may fire any of the new enabled protocol transition and progress on the protocol execution (back to step 1)
+2. Daemon consumes client `instruction` control flow message and
+3. Daemon fires transitions that are in one-to-one correspondence with client instructions (if predicate conditions met)
+4. As a consequence of firing protocol transitions, daemon's internal swap state may be modified
+5. If the swap state was modified, daemon must update client by sending a `state digest` message to the client informing it about the new swap state and thus what enabled protocol transitions client may next instruct to fire
+6. Client then may fire any of the new enabled protocol transition and progress on the protocol execution (back to step 1)
 
 ### The `alice_session_params` Instruction
 
