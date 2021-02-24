@@ -1,29 +1,29 @@
 # XMR-BTC atomic swap core protocol
 
 This document intends to formally specify the core of the swap protocol
-execution: the protocol states and what state transitions are permited for each
-given state. This is critical to prevent unintentional though exploitable
+execution: the protocol states and what state transitions are permitted for each
+given state. This is critical to prevent unintentional and potentially exploitable
 state-space explosion by implementation choices.
 
-It currently uses a petrinet descriptor language which we refer to as net. Its
+It currently uses a petrinet descriptor language which we refer to as a net. Its
 syntax is extremely simple: `transition_name input_type0 input_type1 ... ->
 output_type0 output_type1 ...`. Think of it as normal function signatures on
 strongly typed languages.
 
 During runtime each instantiated input_type gives rise to a local state. At a
-given time, there is a correspondance between (a) the sum type of all
+given time, there is a correspondence between (a) the sum type of all
 constructed input_types for the entire protocol and (b) the global protocol
 state.
 
 What does this type of formal specification gives us? 
 1. facilitates correct implementation of the code -- i.e., correct by
    construction approach,
-1. facilitates formal verification of the code,
-1. may eventually be used to create a type-checked runtime environment by
+2. facilitates formal verification of the code,
+3. may eventually be used to create a type-checked runtime environment by
 leveraging Rust's borrow-checker to impose linear type/logic constraints. Thus
 correct protocol execution may be imposed at compile time rather than at runtime
 for the utmost critical parts of the software.
-1. facilitates combining/reusing sub-protocols into larger protocols as
+4. facilitates combining/reusing sub-protocols into larger protocols as
    petrinets with their composable local states are ideal for that.
 
 ## Alice
@@ -191,10 +191,10 @@ send2b VrfyXLockMined buy buy_adaptor_sig -> buy_a buy_adaptor_sig_a
 ```
 
 ``` net:bob3_
-WatchbuyOKb buyPublished buy -> VrfybuyMined
-WatchbuyERRb buyPublished buy -> FailbuyMined
+WatchBuyOKb buyPublished buy -> VrfyBuyMined
+WatchBuyERRb buyPublished buy -> FailBuyMined
 
-RecSig0b VrfybuyMined buy -> s1_b _s2_b
+RecSig0b VrfyBuyMined buy -> s1_b _s2_b
 Rec0b s1_b d -> ksa_b
 aggreg_ks_b ksa_b ksb -> ks_b
 
