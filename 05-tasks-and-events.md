@@ -6,8 +6,9 @@
 # 05. Tasks & Blockchain Events
 
 ## Overview
+The `syncer` main function is to maintain the protocol state and the blockchain state in sync.
 
-This RFC describe the syncer interface: `tasks` and `blockchain events`. Through this interface a daemon interact with a blockchain.
+This RFC describe the syncer interface: `tasks` and `blockchain events`. Through this interface a daemon bi-directionally interacts with a blockchain.
 
 ## Table of Contents
 
@@ -23,7 +24,7 @@ TODO(h4sh3d): add blockchain events
 
 ## Tasks
 
-A syncer is responsible to handle `tasks` messages, its inputs. To achieve that goal a syncer is connected to a blockchain, through a full node or equivalent, and uses e.g. RPC calls and 0MQ notification streams to produce `blockchain events` messages, its outputs.
+A syncer is responsible for carrying out assigned `tasks` received throught the `tasks` messages, its inputs. To achieve that goal a syncer connects to a blockchain, through a full node or equivalent, and uses e.g. RPC calls and 0MQ notification streams to compute and emit `blockchain events` messages, its outputs.
 
 Tasks MUST follow those rules:
 
@@ -33,7 +34,7 @@ Tasks MUST follow those rules:
 
 Tasks are available from any syncer, yet their parameters vary depending on the network. Parameters are provided for Bitcoin and Monero to demonstrate how the protocol would be implemented. Any codebase working with Bitcoin or Monero SHOULD use the following definitions.
 
-This RFC lists available tasks that MUST be supported by syncers, unless noted otherwise, and their respective outputs: blockchain events. A task produces zero or more events during its lifetime.
+This RFC lists available tasks that MUST be supported by syncers, unless noted otherwise, and their respective outputs: blockchain events. A task produces zero or more `events` during its lifetime.
 
 Every task is accompanied with an `id`, a positive integer which fits into the 32-bit signed integer space. This integer has no rules on its generation or any pattern required by its usage. Every emitted event has its own `id` field corresponding to the task which caused it.
 
@@ -43,7 +44,7 @@ This document frequently references epochs, whose definition is dependent on the
 
 ### The `watch_height` Task
 
-`watch_height` asks the syncer for notifications about updates to the blockchain's height. This task MUST be implemented for any coin with a blockchain. This task MAY be implementeted for any coin without a blockchain. If it is not implemented, an error event must be sent in response to any attempt to start this task.
+`watch_height` asks the syncer for notifications about updates to the blockchain's height. This task MUST be implemented for any coin with a blockchain. This task MAY be implemented for any coin without a blockchain. If it is not implemented, an error event must be sent in response to any attempt to start this task.
 
 Required parameters are:
 * `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, barring another instance of this task, this task MUST be maintained. When another instance appears, syncers MAY only keep the most recent one.
