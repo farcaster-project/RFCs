@@ -3,7 +3,7 @@
   Created: 2021-02-03
 </pre>
 
-# Instructions & State Digests
+# 06. Instructions & State Digests
 
 ## Overview
 
