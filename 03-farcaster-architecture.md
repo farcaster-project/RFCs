@@ -31,8 +31,8 @@ This RFC describe the overall architecture and how the software stack of Farcast
 We segregated three main conceptual components: `client`, `daemon`, and `syncers`.
 
 - The `client` drives the swap,
-- the `daemon` orchestrates the swap protocol execution and
-- the `syncer` maintains the protocol state and the blockchain state in sync
+- The `daemon` orchestrates the swap protocol execution and
+- The `syncer` maintains the protocol state and the blockchain state in sync
 
 The figure below represents the general architecture based on these three main type of components.
 
