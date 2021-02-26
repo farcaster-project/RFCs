@@ -31,12 +31,12 @@ This RFC describe the overall architecture and how the software stack of Farcast
 We segregated three main conceptual components: `client`, `daemon`, and `syncers`.
 
 - The `client` drives the swap,
-- the `daemon` orchestrates the swap protocol execution and
-- the `syncer` maintains the protocol state and the blockchain state in sync
+- The `daemon` orchestrates the swap protocol execution and
+- The `syncer` maintains the protocol state and the blockchain state in sync
 
 The figure below represents the general architecture based on these three main type of components.
 
-![Farcaster High Level Components Architecture](./images/arch.png)
+![Farcaster High Level Components Architecture](./03-farcaster-architecture/global-farcaster-architecture.png)
 *Fig 1. Farcaster High Level Components Architecture*
 
 The following table summarizes different aspects of each component.
@@ -70,7 +70,7 @@ The aim of this segregation is to improve flexibility and extensibility added by
 
 Each swap components is represented as a black box that consumes input messages and produces output messages. Each input and output message is a typed message. Components subscribe to type of messages, e.g. the client may not consume messages produced by syncers but will subscribe to daemon's messages.
 
-![Typed messages exchanged between components](./images/arch-global.png)
+![Typed messages exchanged between components](./03-farcaster-architecture/messages-architecture.png)
 *Fig 2. Typed messages exchanged between components*
 
 It is worth noting that this diagram (Fig. 2) only show one syncer, but a syncer per blockchain is required. Conceptually even more than one syncer per blockchain make sense if you don't run or trust the syncer you are using, in that case one can aggregate and compare different data sources and detect discrepancies.

@@ -14,7 +14,7 @@ We distinguish transactions created and controlled by the protocol itself and ex
 ## Table of Contents
 
   * [Bitcoin](#bitcoin)
-    * [Pre-lock](#pre-lock)
+    * [Funding](#funding)
     * [Lock](#lock)
     * [Buy](#buy)
     * [Cancel](#cancel)
@@ -46,11 +46,12 @@ The latter is the prefered option for privacy but depends on features activation
 
 #### Bitcoin transaction graph
 
-![Bitcoin transaction graph](./images/btc-transactions.png)
+![Arbitrating UTXO based transaction graph](./08-transactions/arbitrating-tx-graph.png)
+*Fig 1. Arbitrating UTXO based transaction graph*
 
-### Pre-lock
+### Funding
 
-The `pre-lock (a)` transaction is an externally created transaction that serves two purposes:
+The `funding (a)` transaction is an externally created transaction that serves two purposes:
 
  1. Force the creation of a SegWit UTXO for the `lock (b)` transaction
  2. Not make any assumption on where the funds come from
@@ -61,7 +62,7 @@ The P2WPKH rationale is to have a better support, this can be moved to a (SegWit
 
 ### Lock
 
-The `lock (b)` transaction consumes the SegWit UTXO `(i)` from `pre-lock (a)` and creates the UTXO `(ii)`.
+The `lock (b)` transaction consumes the SegWit UTXO `(i)` from `funding (a)` and creates the UTXO `(ii)`.
 
 #### ECDSA Scripts
 
@@ -373,17 +374,18 @@ and `<input>`:
 
 ## Monero
 
-Two external Monero transactions are defined: (a) the `lock` transaction and (b) the `spend` transaction. The spend transaction consumes the protocol created output from the `lock` transaction by complying with the condition `(i)`.
+Two external Monero transactions are defined: the `lock (x)` transaction and the `spend (y)` transaction. The spend transaction consumes the protocol created output from the `lock (x)` transaction by complying with the condition `(iv)`.
 
-![Monero transaction graph](./images/xmr-transactions.png)
+![Accordant transaction graph](./08-transactions/accordant-tx-graph.png)
+*Fig 2. Accordant UTXO based transaction graph*
 
 > It is worth noting that all Monero transactions can be handled by external wallet. More precisely the latter by importing the private keys into an external software.
 
 ### Lock
 
-The Monero lock transaction (a) is performed by an external wallet and MUST send the full negotiated amount in the address attached to (i). The transaction MUST NOT be broadcasted too early in the protocol, otherwise funds will be lost.
+The Monero `lock (x)` transaction is performed by an external wallet and MUST send the full negotiated amount in the address attached to `(iv)`. The transaction MUST NOT be broadcasted too early in the protocol, otherwise funds will be lost.
 
-The condition (i) is defined during the protocol initialization phase as a shared secret between the two participants as:
+The condition `(iv)` is defined during the protocol initialization phase as a shared secret between the two participants as:
 
     k_s = k_s^a + k_s^b (mod l)    | the private spend key of the address
     k_v = k_v^a + k_v^b (mod l)    | the private view key of the address
@@ -392,7 +394,7 @@ The condition (i) is defined during the protocol initialization phase as a share
 
 ### Spend
 
-The Monero spend transaction (b) allows the final owner of the funds to move them into an address without revealing the private view key to anyone else for better anonymity. This step is not necessary from a security point of view but required for good privacy.
+The Monero `spend (y)` transaction allows the final owner of the funds to move them into an address without revealing the private view key to anyone else for better anonymity. This step is not necessary from a security point of view but required for good privacy.
 
 The spend transaction has to follow the minimum Monero output age policy (10 blocks).
 
