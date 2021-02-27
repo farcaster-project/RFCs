@@ -28,7 +28,7 @@ State digests are messages sent by the daemon to the client. They relay the info
 **Format**:
 
 - Current marking of petri net representation of swap
-- Data required for client state progression constructing client instrucions
+- Data required for firing a given transition
 
 ## The `state_digest` Message
 Provides the client with the current swap state digest. By applying the fired transitions to the current petri net of the client, the client can infer which transitions are available to fire.
