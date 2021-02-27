@@ -26,17 +26,20 @@ for the utmost critical parts of the software.
 4. facilitates combining/reusing sub-protocols into larger protocols as
    petrinets with their composable local states are ideal for that.
 
-## Alice
-Ab: secp256k1 buy key;
-Ac: secp256k1 cancel key;
-Ar: secp256k1 refund key;
-Ap: secp256k1 punish key;
-Ta -> Ta: secp256k1 adaptor key;
-Ksa -> K_s^a: ed25519 spend key;
-Kva -> K_v^a: ed25519 view key;
-where
-    Ta = K_s^a projection over secp256k1
 
+## Protocol messages
+The description of the protocol messages exchanged between Alice and Bob are explained in detail in [protocol messages RFC](../04-protocol-messages.md). 
+
+## Alice
+- `Ab`: secp256k1 buy key;
+- `Ac`: secp256k1 cancel key;
+- `Ar`: secp256k1 refund key;
+- `Ap`: secp256k1 punish key;
+- `Ta` -> Ta: secp256k1 adaptor key;
+- `Ksa` -> K_s^a: ed25519 spend key;
+- `Kva` -> K_v^a: ed25519 view key;
+where
+    `Ta` = K_s^a projection over secp256k1
 
 ``` net:alice0_
 keygen_a () -> ab ac Ab Ac ar ap Ar Ap kva ksa AAddress
@@ -44,20 +47,19 @@ dl_prove_a ksa -> za Ksa Ta
 ```
 
 ### The reveal_alice_session_params Message
-Ab -> b: secp256k1 curve point The buy Ab public key
-Ac -> c: secp256k1 curve point The cancel Ac public key
-Ar -> r: secp256k1 curve point The refund Ar public key
-Ap -> p: secp256k1 curve point The punish Ap public key
-Ta -> T: secp256k1 curve point The Ta adaptor public key
-AAdress -> Address: base58 The destination Bitcoin address
-kva -> k_v: edward25519 scalar The K_v^a spend private key
-Ksa -> K_s: edward25519 curve point The K_s^a view public key
-za -> z: DLEQ proof The cross-group discrete logarithm zero-knowledge proof
+- `Ab` -> b: secp256k1 curve point The buy Ab public key
+- `Ac` -> c: secp256k1 curve point The cancel Ac public key
+- `Ar` -> r: secp256k1 curve point The refund Ar public key
+- `Ap` -> p: secp256k1 curve point The punish Ap public key
+- `Ta` -> T: secp256k1 curve point The Ta adaptor public key
+- `AAdress` -> Address: base58 The destination Bitcoin address
+- `kva` -> k_v: edward25519 scalar The K_v^a spend private key
+- `Ksa` -> K_s: edward25519 curve point The K_s^a view public key
+- `za` -> z: DLEQ proof The cross-group discrete logarithm zero-knowledge proof
 
 ``` net:reveal_alice_session_params_
 send0a kva Ksa Ab Ta Ac Ar Ap AAddress za  -> kva_b Ksa_b Ab_b Ta_b Ac_b Ar_b Ap_b AAddress_b  za_b
 ```
-
 
 ``` net:alice1_
 aggreg_priv_view_a kva kbv_a -> kv_a
@@ -87,8 +89,8 @@ SignCancl_a Valid0a ac cancel_a -> a_sig_cancel
 ```
 
 ### The refund_procedure_signatures Message
-a_sig_cancel -> cancel_sig: ECDSA signature The Ac cancel (d) signature
-refund_adaptor_sig -> refund_adaptor_sig: ECDSA signature The Ar(Tb) refund (e) adaptor signature
+- `a_sig_cancel` -> cancel_sig: the Ac cancel signature
+- `refund_adaptor_sig` -> refund_adaptor_sig: ECDSA signature The Ar(Tb) refund (e) adaptor signature
 
 ``` net:refund_procedure_signatures_
 send1a a_sig_cancel refund_adaptor_sig -> a_sig_cancel_b refund_adaptor_sig_b
@@ -110,18 +112,18 @@ PubBuyTx buy_a s12 -> buyPublished
 ```
 
 ## Bob
-Bf -> Bf: secp256k1 fund key;
-Bb -> Bb: secp256k1 buy key;
-Bbr -> Bc: secp256k1 cancel key;
-Br  -> Br: secp256k1 refund key;
+- `Bf` -> Bf: secp256k1 fund key;
+- `Bb` -> Bb: secp256k1 buy key;
+- `Bc` -> Bc: secp256k1 cancel key;
+- `Br`  -> Br: secp256k1 refund key;
 
-Tb -> Tb: secp256k1 adaptor key;
-
-Ksb -> K_s^b: ed25519 spend key;
-Kvb -> K_v^b: ed25519 view key;
+- `Tb` -> Tb: secp256k1 adaptor key;
+ 
+- `Ksb` -> K_s^b: ed25519 spend key;
+- `Kvb` -> K_v^b: ed25519 view key;
 
 where
-    Tb = K_s^b projection over secp256k1
+    `Tb` = K_s^b projection over secp256k1
 
 ``` net:bob0_
 ;; bob
@@ -130,14 +132,15 @@ dl_prove_b ksb -> zb Ksb Tb
 ```
 
 ### The reveal_bob_session_params Message
-Bb -> b: secp256k1 curve point The buy Bb public key
-Bc -> c: secp256k1 curve point The cancel Bc public key
-Br -> r: secp256k1 curve point The refund Br public key
-Tb -> T: secp256k1 curve point The Tb adaptor public key
-BAddress -> Address: base58 The refund Bitcoin address
-kbv -> k_v: edward25519 scalar The K_v^b view private key
-Ksb -> K_s: edward25519 curve point The K_s^b spend public key
-zb -> z: DLEQ proof The cross-group discrete logarithm zero-knowledge proof 
+- `Bb` -> b: secp256k1 curve point The buy Bb public key
+- `Bc` -> c: secp256k1 curve point The cancel Bc public key
+- `Br` -> r: secp256k1 curve point The refund Br public key
+- `Tb` -> T: secp256k1 curve point The Tb adaptor public key
+- `BAddress` -> Address: base58 The refund Bitcoin address
+- `kbv` -> k_v: edward25519 scalar The K_v^b view private key
+- `Ksb` -> K_s: edward25519 curve point The K_s^b spend public key
+- `zb` -> z: DLEQ proof The cross-group discrete logarithm zero-knowledge proof 
+
 ``` net:reveal_bob_session_params_
 send0b kbv Ksb Bb Tb Bc zb Br BAddress -> kbv_a Ksb_a Bb_a Tb_a Bc_a zb_a Br_a BAddress_a
 ```
@@ -155,15 +158,14 @@ Sign_cancel_b bc cancel -> b_sig_cancel
 ```
 
 ### The core_arbitrating_setup Message
-lock -> lock: BTC transaction The arbitrating lock (b) transaction
-cancel -> cancel: BTC transaction The arbitrating cancel (d) transaction
-refund -> refund: BTC transaction The arbitrating refund (e) transaction
-b_sig_cancel -> cancel_sig: ECDSA signature The Bc cancel (d) signature
+- `lock` -> lock: BTC transaction The arbitrating lock (b) transaction
+- `cancel` -> cancel: BTC transaction The arbitrating cancel (d) transaction
+- `refund` -> refund: BTC transaction The arbitrating refund (e) transaction
+- `b_sig_cancel` -> cancel_sig: ECDSA signature The Bc cancel (d) signature
 
 ``` net:core_arbitrating_setup_
 send1b lock cancel refund b_sig_cancel -> lock_a cancel_a refund_a b_sig_cancel_a
 ```
-
 
 ``` net:bob2_
 EncVrfyRfndOKb Ac Tb refund refund_adaptor_sig_b -> EncVrfyedRfnd_b
@@ -183,8 +185,8 @@ WatchXlockERRb XlockPublished Kv_b Ks_b -> FailXLockMined
 
 ```
 ### The buy_procedure_signature Message
-buy -> buy: BTC transaction The arbitrating buy (c) transaction
-buy_adaptor_sig -> buy_adaptor_sig: ECDSA signature The Bb(Ta) buy (c) adaptor signature
+- `buy` -> buy: BTC transaction The arbitrating buy (c) transaction
+- `buy_adaptor_sig` -> buy_adaptor_sig: ECDSA signature The Bb(Ta) buy (c) adaptor signature
 
 ``` net:buy_procedure_signature_
 send2b VrfyXLockMined buy buy_adaptor_sig -> buy_a buy_adaptor_sig_a
