@@ -1,7 +1,7 @@
 # Swap State
 
 ## Daemon state
-The daemon encodes the swap state-space as a petrinet. The marking of the petrinet encodes the swap state. Only swap states resulting from a valid protocol execution are included in the state-space.
+The daemon encodes the swap state-space as a petrinet. The marking of the petrinet encodes the swap state. Only swap states resulting from a valid protocol execution are included in the state-space. A valid protocol execution is one that respect the state transitions rules.
 
 The daemon handles the swap state and its state transitions on behalf of the client, and following its instructions. The swap state indicates the step on the protocol execution the user is currently in.  For each given state, zero or more state transitions are enabled as a function of a list of time-ordered daemon execution logs. That is, depending on the protocol execution path taken, these are the next available user actions.
 
@@ -18,17 +18,17 @@ For each swap state, only a subset of inputs is valid. The daemon must contextua
 
 The first task of the combined input stream must be a save on disk. After each transition the swap state must be saved on disk as the last checkpoint. The daemon must be able to start with a given checkpoint, a saved stream of inputs and a protocol.
 
-The swap state can be viewed as an ordered set of inputs. On a crash the daemon must be able to load the last checkpoint and apply the stream of inputs (saved and incoming inputs) uncontained in the loaded checkpoint.
+The swap state can be viewed as an ordered set of incoming messages. On a crash the daemon must be able to load the last checkpoint and apply the stream of inputs (saved and incoming inputs) uncontained in the loaded checkpoint.
 
 By ensuring that daemon output messages can be replayed safely, like tasks, the work already performed since the last saved checkpoint can be replayed safely.
 
 ## State digests
-State digests are messages sent by the daemon to the client. They relay the information needed to construct the client state. The client state determins what is presented to user interface, by exposing the currently valid user instructions. These messages both allow the client to display the correct actions a user can perform and create the necessary instructions consumed daemon to continue the swap protocol.
+State digests are messages sent by the daemon to the client. They relay the information needed to construct the client state. The client state determines what is presented to user interface, by exposing the currently valid user instructions. These messages both allow the client to display the correct actions a user can perform and create the necessary instructions consumed daemon to continue the swap protocol.
 
 **Format**:
 
 - Current marking of petri net representation of swap
-- Data required for firing a given transition
+- Data required for client state progression constructing client instrucions
 
 ## The `state_digest` Message
 Provides the client with the current swap state digest. By applying the fired transitions to the current petri net of the client, the client can infer which transitions are available to fire.
@@ -43,7 +43,7 @@ Provides the client with the current swap state digest. By applying the fired tr
 
 
 ## Recover state
-`L` is the complete set of valid logs produced by valid protocol executions and `Σ` is the set of protocol states.
+`L` is the complete set of valid logs produced by valid protocol executions and `Σ` is the set of protocol states, the state-space.
 
 There is a function, `recover_state` or `r`,
 
@@ -52,7 +52,7 @@ There is a function, `recover_state` or `r`,
                 r(logs) = σ
 ```
 
-that takes the time-ordered logs composed of 
+that takes the time-ordered execution logs composed of 
 
 - blockchain event 1, `Ev1`
 - blockchain event 2, `Ev2`
