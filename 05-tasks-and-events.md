@@ -13,12 +13,21 @@ This RFC describe the syncer interface: `tasks` and `blockchain events`. Through
 ## Table of Contents
 
   * [Tasks](#tasks)
+    * [The `abort` Task](#the-abort-task)
     * [The `watch_height` Task](#the-watch_height-task)
     * [The `watch_address` Task](#the-watch_address-task)
     * [The `watch_transaction` Task](#the-watch_transaction-task)
     * [The `broadcast_transaction` Task](#the-broadcast_transaction-task)
   * [Blockchain Events](#blockchain-events)
+    * [The `task_aborted` Event](#the-task_aborted-event)
+    * [The `height_changed` Event](#the-height_changed-event)
+    * [The `address_transaction` Event](#the-address_transaction-event)
+    * [The `transaction_confirmations` Event](#the-transaction_confirmations-event)
+    * [The `transaction_broadcasted` Event](#the-transaction_broadcasted-event)
     * [Equivalence of Event Sets](#equivalence-of-event-sets)
+      * [`block_height` event](#block_height-event)
+      * [`transaction_broadcasted` event](#transaction_broadcasted-event)
+
 
 ## Tasks
 
@@ -40,20 +49,20 @@ The `error` event is valid for every single task, and it takes the task's ID and
 
 This document frequently references epochs, whose definition is dependent on the protocol in question. For Bitcoin, Monero, and other blockchain-based systems, the epoch is the block height. For systems without the context of a block height, Unix timestamps SHOULD be used.
 
-### The `abort_id` Task
+### The `abort` Task
 Task consists in aborting the task with id `id`.
 
 Data: 
 - `id`: the task `id` that shall be aborted
 
-To update a task with id `id`, Syncer must receive an `abort_id` task aborting with `id` parameter, and subsequently submit a new instance of this task which shall have a new `id`. 
+To update a task with id `id`, Syncer must receive an `abort` task aborting with `id` parameter, and subsequently submit a new instance of this task which shall have a new `id`. 
 
 ### The `watch_height` Task
 
 `watch_height` asks the syncer for notifications about updates to the blockchain's highest block. This task MUST be implemented for any coin with a blockchain. This task MAY be implemented for any coin without a blockchain. If it is not implemented, an error event must be sent in response to any attempt to start this task.
 
 Required parameters are:
-* `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, this task MUST be maintained, barring the case where an `abort_id` task aborts it. 
+* `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, this task MUST be maintained, barring the case where an `abort` task aborts it. 
 
 Parameters may be added to specify which blockchain, in order to support any network utilizing multiple.
 
@@ -62,7 +71,7 @@ Parameters may be added to specify which blockchain, in order to support any net
 `watch_address` asks the syncer for notifications about when a specified address is involved in a transaction.
 
 Required parameters are:
-* `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, this task MUST be maintained, barring the case where an `abort_id` task aborts it.
+* `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, this task MUST be maintained, barring the case where an `abort` task aborts it.
 
 For Bitcoin, the following additional parameters are defined:
 * `address`: The address to watch.
@@ -82,8 +91,8 @@ For Monero, the following parameters:
 
 Required parameters are:
 * `hash`: Transaction hash.
-* `confirmation-bound`: Upper bound on the confirmation count until which the syncer should report updates on the block depth of the transaction. This task MUST be maintained until this threshold is reached or until until `lifetime` has passed.
-* `lifetime`: Epoch at which the syncer SHOULD drop this task. This task MUST be maintained until this threshold is reached or until until `confirmation-bound` has been reached. 
+* `confirmation_bound`: Upper bound on the confirmation count until which the syncer should report updates on the block depth of the transaction. This task MUST be maintained until this threshold is reached or until until `lifetime` has passed.
+* `lifetime`: Epoch at which the syncer SHOULD drop this task. This task MUST be maintained until this threshold is reached or until until `confirmation_bound` has been reached. 
 
 Once a transaction is seen by the syncer, and passed the confirmation threshold, a `transaction_confirmations` event is emitted. 
 
@@ -94,7 +103,7 @@ Once a transaction is seen by the syncer, and passed the confirmation threshold,
 The only parameter is:
 * `tx`: The raw transaction in its serialized format.
 
-The blockchain event in response is `transaction broadcasted` event.
+The blockchain event in response is `transaction_broadcasted` event.
 
 ## Blockchain Events
 The function of the Syncer is to emit events to accomplish its assigned tasks. Syncer's must emit events targeting the daemon (at a later stage of the project, potentially the client as well). Blockchain Events are produced by syncers in response to certain type of `tasks`. A task MAY produce multiple `blockchain event` messages. The `blockchain event` messages as defined below. 
@@ -117,20 +126,21 @@ Once a `watch_address` address is involved in a transaction, `address_transactio
 * `hash`: Transaction ID.
 * `amount`: Value of the amount sent to the specified address.
 
-Further fields may be defined depending on the coin. Any coin based on a blockchain MUST also have:
+Further fields may be defined depending on the asset. Any asset based on a blockchain MUST also have:
 * `block`: hash of the block mining the transaction
 
 ### The `transaction_confirmations` Event
 In response to the `watch_transaction` task.
 
-Data: 
-* `block`: hash of the block mining the transaction.
-* `confirmations`: Number of blocks after `block`
+- Data: 
+  * `block`: hash of the block mining the transaction.
+  * `confirmations`: Number of blocks after `block`
 
-- For transaction not seen on mempool, emit `(0x0, None)`
-- For transaction seen on mempool but not mined, emit `(0x0, Some(0))`
-- For transaction mined, emit `(tx_block, Some(confirmations))` where `tx_block` is the block that the transaction got mined, and `confirmations` is the number of blocks extending `tx_block`
-- When `confirmations` >= `confirmation-bound`, emit `(tx_block, Some(confirmation-bound))`. Here `Task` is considered successfully accomplished and terminates. At that time, transaction is considered final (=irreversible). 
+- Semantics:
+    - For transaction not seen on mempool, emit `(0x0, None)`
+    - For transaction seen on mempool but not mined, emit `(0x0, Some(0))`
+    - For transaction mined, emit `(tx_block, Some(confirmations))` where `tx_block` is the block that the transaction got mined, and `confirmations` is the number of blocks extending `tx_block`
+    - When `confirmations` >= `confirmation_bound`, emit `(tx_block, Some(confirmation_bound))`. Here `Task` is considered successfully accomplished and terminates. At that time, transaction is considered final (=irreversible). 
 
 Thus:
 ```
@@ -140,17 +150,10 @@ for each transaction being watched by Syncer:
       Syncer emits: `(tx_block, Some(confirmations))`
 ```
 
-Upon block reorg reverting transaction out of blockchain, emit (0x0, Some(0)) if transaction shows back in mempool or (0x0, None) if it's not in the mempool.
+Upon block reorg reverting transaction out of blockchain, emit `(0x0, Some(0))` if transaction shows back in mempool or `(0x0, None)` if it's not in the mempool.
 
 ### The `transaction_broadcasted` Event
-The `broadcast_transaction` task defined above produces upon successful transaction broadcast a success output message -- `transaction broadcasted` blockchain event.
-
-This message contains:
-* `tx`: The raw transaction in its serialized format.
-* `success_broadcast`: bool
-
-### The `transaction_broadcasted` Event
-The `broadcast_transaction` task defined above produces upon successful transaction broadcast a success output message -- `transaction broadcasted` blockchain event.
+The `broadcast_transaction` task defined above produces upon successful transaction broadcast a success output message: `transaction_broadcasted` blockchain event.
 
 This message contains:
 * `tx`: The raw transaction in its serialized format.
