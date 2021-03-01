@@ -149,13 +149,13 @@ Provides daemon with a signature on the unsigned `cancel (d)` transaction previo
     - [`cancel_sig_len * byte`: `cancel_sig`] The `Ac|Bc` `cancel (d)` signature
 
 
-### The `signed_adapted_buy` Instruction
+### The `signed_adaptor_buy` Instruction
 
 **Send by**: Bob clients
 
 Provides Bob's daemon with a signature on the unsigned `buy (c)` transaction previously provided by the daemon via `state digest`.
 
- 1. type: ? (`signed_adapted_buy`)
+ 1. type: ? (`signed_adaptor_buy`)
  2. data:
     - [`u16`: `buy_adaptor_sig_len`]
     - [`buy_adaptor_sig_len * byte`: `buy_adaptor_sig`] The `Bb(Ta)` `buy (c)` adaptor signature
@@ -174,13 +174,13 @@ Provides Alice's daemon with the two signatures on the unsigned `buy (c)` transa
     - [`u16`: `buy_adapted_sig_len`]
     - [`buy_adapted_sig_len * byte`: `buy_adapted_sig`] The decrypted `Bb(Ta)` `buy (c)` adaptor signature
 
-### The `signed_adapted_refund` Instruction
+### The `signed_adaptor_refund` Instruction
 
 **Send by**: Alice clients
 
 Provides Alice's daemon with a signature on the unsigned `refund (e)` transaction previously provided by the daemon via `state digest`.
 
- 1. type: ? (`signed_adapted_refund`)
+ 1. type: ? (`signed_adaptor_refund`)
  2. data:
     - [`u16`: `refund_adaptor_sig_len`]
     - [`refund_adaptor_sig_len * byte`: `refund_adaptor_sig`] The `Ar(Tb)` `refund (e)` adaptor signature
