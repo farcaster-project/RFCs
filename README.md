@@ -24,14 +24,17 @@ Specifies the messages exchanged between daemons during a swap and the peer-to-p
 ### [05. Tasks & Blockchain Events](./05-tasks-and-events.md)
 Specifies the tasks that syncers make available to daemons for the monitoring of chain-state through blockchain events and the broadcasting of transactions.
 
-### [06. Instructions & State Digests](./06-instructions-and-digests.md)
-Specifies the instructions that daemon makes available to clients for piloting the swap and state digests send to clients by the daemon.
+### [06. Instructions](./06-instructions.md)
+Specifies the instructions that daemon expects to receive from the client commanding it. Daemon instruction proposals to client are to be included on state digest messages.
 
 ### [07. Cryptographic Setup](./07-cryptographic-setup.md)
 Specifies the cryptographic primitives used to transfer secrets through transactions with adaptor signatures and specifies the cryptographic setup required at the beginning of a swap to guarentee funds safety.
 
 ### [08. Transactions](./08-transactions.md)
 Specifies the Bitcoin and Monero transactions involved in a swap with their temporal safety. Variants of Bitcoin transactions are described depending on the SegWit version and multi-signature protocol used.
+
+### [09. Swap state](./09-swap-state.md)
+Specifies what the swap state is, state-digests summarizing the swap state, what information has to be logged for recovery, how to recover state,  and recovery from failure.
 
 ## Acknowledgments
 
