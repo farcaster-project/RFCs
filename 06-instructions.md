@@ -37,6 +37,7 @@ As sketched below, the `client`→`daemon` and `daemon`→`client` routes consis
     * [The `alice_session_params` Bundle](#the-alice_session_params-bundle)
     * [The `bob_session_params` Bundle](#the-bob_session_params-bundle)
     * [The `cosigned_arbitrating_cancel` Bundle](#the-cosigned_arbitrating_cancel-bundle)
+    * [The `core_arbitrating_transactions` Bundle](#the-core_arbitrating_transactions-bundle)
     * [The `signed_adaptor_buy` Bundle](#the-signed_adaptor_buy-bundle)
     * [The `fully_signed_buy` Bundle](#the-fully_signed_buy-bundle)
     * [The `signed_adaptor_refund` Bundle](#the-signed_adaptor_refund-bundle)
@@ -272,6 +273,18 @@ Provides daemon with a signature on the unsigned `cancel (d)` transaction.
 
  1. data:
     - The `Ac|Bc` `cancel (d)` signature
+
+
+### The `core_arbitrating_transactions` Bundle
+
+**Send by**: Bob clients|Alice daemon
+
+Provides Bob's daemon or Alice's clients the core set of arbritrating transactions.
+
+ 1. data:
+    - The `lock (b)` transaction
+    - The `cancel (d)` transaction
+    - The `refund (e)` transaction
 
 
 ### The `signed_adaptor_buy` Bundle
