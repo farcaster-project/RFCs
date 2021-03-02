@@ -174,9 +174,9 @@ The type of the parameter is derived from the `param_id`:
 
 ## Instructions: High level, Control flow messages
 
-The low level Instructions above behaves as if the Daemon controls the Client. The High level, control flow messages, triggers the Daemon to initiate the apparent control of the client.
+The low level Instructions above behaves as if the Daemon controls the Client. The High level, control flow messages, triggers the Daemon to initiate the control of the client.
 
-We illustrate the effect client's control flow operations exert over a daemon, and its feedback loop back to the client. Both client and daemon have the responsibility to exchange valid `instruction` and `Proposal` messages based on their respective state and user actions. Please see the trust assumptions at [security considerations](#security-considerations).
+We illustrate the effect client's control flow operations exert over a daemon, and its feedback loop back to the client. Both client and daemon have the responsibility to exchange valid `instruction` messages based on their respective state and user actions. Please see the trust assumptions at [security considerations](#security-considerations).
 
 A protocol transition moves the protocol execution forward, that is a step in the swap process. The set of states that fulfills the predicates for enabling a given transition must be selected, in order to be able to carry out the step in the swap process.
 
@@ -186,7 +186,7 @@ Please find below a high-level summary of this interaction:
  2. Daemon consumes client `instruction` control flow message and
  3. Daemon fires transitions that are in one-to-one correspondence with client instructions (if predicate conditions met)
  4. As a consequence of firing protocol transitions, daemon's internal swap state may be modified
- 5. If the swap state was modified, daemon must send client `Proposal` messages providing client with the data for next user actions if any new actions available. When applicable, Daemon must as well spawn Syncer tasks.
+ 5. If the swap state was modified, daemon must send client messages providing client with the data for next user actions if any new actions available. When applicable, Daemon must as well spawn Syncer tasks.
  6. Client then may give new instructions and progress on the protocol execution (back to step 1)
 
 ### The `abort` Instruction
@@ -203,7 +203,7 @@ Provides daemon the instruction to abort the swap, it is the daemon responsabili
 
 **Send by**: Bob and Alice daemon
 
-`abort` Instruction MAY trigger Tasks and Proposals, and their downstream effects, depending on who called it and the current swap-state, such as:
+`abort` Instruction MAY trigger Tasks, and their downstream effects, depending on who called it and the current swap-state, such as:
     - Bob or Alice: `publish_tx cancel` | `watch_tx cancel`
     - Bob: `fully_sign_refund`
     - Bob: `publish_tx refund` & `watch_tx refund`
