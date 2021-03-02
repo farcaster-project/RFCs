@@ -59,7 +59,7 @@ To update a task with id `id`, Syncer must receive an `abort` task aborting with
 
 ### The `watch_height` Task
 
-`watch_height` asks the syncer for notifications about updates to the blockchain's highest block. This task MUST be implemented for any coin with a blockchain. This task MAY be implemented for any coin without a blockchain. If it is not implemented, an error event must be sent in response to any attempt to start this task.
+`watch_height` asks the syncer for notifications about updates to the blockchain's `height` and associated `block` id. This task MUST be implemented for any coin with a blockchain. This task MAY be implemented for any coin without a blockchain. If it is not implemented, an error event must be sent in response to any attempt to start this task.
 
 Required parameters are:
 * `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, this task MUST be maintained, barring the case where an `abort` task aborts it. 
