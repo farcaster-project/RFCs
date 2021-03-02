@@ -24,19 +24,25 @@ As sketched below, the `client`→`daemon` and `daemon`→`client` routes consis
 ## Table of Contents
   * [Security considerations](#security-considerations)
   * [Instructions: Low level](#instructions-low-level)
-    * [The `alice_session_params` Instruction](#the-alice_session_params-instruction)
-    * [The `bob_session_params` Instruction](#the-bob_session_params-instruction)
-    * [The `cosigned_arbitrating_cancel` Instruction](#the-cosigned_arbitrating_cancel-instruction)
-    * [The `signed_adaptor_buy` Instruction](#the-signed_adaptor_buy-instruction)
-    * [The `fully_signed_buy` Instruction](#the-fully_signed_buy-instruction)
-    * [The `signed_adaptor_refund` Instruction](#the-signed_adaptor_refund-instruction)
-    * [The `fully_signed_refund` Instruction](#the-fully_signed_refund-instruction)
-    * [The `signed_arbitrating_lock` Instruction](#the-signed_arbitrating_lock-instruction)
-    * [The `signed_arbitrating_punish` Instruction](#the-signed_arbitrating_punish-instruction)
+    * [The `transaction` Instruction](#the-transation-instruction)
+    * [The `key` Instruction](#the-key-instruction)
+    * [The `signature` Instruction](#the-signature-instruction)
+    * [The `proof` Instruction](#the-proof-instruction)
+    * [The `parameter` Instruction](#the-parameter-instruction)
   * [Instructions: High level, Control flow messages](#instructions-high-level-control-flow-messages)
     * [The `abort` Instruction](#the-abort-instruction)
       * [Daemon's  response to `abort` Instruction](#daemons--response-to-abort-instruction)
     * [The `next` Instruction](#the-next-instruction)
+  * [Instruction Bundles](#instruction-bundles)
+    * [The `alice_session_params` Bundle](#the-alice_session_params-bundle)
+    * [The `bob_session_params` Bundle](#the-bob_session_params-bundle)
+    * [The `cosigned_arbitrating_cancel` Bundle](#the-cosigned_arbitrating_cancel-bundle)
+    * [The `signed_adaptor_buy` Bundle](#the-signed_adaptor_buy-bundle)
+    * [The `fully_signed_buy` Bundle](#the-fully_signed_buy-bundle)
+    * [The `signed_adaptor_refund` Bundle](#the-signed_adaptor_refund-bundle)
+    * [The `fully_signed_refund` Bundle](#the-fully_signed_refund-bundle)
+    * [The `signed_arbitrating_lock` Bundle](#the-signed_arbitrating_lock-bundle)
+    * [The `signed_arbitrating_punish` Bundle](#the-signed_arbitrating_punish-bundle)
   * [References](#references)
 
 
@@ -215,9 +221,9 @@ The `next_code` may be used when next require a choice by the client.
  2. data:
     - [`u16`: `next_code`] OPTIONAL: A code conveying the type of execution progression
 
-## Instruction bundles
+## Instruction Bundles
 
-Instruction decribe above are succint and are used to convey atomic chunk of data between clients and daemons. We also present here the bundles used during the different steps of the swap by both Alice and Bob. A bundle is a aggregate of 1 or more atomic `instruction` with a particular meaning. Meanings of each bundle is described with the list of content that should be received as atomic instructions.
+Instruction described above are succinct and are used to convey atomic chunk of data between clients and daemons. We also present here the bundles used during the different steps of the swap by both Alice and Bob. A bundle is a aggregate of 1 or more atomic `instruction` with a particular meaning. Meanings of each bundle is described with the list of content that should be received as atomic instructions.
 
 ### The `alice_session_params` Bundle
 
