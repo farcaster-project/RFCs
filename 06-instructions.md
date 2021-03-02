@@ -24,7 +24,7 @@ As sketched below, the `client`→`daemon` and `daemon`→`client` routes consis
 ## Table of Contents
   * [Security considerations](#security-considerations)
   * [Instructions: Low level](#instructions-low-level)
-    * [The `transaction` Instruction](#the-transation-instruction)
+    * [The `transaction` Instruction](#the-transaction-instruction)
     * [The `key` Instruction](#the-key-instruction)
     * [The `signature` Instruction](#the-signature-instruction)
     * [The `proof` Instruction](#the-proof-instruction)
@@ -72,11 +72,11 @@ We define three categories of content found in `instructions`:
    - Accepting a step in the swap process
    - User or protocol canceling the swap
 
-### The `transation` Instruction
+### The `transaction` Instruction
 
 The `transaction` instruction is used to convey a transaction between clients and daemons. The transaction is transmitted within the `tx_value` field in its serialized format.
 
- 1. type: ? (`transation`)
+ 1. type: ? (`transaction`)
  2. data:
     - [`u16`: `tx_id`] The identifier of the transaction
     - [`u16`: `tx_value_len`]
