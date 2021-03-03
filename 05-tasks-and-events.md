@@ -91,8 +91,8 @@ For Monero, the following parameters:
 
 Required parameters are:
 * `hash`: Transaction hash.
-* `confirmation_bound`: Upper bound on the confirmation count until which the syncer should report updates on the block depth of the transaction. This task MUST be maintained until this threshold is reached or until until `lifetime` has passed.
-* `lifetime`: Epoch at which the syncer SHOULD drop this task. This task MUST be maintained until this threshold is reached or until until `confirmation_bound` has been reached. 
+* `confirmation_bound`: Upper bound on the confirmation count until which the syncer should report updates on the block depth of the transaction. This task MUST be maintained until this threshold is reached or until `lifetime` has passed.
+* `lifetime`: Epoch at which the syncer SHOULD drop this task. This task MUST be maintained until this threshold is reached or until `confirmation_bound` has been reached. 
 
 Once a transaction is seen by the syncer, and passed the confirmation threshold, a `transaction_confirmations` event is emitted. 
 
