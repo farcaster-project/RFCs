@@ -3,19 +3,19 @@
   Created: 2021-02-03
 </pre>
 
-# 06. Instructions and Proposals
+# 06. Instructions
 
 ## Overview
 
 This RFC specifies the messages exchanged between the user's swap client and its own daemon.
-As sketched below, the `client`→`daemon` route consists of (a) `instructions` from the client to daemon that control the state transitions of an ongoing swap, and (b) the `daemon`→`client` route consists of `proposals` sent to the client encoding the `daemon`'s swap state and proposing available instructions for client's control and presentation functionality. `proposal` messages include the backbone of instruction messages `proposals` are described in [09. Swap state](./09-swap-state.md) The `client` must  present control choices to the end-user during the progression of the protocol execution.
+As sketched below, the `client`→`daemon` and `daemon`→`client` routes consists of `instructions`. They control the state transitions of an ongoing swap. The `client` must  present control choices to the end-user during the progression of the protocol execution.
 
 ```
-                                      sk,pk       instructions     pk
+                                      sk,pk                        pk
                                      -----------  ------------> -------------
-                                     | client  |                | daemon    |
+                                     | client  |  instructions  | daemon    |
                                      -----------  <-----------  -------------
-                                                    proposals
+
 ```
 *Fig 1. Sketch of interaction between a client and a daemon. Note only client has access to private keys (pk).*
 
@@ -24,27 +24,26 @@ As sketched below, the `client`→`daemon` route consists of (a) `instructions` 
 ## Table of Contents
   * [Security considerations](#security-considerations)
   * [Instructions: Low level](#instructions-low-level)
-    * [The `alice_session_params` Instruction](#the-alice_session_params-instruction)
-    * [The `bob_session_params` Instruction](#the-bob_session_params-instruction)
-    * [The `cosigned_arbitrating_cancel` Instruction](#the-cosigned_arbitrating_cancel-instruction)
-    * [The `signed_adaptor_buy` Instruction](#the-signed_adaptor_buy-instruction)
-    * [The `fully_signed_buy` Instruction](#the-fully_signed_buy-instruction)
-    * [The `signed_adaptor_refund` Instruction](#the-signed_adaptor_refund-instruction)
-    * [The `fully_signed_refund` Instruction](#the-fully_signed_refund-instruction)
-    * [The `signed_arbitrating_lock` Instruction](#the-signed_arbitrating_lock-instruction)
-    * [The `signed_arbitrating_punish` Instruction](#the-signed_arbitrating_punish-instruction)
+    * [The `transaction` Instruction](#the-transaction-instruction)
+    * [The `key` Instruction](#the-key-instruction)
+    * [The `signature` Instruction](#the-signature-instruction)
+    * [The `proof` Instruction](#the-proof-instruction)
+    * [The `parameter` Instruction](#the-parameter-instruction)
   * [Instructions: High level, Control flow messages](#instructions-high-level-control-flow-messages)
     * [The `abort` Instruction](#the-abort-instruction)
       * [Daemon's  response to `abort` Instruction](#daemons--response-to-abort-instruction)
     * [The `next` Instruction](#the-next-instruction)
-  * [Proposals](#proposals)
-    * [The `cosign_arbitrating_cancel` Proposal](#the-cosign_arbitrating_cancel-proposal)
-    * [The `sign_adaptor_buy` Proposal](#the-sign_adaptor_buy-proposal)
-    * [The `fully_sign_buy` Proposal](#the-fully_sign_buy-proposal)
-    * [The `sign_adaptor_refund` Proposal](#the-sign_adaptor_refund-proposal)
-    * [The `fully_sign_refund` Proposal](#the-fully_sign_refund-proposal)
-    * [The `sign_arbitrating_lock` Proposal](#the-sign_arbitrating_lock-proposal)
-    * [The `sign_arbitrating_punish` Proposal](#the-sign_arbitrating_punish-proposal)
+  * [Instruction Bundles](#instruction-bundles)
+    * [The `alice_session_params` Bundle](#the-alice_session_params-bundle)
+    * [The `bob_session_params` Bundle](#the-bob_session_params-bundle)
+    * [The `cosigned_arbitrating_cancel` Bundle](#the-cosigned_arbitrating_cancel-bundle)
+    * [The `core_arbitrating_transactions` Bundle](#the-core_arbitrating_transactions-bundle)
+    * [The `signed_adaptor_buy` Bundle](#the-signed_adaptor_buy-bundle)
+    * [The `fully_signed_buy` Bundle](#the-fully_signed_buy-bundle)
+    * [The `signed_adaptor_refund` Bundle](#the-signed_adaptor_refund-bundle)
+    * [The `fully_signed_refund` Bundle](#the-fully_signed_refund-bundle)
+    * [The `signed_arbitrating_lock` Bundle](#the-signed_arbitrating_lock-bundle)
+    * [The `signed_arbitrating_punish` Bundle](#the-signed_arbitrating_punish-bundle)
   * [References](#references)
 
 
@@ -60,7 +59,7 @@ For instance, if the client is Bob who initially owns BTC in a swap, and the can
 
 ## Instructions: Low level
 
-`instructions` must convey all required data a daemon needs to fulfill its mission, not only the keys or the transactions' signatures but also the user's commands for continuing the swap or cancelling it.
+`instructions` must convey all required data a daemon or a client needs to fulfill its mission, not only the keys or the transactions' signatures but also the user's commands for continuing the swap or cancelling it.
 
 We define three categories of content found in `instructions`:
 
@@ -72,170 +71,126 @@ We define three categories of content found in `instructions`:
 2. Transactions; following *PSBT standard* & *BIP 174* [[2,3]](#references)
 3. Control flow operations
    - Accepting a step in the swap process
-   - User canceling the swap
+   - User or protocol canceling the swap
 
-### The `alice_session_params` Instruction
+### The `transaction` Instruction
 
-**Send by**: Alice clients
+The `transaction` instruction is used to convey a transaction between clients and daemons. The transaction is transmitted within the `tx_value` field in its serialized format.
 
-Provides the counter-party daemon with all the information required for the initialization step of a swap.
-
-> This message has the same format as the protocol message 33703 `areveal`, we have to check if two messages are needed or if we need only once and use it in two different context.
-> I bet there is missing data here that the daemon needs to know, which would justify two messages.
-
- 1. type: ? (`alice_session_params`)
+ 1. type: ? (`transaction`)
  2. data:
-    - [`u16`: `secp256k1_point_len`]
-    - [`secp256k1_point_len * byte`: `buy`] The buy `Ab` public key
-    - [`u16`: `secp256k1_point_len`]
-    - [`secp256k1_point_len * byte`: `cancel`] The cancel `Ac` public key
-    - [`u16`: `secp256k1_point_len`]
-    - [`secp256k1_point_len * byte`: `refund`] The refund `Ar` public key
-    - [`u16`: `secp256k1_point_len`]
-    - [`secp256k1_point_len * byte`: `punish`] The punish `Ap` public key
-    - [`u16`: `secp256k1_point_len`]
-    - [`secp256k1_point_len * byte`: `adaptor`] The `Ta` adaptor public key
-    - [`u16`: `address_len`]
-    - [`address_len * byte`: `address`] The destination Bitcoin address
-    - [`u16`: `ed25519_scalar_len`]
-    - [`ed25519_scalar_len * byte`: `view`] The `K_v^a` view private key
-    - [`u16`: `ed25519_point_len`]
-    - [`ed25519_point_len * byte`: `spend`] The `K_s^a` spend public key
-    - [`u16`: `proof_len`]
-    - [`proof * byte`: `proof`] The cross-group discrete logarithm zero-knowledge proof
+    - [`u16`: `tx_id`] The identifier of the transaction
+    - [`u16`: `tx_value_len`]
+    - [`tx_value_len * byte`: `tx_value`] The serialized value of the transaction
 
+The type of the transaction is derived from the `tx_id`:
 
-### The `bob_session_params` Instruction
+ 1. `tx_id`:
+    - `0x01`: `funding (a)` arbitrating transaction
+    - `0x02`: `lock (b)` arbitrating transaction
+    - `0x03`: `buy (c)` arbitrating transaction
+    - `0x04`: `cancel (d)` arbitrating transaction
+    - `0x05`: `refund (e)` arbitrating transaction
+    - `0x06`: `punish (f)` arbitrating transaction
 
-**Send by**: Bob clients
+### The `key` Instruction
 
-Provides the counter-party daemon with all the information required for the initialization step of a swap.
+The `key` instruction is used to convey keys between clients and daemons. The key is transmitted within the `key_value` field in its serialized format and is identified by the `key_id`.
 
-> Same remarks have previous inst.
-
- 1. type: ? (`bob_session_params`)
+ 1. type: ? (`key`)
  2. data:
-    - [`u16`: `secp256k1_point_len`]
-    - [`secp256k1_point_len * byte`: `buy`] The buy `Bb` public key
-    - [`u16`: `secp256k1_point_len`]
-    - [`secp256k1_point_len * byte`: `cancel`] The cancel `Bc` public key
-    - [`u16`: `secp256k1_point_len`]
-    - [`secp256k1_point_len * byte`: `refund`] The refund `Br` public key
-    - [`u16`: `secp256k1_point_len`]
-    - [`secp256k1_point_len * byte`: `adaptor`] The `Tb` adaptor public key
-    - [`u16`: `address_len`]
-    - [`address_len * byte`: `address`] The refund Bitcoin address
-    - [`u16`: `ed25519_scalar_len`]
-    - [`ed25519_scalar_len * byte`: `view`] The `K_v^b` view private key
-    - [`u16`: `ed25519_point_len`]
-    - [`ed25519_point_len * byte`: `spend`] The `K_s^b` spend public key
-    - [`u16`: `proof_len`]
-    - [`proof * byte`: `proof`] The cross-group discrete logarithm zero-knowledge proof
+    - [`u16`: `key_id`] The identifier of the key
+    - [`u16`: `key_value_len`]
+    - [`key_value_len * byte`: `key_value`] The serialized value of the key
 
+The type of the key is derived from the `key_id`:
 
-### The `cosigned_arbitrating_cancel` Instruction
+ 1. `key_id`:
+    - `0x01`: `Ab` Alice buy key
+    - `0x02`: `Ac` Alice cancel key
+    - `0x03`: `Ar` Alice refund key
+    - `0x04`: `Ap` Alice punish key
+    - `0x05`: `Ta` Alice adaptor key
+    - `0x06`: `K_s^a` Alice spend key
+    - `0x07`: `K_v^a` Alice private view key
+    - `0x08`: `Bf` Bob fund key
+    - `0x09`: `Bb` Bob buy key
+    - `0x0a`: `Bc` Bob cancel key
+    - `0x0b`: `Br` Bob refund key
+    - `0x0c`: `Tb` Bob adaptor key
+    - `0x0d`: `K_s^b` Bob spend key
+    - `0x0e`: `K_v^b` Bob private view key
 
-**Send by**: Alice|Bob clients
+### The `signature` Instruction
 
-Provides daemon with a signature on the unsigned `cancel (d)` transaction previously provided by the daemon via `cosign_arbitrating_cancel` Proposal.
+The `signature` instruction is used to convey signatures between clients and daemons. When this instruction comes from a client it is usually a signature freshly generated or adapted by the client, when the instruction is emitted by the daemon to the client it is usually a adaptor signature to be adapted by the client.
 
- 1. type: ? (`cosigned_arbitrating_cancel`)
+ 1. type: ? (`signature`)
  2. data:
-    - [`u16`: `cancel_sig_len`]
-    - [`cancel_sig_len * byte`: `cancel_sig`] The `Ac|Bc` `cancel (d)` signature
+    - [`u16`: `tx_id`] The identifier of the related transaction, see `tx_id` definition
+    - [`u16`: `role`] The swap role that emitted the signature
+    - [`u16`: `sig_value_len`]
+    - [`sig_value_len * byte`: `sig_value`] The serialized value of the signature, the signature can be a adaptor, adapted, or regular signature
 
+The swap role:
 
-### The `signed_adaptor_buy` Instruction
+ 1. `role`:
+    - `0x01`: Alice
+    - `0x02`: Bob
 
-**Send by**: Bob clients
+### The `proof` Instruction
 
-Provides Bob's daemon with an adaptor signature for the unsigned `buy (c)` transaction. In response to daemon's `sign_adaptor_buy` Proposal.
+The `proof` instruction is used by clients to provides cryptographic proofs needed to secure the protocol.
 
- 1. type: ? (`signed_adaptor_buy`)
+ 1. type: ? (`proof`)
  2. data:
-    - [`u16`: `buy_adaptor_sig_len`]
-    - [`buy_adaptor_sig_len * byte`: `buy_adaptor_sig`] The `Bb(Ta)` `buy (c)` adaptor signature
+    - [`u16`: `proof_id`] The identifier of the proof
+    - [`u16`: `proof_value_len`]
+    - [`proof_value_len * byte`: `proof_value`] The serialized value of the proof
 
-### The `fully_signed_buy` Instruction
+The proof type is derived from the `proof_id`:
 
-**Send by**: Alice clients
+ 1. `proof_id`:
+    - `0x01`: Cross-group discrete logarthim proof
 
-Provides Alice's daemon with the two signatures on the unsigned `buy (c)` transaction previously provided by the daemon via `fully_sign_buy` Proposal, ready to be broadcasted.
+### The `parameter` Instruction
 
- 1. type: ? (`fully_signed_buy`)
+The `parameter` instruction is used to convey parameters between clients and daemons such as: addresses, timelocks, fee strategies, etc. They are mostly used by clients to instruct daemons about user parameters and offer parameters.
+
+ 1. type: ? (`parameter`)
  2. data:
-    - [`u16`: `buy_sig_len`]
-    - [`buy_sig_len * byte`: `buy_sig`] The `Ab` `buy (c)` signature
-    - [`u16`: `buy_adapted_sig_len`]
-    - [`buy_adapted_sig_len * byte`: `buy_adapted_sig`] The decrypted `Bb(Ta)` `buy (c)` adaptor signature
+    - [`u16`: `param_id`] The identifier of the parameter
+    - [`u16`: `param_value_len`]
+    - [`param_value_len * byte`: `param_value`] The serialized value of the parameter
 
-### The `signed_adaptor_refund` Instruction
+The type of the parameter is derived from the `param_id`:
 
-**Send by**: Alice clients
-
-Provides Alice's daemon with a signature on the unsigned `refund (e)` transaction previously provided by the daemon via `sign_adaptor_refund` Proposal.
-
- 1. type: ? (`signed_adaptor_refund`)
- 2. data:
-    - [`u16`: `refund_adaptor_sig_len`]
-    - [`refund_adaptor_sig_len * byte`: `refund_adaptor_sig`] The `Ar(Tb)` `refund (e)` adaptor signature
-
-
-### The `fully_signed_refund` Instruction
-
-**Send by**: Bob clients
-
-Provides Bob's daemon with the two signatures on the unsigned `refund (e)` transaction previously provided by the daemon via `fully_sign_refund` Proposal, ready to be broadcasted.
-
- 1. type: ? (`fully_signed_refund`)
- 2. data:
-    - [`u16`: `refund_sig_len`]
-    - [`refund_sig_len * byte`: `refund_sig`] The `Br` `refund (e)` signature
-    - [`u16`: `refund_adapted_sig_len`]
-    - [`refund_adapted_sig_len * byte`: `refund_adapted_sig`] The decrypted `Ar(Tb)` `refund (e)` signature
-
-
-### The `signed_arbitrating_lock` Instruction
-
-**Send by**: Bob clients
-
-Provides Bob's daemon with the signature on the unsigned `lock (b)` transaction previously provided by the daemon via `sign_arbitrating_lock` Proposal, ready to be broadcasted with this signature.
-
- 1. type: ? (`signed_arbitrating_lock`)
- 2. data:
-    - [`u16`: `lock_sig_len`]
-    - [`lock_sig_len * byte`: `lock_sig`] The `Bf` `lock (b)` signature for unlocking the funding
-
-
-### The `signed_arbitrating_punish` Instruction
-
-**Send by**: Alice clients
-
-Provides Alice's daemon with the signature on the unsigned `punish (f)` transaction previously provided by the daemon via `sign_arbitrating_punish` Proposal, ready to be broadcasted with this signature.
-
- 1. type: ? (`signed_arbitrating_punish`)
- 2. data:
-    - [`u16`: `punish_sig_len`]
-    - [`punish_sig_len * byte`: `punish_sig`] The `Ap` `punish (f)` signature for unlocking the cancel transaction UTXO
+ 1. `param_id`:
+    - `0x01`: Alice destination address
+    - `0x02`: Bob refund address
+    - `0x03`: Cancel timelock
+    - `0x04`: Punish timelock
+    - `0x05`: Fee strategy
 
 ## Instructions: High level, Control flow messages
 
-The low level Instructions above behaves as if the Daemon controls the Client. The High level, control flow messages, triggers the Daemon to initiate the apparent control of the client.
+The low level Instructions above behaves as if the Daemon controls the Client. The High level, control flow messages, triggers the Daemon to initiate the control of the client.
 
-We illustrate the effect client's control flow operations exert over a daemon, and its feedback loop back to the client. Both client and daemon have the responsibility to exchange valid `instruction` and `Proposal` messages based on their respective state and user actions. Please see the trust assumptions at [security considerations](#security-considerations).
+We illustrate the effect client's control flow operations exert over a daemon, and its feedback loop back to the client. Both client and daemon have the responsibility to exchange valid `instruction` messages based on their respective state and user actions. Please see the trust assumptions at [security considerations](#security-considerations).
 
 A protocol transition moves the protocol execution forward, that is a step in the swap process. The set of states that fulfills the predicates for enabling a given transition must be selected, in order to be able to carry out the step in the swap process.
 
 Please find below a high-level summary of this interaction:
 
-1. A valid client `instruction` message sent by the client to the daemon controls the daemon to fire a given enabled protocol transition. 
-2. Daemon consumes client `instruction` control flow message and
-3. Daemon fires transitions that are in one-to-one correspondence with client instructions (if predicate conditions met)
-4. As a consequence of firing protocol transitions, daemon's internal swap state may be modified
-5. If the swap state was modified, daemon must send client `Proposal` messages providing client with the data for next user actions if any new actions available. When applicable, Daemon must as well spawn Syncer tasks.
-6. Client then may give new instructions and progress on the protocol execution (back to step 1)
+ 1. A valid client `instruction` message sent by the client to the daemon controls the daemon to fire a given enabled protocol transition.
+ 2. Daemon consumes client `instruction` control flow message and
+ 3. Daemon fires transitions that are in one-to-one correspondence with client instructions (if predicate conditions met)
+ 4. As a consequence of firing protocol transitions, daemon's internal swap state may be modified
+ 5. If the swap state was modified, daemon must send client messages providing client with the data for next user actions if any new actions available. When applicable, Daemon must as well spawn Syncer tasks.
+ 6. Client then may give new instructions and progress on the protocol execution (back to step 1)
 
 ### The `abort` Instruction
+
 **Send by**: Alice|Bob clients
 
 Provides daemon the instruction to abort the swap, it is the daemon responsability to abort accordingly to the current swap-state. Upon daemon request, via `proposal`, the client must be able to provide any missing signatures.
@@ -245,9 +200,10 @@ Provides daemon the instruction to abort the swap, it is the daemon responsabili
     - [`u16`: `abort_code`] OPTIONAL: A code conveying the reason of the abort
 
 #### Daemon's  response to `abort` Instruction
+
 **Send by**: Bob and Alice daemon
 
-`abort` Instruction MAY trigger Tasks and Proposals, and their downstream effects, depending on who called it and the current swap-state, such as: 
+`abort` Instruction MAY trigger Tasks, and their downstream effects, depending on who called it and the current swap-state, such as:
     - Bob or Alice: `publish_tx cancel` | `watch_tx cancel`
     - Bob: `fully_sign_refund`
     - Bob: `publish_tx refund` & `watch_tx refund`
@@ -266,58 +222,134 @@ The `next_code` may be used when next require a choice by the client.
  2. data:
     - [`u16`: `next_code`] OPTIONAL: A code conveying the type of execution progression
 
+## Instruction Bundles
 
-## Proposals
+Instruction described above are succinct and are used to convey atomic chunk of data between clients and daemons. We also present here the bundles used during the different steps of the swap by both Alice and Bob. A bundle is a aggregate of 1 or more atomic `instruction` with a particular meaning. Meanings of each bundle is described with the list of content that should be received as atomic instructions.
 
-Proposals are messages sent from Daemon to Client providing data Client needs to proceed in the protocol execution. They propose transactions, presents counterparty signatures and adaptor signatures to Client. With these data, Client is able to create valid, fully signed transactions.
+### The `alice_session_params` Bundle
 
-### The `cosign_arbitrating_cancel` Proposal
-**Send by**: Alice|Bob daemon
-- data:
-    - [`u16`: `cancel_tx_len`]
-    - [`cancel_tx_len * byte`:`cancel (d)`] The `cancel (d)` transaction
+**Send by**: Alice clients|Bob daemon
 
-### The `sign_adaptor_buy` Proposal
-**Send by**: Bob daemon
-- data:
-    - [`buy (c)`] buy transaction
+Provides the (counter-party) daemon with all the information required for the initialization step of a swap.
 
-### The `fully_sign_buy` Proposal
-**Send by**: Alice daemon
-- data:
-    - [`u16`: `buy_adaptor_sig_len`]
-    - [`buy_adaptor_sig_len * byte`: `buy_adaptor_sig`] The `Bb(Ta)` `buy (c)` adaptor signature
+ 1. data:
+    - The buy `Ab` public key
+    - The cancel `Ac` public key
+    - The refund `Ar` public key
+    - The punish `Ap` public key
+    - The `Ta` adaptor public key
+    - The destination Bitcoin address
+    - The `K_v^a` view private key
+    - The `K_s^a` spend public key
+    - The cross-group discrete logarithm zero-knowledge proof
+    - The `cancel` and `punish` timelocks
+    - The fee strategy
 
-### The `sign_adaptor_refund` Proposal
-**Send by**: Alice daemon
-data:
-    - [`u16`: `refund_tx_len`]
-    - [`refund_tx_len * byte`:`refund (e)`] The refund transaction
 
-### The `fully_sign_refund` Proposal
-**Send by**: Bob daemon
-- data:
-    - [`u16`: `refund_tx_len`]
-    - [`refund_tx_len * byte`:`refund (e)`] The `refund (e)` transaction
-    - [`u16`: `refund_adaptor_sig_len`]
-    - [`refund_adaptor_sig_len * byte`: `refund_adaptor_sig`] The `Ar(Tb)` `refund (e)` adaptor signature
+### The `bob_session_params` Bundle
 
-### The `sign_arbitrating_lock` Proposal
-**Send by**: Bob daemon
-- data:
-    - [`u16`: `lock_tx_len`]
-    - [`lock_tx_len * byte`:`lock (b)`] The `lock` transaction
+**Send by**: Bob clients|Alice daemon
 
-### The `sign_arbitrating_punish` Proposal
-**Send by**: Alice daemon
-- data
-    - [`u16`: `punish_tx_len`]
-    - [`punish_tx_len * byte`:`punish (f)`] The `punish (f)` transaction
+Provides the (counter-party) daemon with all the information required for the initialization step of a swap.
 
+ 1. data:
+    - The buy `Bb` public key
+    - The cancel `Bc` public key
+    - The refund `Br` public key
+    - The `Tb` adaptor public key
+    - The refund Bitcoin address
+    - The `K_v^b` view private key
+    - The `K_s^b` spend public key
+    - The cross-group discrete logarithm zero-knowledge proof
+    - The `cancel` and `punish` timelocks
+    - The fee strategy
+
+
+### The `cosigned_arbitrating_cancel` Bundle
+
+**Send by**: Alice|Bob clients
+
+Provides daemon with a signature on the unsigned `cancel (d)` transaction.
+
+ 1. data:
+    - The `Ac|Bc` `cancel (d)` signature
+
+
+### The `core_arbitrating_transactions` Bundle
+
+**Send by**: Bob clients|Alice daemon
+
+Provides Bob's daemon or Alice's clients the core set of arbritrating transactions.
+
+ 1. data:
+    - The `lock (b)` transaction
+    - The `cancel (d)` transaction
+    - The `refund (e)` transaction
+
+
+### The `signed_adaptor_buy` Bundle
+
+**Send by**: Bob clients|Alice daemon
+
+Provides Bob's daemon or Alice's client with an adaptor signature for the unsigned `buy (c)` transaction.
+
+ 1. data:
+    - The `Bb(Ta)` `buy (c)` adaptor signature
+
+
+### The `fully_signed_buy` Bundle
+
+**Send by**: Alice clients|Bob daemon
+
+Provides Alice's daemon or Bob's clients with the two signatures on the unsigned `buy (c)` transaction.
+
+ 1. data:
+    - The `Ab` `buy (c)` signature
+    - The adapted `Bb(Ta)` `buy (c)` adaptor signature
+
+
+### The `signed_adaptor_refund` Bundle
+
+**Send by**: Alice clients|Bob daemon
+
+Provides Alice's daemon or Bob's clients with a signature on the unsigned `refund (e)` transaction.
+
+ 1. data:
+    - The `Ar(Tb)` `refund (e)` adaptor signature
+
+
+### The `fully_signed_refund` Bundle
+
+**Send by**: Bob clients|Alice daemon
+
+Provides Bob's daemon or Alice's clients with the two signatures on the unsigned `refund (e)` transaction.
+
+ 1. data:
+    - The `Br` `refund (e)` signature
+    - The adapted `Ar(Tb)` `refund (e)` adaptor signature
+
+
+### The `signed_arbitrating_lock` Bundle
+
+**Send by**: Bob clients
+
+Provides Bob's daemon with the signature on the unsigned `lock (b)` transaction.
+
+ 1. data:
+    - The `Bf` `lock (b)` signature for unlocking the funding
+
+
+### The `signed_arbitrating_punish` Bundle
+
+**Send by**: Alice clients
+
+Provides Alice's daemon with the signature on the unsigned `punish (f)` transaction.
+
+ 1. data:
+    - The `Ap` `punish (f)` signature for unlocking the cancel transaction UTXO
 
 ## References
  * [[1] BOLT #1: Base Protocol](https://github.com/lightningnetwork/lightning-rfc/blob/master/01-messaging.md#type-length-value-format)
  * [[2] PSBT standard](https://github.com/bitcoin/bitcoin/blob/master/doc/psbt.md)
  * [[3] BIP 174](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki)
-
 
