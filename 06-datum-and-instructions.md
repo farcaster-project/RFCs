@@ -11,6 +11,7 @@ This RFC specifies the messages exchanged between the user's swap client and its
 As sketched below, the `client`→`daemon` and `daemon`→`client` routes consists of `datum` and `instruction` messages. They control the state transitions of an ongoing swap. The `client` must present control choices to the end-user during the progression of the protocol execution.
 
 ```
+
                                      sk,pk           datum         pk
                                     -----------        &        -------------
                                     | client  |   instruction   | daemon    |

@@ -37,15 +37,15 @@ The figure below represents the general architecture based on these three main t
 
 The following table summarizes different aspects of each component.
 
-|                 | `client`                    | `daemon`                                        | `syncer`     |
-|-----------------|----------------------------------|------------------------------------------------------|--------------------|
-| Definition   | a program that controls the daemon and displays the current state | a program that executes the core protocol in a state machine | a program that talks with a specific blockchain |
-| Cryptographic keys & secrets | private & public    | public only`*`                                        | public only`*`      |
-| Client/User  | end-user                         | `client`, counter-party `daemon`                | `daemon`        |
-| Availability          | present at the start and to sign | mostly online, channel of communication between parties | always online      |
-| Communicates with | `daemon`                      | `client`, `syncer`, counter-party `daemon` | `daemon`, blockchain |
-| Transactions    | creates all transactions, signs                            | verifies transactions and signatures        | listens for and publishes transactions  |
-| Protocol state  | doesn't understand protocol, but can represent its state              | understands the protocol, but can't sign             | doesn't understand protocol |
+|                              | `client`                                                          | `daemon`                                                     | `syncer`                                        |
+|------------------------------|-------------------------------------------------------------------|--------------------------------------------------------------|-------------------------------------------------|
+| Definition                   | a program that controls the daemon and displays the current state | a program that executes the core protocol in a state machine | a program that talks with a specific blockchain |
+| Cryptographic keys & secrets | private & public                                                  | public only`*`                                               | public only`*`                                  |
+| Client/User                  | end-user                                                          | `client`, counter-party `daemon`                             | `daemon`                                        |
+| Availability                 | present at the start and to sign                                  | mostly online, channel of communication between parties      | always online                                   |
+| Communicates with            | `daemon`                                                          | `client`, `syncer`, counter-party `daemon`                   | `daemon`, blockchain                            |
+| Transactions                 | creates all transactions, signs                                   | verifies transactions and signatures                         | listens for and publishes transactions          |
+| Protocol state               | doesn't understand protocol, but can represent its state          | understands the protocol, but can't sign                     | doesn't understand protocol                     |
 
  `*` the exception is any keys needed to read the blockchain state and detect transactions or amounts, e.g. a private view key for the Monero accordant blockchain.
 
