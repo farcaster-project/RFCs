@@ -1,6 +1,6 @@
 # Farcaster Specifications
 
-Hello voyager and welcome to the Farcaster Specifications! The RFCs describe components that glue together to form a swap protocol between two blockchain based assets, currently focusing on Bitcoin and Monero.
+Hello hitchhiker and welcome onboard to the Farcaster Specifications! The RFCs describe components that glue together to form a swap protocol between two blockchain based assets, currently focusing on Bitcoin and Monero.
 
 ## Overview
 

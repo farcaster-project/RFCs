@@ -7,7 +7,7 @@
 
 ## Overview
 
-This RFC specifies the inter-daemon communication messages, segregated by protocol swap phase roles (see [01. High Level Overview](./01-high-level-overview.md)). These messages are based on the protocol execution specified in *'Bitcoin-Monero Cross-chain Atomic Swap'* [[1](#references)] with better optimization and greater generalization over blockchains in mind.
+This RFC specifies the inter-daemon communication messages, segregated by protocol swap phase roles (see [01. High-Level Overview](./01-high-level-overview.md)). These messages are based on the protocol execution specified in *'Bitcoin-Monero Cross-chain Atomic Swap'* [[1](#references)] with better optimization and greater generalization over blockchains in mind.
 
 ## Table of Contents
 
@@ -27,7 +27,7 @@ This RFC specifies the inter-daemon communication messages, segregated by protoc
 
 The inter-daemon communication must follow *'BOLT #8: Encrypted and Authenticated Transport'* [[2](#references)] standard from the Lightning Network specifications.
 
-All communications between nodes is encrypted in order to provide confidentiality for all transcripts between nodes and is authenticated in order to avoid malicious interference. Each node has a known long-term identifier that is a public key on Bitcoin's `secp256k1` curve. This long-term public key is used within the protocol to establish an encrypted and authenticated connection with peers.
+All communications between nodes are encrypted to provide confidentiality for all transcripts between nodes and are authenticated to avoid malicious interference. Each node has a known long-term identifier that is a public key on Bitcoin's `secp256k1` curve. This long-term public key is used within the protocol to establish an encrypted and authenticated connection with peers.
 
 ## Messages
 
@@ -124,7 +124,7 @@ The following convenience types extend 'BOLT #1' fundamental types:
 
 **Send by**: Bob
 
-`core_arbitrating_setup` sends the `lock (b)`, `cancel (d)` and `refund (e)` arbritrating transactions from Bob to Alice, as well as Bob's signature for the `cancel (d)` transaction.
+`core_arbitrating_setup` sends the `lock (b)`, `cancel (d)` and `refund (e)` arbitrating transactions from Bob to Alice, as well as Bob's signature for the `cancel (d)` transaction.
 
  1. type: 33710 (`coresetup`)
  2. data:
@@ -141,7 +141,7 @@ The following convenience types extend 'BOLT #1' fundamental types:
 
 **Send by**: Alice
 
-`refund_procedure_signatures` is intended to transmit Alice's signature for the `cancel (d)` transaction and Alice's adaptor signature for the `refund (e)` transaction. Uppon reception Bob must validate the signatures.
+`refund_procedure_signatures` is intended to transmit Alice's signature for the `cancel (d)` transaction and Alice's adaptor signature for the `refund (e)` transaction. Upon reception, Bob must validate the signatures.
 
  1. type: 33720 (`refundproc`)
  2. data:
@@ -155,7 +155,7 @@ The following convenience types extend 'BOLT #1' fundamental types:
 
 **Send by**: Bob
 
-`buy_procedure_signature`is intended to transmit Bob's adaptor signature for the `buy (c)` transaction and the transaction itself. Uppon reception Alice must validate the transaction and the adaptor signature.
+`buy_procedure_signature`is intended to transmit Bob's adaptor signature for the `buy (c)` transaction and the transaction itself. Upon reception, Alice must validate the transaction and the adaptor signature.
 
  1. type: 33730 (`buyproc`)
  2. data:
@@ -170,7 +170,7 @@ The following convenience types extend 'BOLT #1' fundamental types:
 
 `abort` is an `OPTIONAL` courtesy message from either swap partner to inform the counterparty that they have aborted the swap with an `OPTIONAL` message body to provide the reason.
 
-Uppon reception the daemon must engage the cancel path if necessary and should respond with an `abort` message.
+Upon reception, the daemon must engage the cancel path if necessary and should respond with an `abort` message.
 
  1. type: 33799 (`abort`)
  2. data:
@@ -182,3 +182,4 @@ Uppon reception the daemon must engage the cancel path if necessary and should r
  * [[1] Bitcoin-Monero Cross-chain Atomic Swap](https://eprint.iacr.org/2020/1126)
  * [[2] BOLT #8: Encrypted and Authenticated Transport](https://github.com/lightningnetwork/lightning-rfc/blob/master/08-transport.md)
  * [[3] BOLT #1: Base Protocol](https://github.com/lightningnetwork/lightning-rfc/blob/master/01-messaging.md#type-length-value-format)
+

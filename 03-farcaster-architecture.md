@@ -7,7 +7,7 @@
 
 ## Overview
 
-This RFC describe the overall architecture and how the software stack of Farcaster is organized. Description of the swap state organization and its recovery process and an high level overview of the three main components: client, daemon, and syncers.
+This RFC describes the overall architecture and how the software stack of Farcaster is organized. It includes the swap state organization, its recovery process and a high-level overview of the three main components: client, daemon, and syncers.
 
 ## Table of Contents
 
@@ -30,10 +30,10 @@ We segregated three main conceptual components: `client`, `daemon`, and `syncers
 - The `daemon` orchestrates the swap protocol execution and
 - The `syncer` maintains the protocol state and the blockchain state in sync
 
-The figure below represents the general architecture based on these three main type of components.
+The figure below represents the general architecture based on these three main types of components.
 
-![Farcaster High Level Components Architecture](./03-farcaster-architecture/global-farcaster-architecture.png)
-*Fig 1. Farcaster High Level Components Architecture*
+![Farcaster High-Level Components Architecture](./03-farcaster-architecture/global-farcaster-architecture.png)
+*Fig 1. Farcaster High-Level Components Architecture*
 
 The following table summarizes different aspects of each component.
 
@@ -58,18 +58,18 @@ The client is the only component that has access to secret keys.
 The aim of this segregation is to improve flexibility and extensibility added by making the client peripheral to the swap stack, that is, other clients might be created, such as:
 
 - clients supporting hardware wallets
-- mobile applications (that may run the daemon in background or in a private server),
-- heavy- or light-weight desktop GUIs,
-- scripted/automated backend clients (e.g. run by market maker, OTCs etc)
+- mobile applications (that may run the daemon in the background or in a private server), 
+- heavy- or light-weight desktop GUIs, 
+- scripted/automated backend clients (e.g. run by market makers, OTCs etc)
 
 ### Components interaction
 
-Each swap components is represented as a black box that consumes input messages and produces output messages. Each input and output message is a typed message. Components subscribe to type of messages, e.g. the client may not consume messages produced by syncers but will subscribe to daemon's messages.
+Each swap component is represented as a black box that consumes input messages and produces output messages. Each input and output message is a typed message. Components subscribe to types of messages, e.g. the client may not consume messages produced by syncers but will subscribe to daemon's messages.
 
 ![Typed messages exchanged between components](./03-farcaster-architecture/messages-architecture.png)
 *Fig 2. Typed messages exchanged between components*
 
-It is worth noting that this diagram (Fig. 2) only show one syncer, but a syncer per blockchain is required. Conceptually even more than one syncer per blockchain make sense if you don't run or trust the syncer you are using, in that case one can aggregate and compare different data sources and detect discrepancies.
+It is worth noting that this diagram (Fig. 2) only shows one syncer, but a syncer per blockchain is required. Conceptually even more than one syncer per blockchain makes sense if you don't run or trust the syncer you are using, in that case, one can aggregate and compare different data sources and detect discrepancies.
 
 ## Daemon
 
@@ -84,7 +84,7 @@ The Daemon MUST be fully aware of the complete state of the cross-chain atomic s
 - user's instructions via Client communication (see [06. Datum & Instructions](./06-datum-and-instructions.md)), and
 - self-produced loopback messages
 
-The Daemon must create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a petrinet model of the protocol may be used to constrain the runtime environment that executes the user's respective swap role in the protocol, by only authorizing firing valid enabled protocol transitions.
+The Daemon must create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a Petri net model of the protocol may be used to constrain the runtime environment that executes the user's respective swap role in the protocol, by only authorizing firing valid enabled protocol transitions.
 
 ### Counter-party daemon communication
 
@@ -102,11 +102,11 @@ Client and daemon communicate via `datum` and `instruction` messages (see [06. D
 
 ### Loopback: self-generated input messages
 
-The daemon may generate self-addressed messages. Those messages may be used to trigger transitions only based on daemon's state, such as timers. Those transitions can e.g. represent the absence of counter-party daemon communication during a period of time, which may trigger the swap cancellation.
+The daemon may generate self-addressed messages. Those messages may be used to trigger transitions only based on the daemon's state, such as timers. Those transitions can e.g. represent the absence of counter-party daemon communication during a period of time, which may trigger the swap cancellation.
 
 ## Syncer
 
-A syncer is specific to a blockchain and can handle a list of `tasks` related to it. Those `tasks` will be completed in different manners depending on the blockchain type and/or the blockchain state. Syncers allow the daemon to abstract a part of the logic needed to interact with a blockchain with a define interface composed of `tasks` and `blockchain events` (see [05. Tasks & Blockchain Events](./05-tasks-and-events.md)).
+A syncer is specific to a blockchain and can handle a list of `tasks` related to it. Those `tasks` will be completed in different manners depending on the blockchain type and/or the blockchain state. Syncers allow the daemon to abstract a part of the logic needed to interact with a blockchain with a defined interface composed of `tasks` and `blockchain events` (see [05. Tasks & Blockchain Events](./05-tasks-and-events.md)).
 
 ## Client
 

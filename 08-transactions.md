@@ -7,9 +7,9 @@
 
 ## Overview
 
-The protocol implemented in Farcaster is blockchain agnostic, thus a strict list of features is required for the arbitrating blockchain involved in the swap (see [00. Introduction](./00-introduction.md) and [01. High Level Overview](./01-high-level-overview.md)). This RFC describes a concrete implementation of the protocol with Bitcoin as the arbitrating blockchain and Monero as the accordant blockchain.
+The protocol implemented in Farcaster is blockchain agnostic, thus a strict list of features is required for the arbitrating blockchain involved in the swap (see [00. Introduction](./00-introduction.md) and [01. High-Level Overview](./01-high-level-overview.md)). This RFC describes a concrete implementation of the protocol with Bitcoin as the arbitrating blockchain and Monero as the accordant blockchain.
 
-We distinguish transactions created and controlled by the protocol itself and external transactions. Dashed outline transactions are transaction created by external wallets, i.e. not the daemon nor the client.
+We distinguish transactions created and controlled by the protocol itself and external transactions. Dashed outline transactions are transactions created by external wallets, i.e. not the daemon nor the client.
 
 ## Table of Contents
 
@@ -36,7 +36,7 @@ This RFC defines the Bitcoin transactions. These transactions can be constructed
  * **Taproot Schnorr Scripts**, with SegWit v1 outputs and Schnorr signatures and on-chain multi-signature using TapLeaf scripts
  * **Taproot Schnorr MuSig2**, with SegWit v1 outputs and Schnorr signatures and MuSig2 off-chain multi-signature protocol
 
-The latter is the prefered option for privacy but depends on features activation on the Bitcoin chain and MuSig2 protocol. This RFC describe for each transaction the three approaches.
+The latter is the preferred option for privacy but depends on feature activation on the Bitcoin chain and MuSig2 protocol. This RFC describes for each transaction the three approaches.
 
 #### Timelocks
 
@@ -58,7 +58,7 @@ The `funding (a)` transaction is an externally created transaction that serves t
 
 The transaction can have `n` inputs and `m` outputs but MUST create 1 and only 1 P2WPKH (SegWit v0) UTXO `(i)` for the given address during initialization.
 
-The P2WPKH rationale is to have a better support, this can be moved to a (SegWit v1) P2TR later when support is added in wallets.
+The P2WPKH rationale is to have better support in the bitcoin wallet ecosystem, this can be moved to a (SegWit v1) P2TR later when support is added in wallets.
 
 ### Lock
 
@@ -193,7 +193,7 @@ Consumes the `lock`'s Taproot output `(ii)` with one valid signature for `<Q>` t
 
 ### Cancel
 
-The `cancel (d)` transaction consumes the `lock`'s output `(ii)` and creates the output `(iii)` used to cancel the swap by one of the participant.
+The `cancel (d)` transaction consumes the `lock`'s output `(ii)` and creates the output `(iii)` used to cancel the swap by one of the participants.
 
 #### ECDSA Scripts
 
@@ -344,7 +344,7 @@ Consumes the `cancel`'s Taproot output `(iii)` with one valid signature for `<Q'
 
 ### Punish
 
-The `punish (f)` transaction consumes `cancel (d)`'s output `(iii)` and transfer the funds to Alice and is available as soon as the timelock is passed.
+The `punish (f)` transaction consumes `cancel (d)`'s output `(iii)` and transfers the funds to Alice and is available as soon as the timelock is passed.
 
 #### ECDSA Scripts
 
@@ -383,7 +383,7 @@ Two external Monero transactions are defined: the `lock (x)` transaction and the
 
 ### Lock
 
-The Monero `lock (x)` transaction is performed by an external wallet and MUST send the full negotiated amount in the address attached to `(iv)`. The transaction MUST NOT be broadcasted too early in the protocol, otherwise funds will be lost.
+The Monero `lock (x)` transaction is performed by an external wallet and MUST send the full negotiated amount to the address attached to `(iv)`. The transaction MUST NOT be broadcasted too early in the protocol, otherwise, funds will be lost.
 
 The condition `(iv)` is defined during the protocol initialization phase as a shared secret between the two participants as:
 
@@ -394,7 +394,7 @@ The condition `(iv)` is defined during the protocol initialization phase as a sh
 
 ### Spend
 
-The Monero `spend (y)` transaction allows the final owner of the funds to move them into an address without revealing the private view key to anyone else for better anonymity. This step is not necessary from a security point of view but required for good privacy.
+The Monero `spend (y)` transaction allows the final owner of the funds to move them into an address without revealing the private view key to anyone else for better anonymity. This step is not necessary from a security point of view but is required for good privacy.
 
 The spend transaction has to follow the minimum Monero output age policy (10 blocks).
 
@@ -404,13 +404,13 @@ The spend transaction has to follow the minimum Monero output age policy (10 blo
 
 Bitcoin transaction must be designed in a way where if Taproot and MuSig2 are used with a single signature to spend an output, it MUST not be possible to differentiate between `c` and `d`, and between `e` and `f`.
 
-But in most cases `c` and `d` will be different because `d` will be used with the TapLeaf script.
+But in most cases, `c` and `d` will be different because `d` will be used with the TapLeaf script.
 
 Also, when a script-path spend is chosen, the script and the control block should look indistinguishable from a common protocol such as Lightning Network to increase the anonymity pool.
 
 ### Transaction fee
 
-On the arbitrating blockchain a chain of three transactions is created, the two last transactions must be are created in advance and their fees must be determined at creation.
+On the arbitrating blockchain, a chain of three transactions is created, the two last transactions must be are created in advance and their fees must be determined at creation.
 
 We describe in this chapter some heuristic to set the fees.
 
@@ -418,11 +418,11 @@ Let's define `f(tx, c)`, a function returning the fee over time for a transactio
 
 If `c(buy) = 1`, then `c(cancel) > 1`, such that at time `t` when `buy` and `cancel` are both available `cancel` has a higher probability to be mined.
 
-It is worth noting that we cannot control the coeficients `c` between `refund` and `punish` as `punish` is control unilaterraly by Alice.
+It is worth noting that we cannot control the coefficients `c` between `refund` and `punish` as `punish` is controlled unilaterally by Alice.
 
 #### Replace By Fee (RBF)
 
-Replace By Fee (RBF) should be integrated into the protocol such that multiple version of some transaction can exist and transactions can be cooperatively bumped to get into the blockchain within the temporal safety window.
+Replace By Fee (RBF) should be integrated into the protocol such that multiple versions of some transactions can exist and transactions can be cooperatively bumped to get into the blockchain within the temporal safety window.
 
 ### Bitcoin transactions temporal safety
 
@@ -439,9 +439,9 @@ The swap participant has a temporal safety parameter, `delta_irreversible`, in b
 
 ##### Funding
 
-After the atomic swap protocol initialization successfully completes, Bob can publish the funding transaction. Bob publishes the funding transaction, that is later mined at block height `t(funding)`. 
+After the atomic swap protocol initialization successfully completes, Bob can publish the funding transaction. Bob publishes the funding transaction, which is later mined at block height `t(funding)`. 
 
-At `t(funding) + delta_irreversible` Alice assumes Bob's transaction is irreversible, and may move on with the protocol execution. That is, Alice can publish her buy transaction. 
+At `t(funding) + delta_irreversible` Alice assumes Bob's transaction is irreversible and may move on with the protocol execution. That is, Alice can publish her buy transaction. 
 
 ##### Buy
 
@@ -473,7 +473,7 @@ A reasonable guesstimate:
 
 Note that `delta_irreversible` and `delta_race` must be proportional to the amount transacted. Additionally `delta_race` is proportional to mempool congestion.
 
-The same logic applies on the cancelation path.
+The same logic applies to the cancelation path.
 
 ##### Cancel
 
@@ -495,10 +495,11 @@ to
 
 It can be argued that the higher bound of the refund transaction window can be extended, not deliberately and safely, but in emergency cases where Bob could not be online. The refund transaction must be published before the punish transaction gets mined, as they consume the same output from the cancel transaction.
 
-The counter argument is that if Bob publishes the refund transaction then Alice can retrieve the secret key and will get the monero, and might as well get the bitcoin if she wins the race.
+The counterargument is that if Bob publishes the refund transaction then Alice can retrieve the secret key and will get the monero, and might as well get the bitcoin if she wins the race.
 
-While if she only gets the bitcoin, and the monero stays locked, Bob could setup a new swap to unlock the already locked monero (no cost for Alice) and propose a nice reward to Alice for revealing her private key. That is a fairly graceful failure.
+While if she only gets the bitcoin, and the monero stays locked, Bob could set up a new swap to unlock the already locked monero (no cost for Alice) and propose a nice reward to Alice for revealing her private key. That is a fairly graceful failure.
 
 ##### Punish
 
 Punish transaction should be published as soon as it becomes valid, that is, after `t(cancel) + delta(punish)`
+
