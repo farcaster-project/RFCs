@@ -69,7 +69,7 @@ We define two categories of content composing the `datum` messages:
    - Zero knowledge proofs requires by the above protocols (e.g., cross-group discreet log equality)
 2. Transactions; following *PSBT standard* & *BIP 174* [[2,3]](#references)
 
-and a thirg category called `instruction` messages that represents:
+and a third category called `instruction` messages that represents:
 
 3. Control flow operations
    - Accepting a step in the swap process
