@@ -2,7 +2,7 @@
 
 This document intends to formally specify the core of the swap protocol
 execution: the protocol states and what state transitions are permitted for each
-given state. This is critical to prevent unintentional and potentially exploitable
+given state. This is critical to prevent an unintentional and potentially exploitable
 state-space explosion by implementation choices.
 
 It currently uses a petrinet descriptor language which we refer to as a net. Its
@@ -10,12 +10,12 @@ syntax is extremely simple: `transition_name input_type0 input_type1 ... ->
 output_type0 output_type1 ...`. Think of it as normal function signatures on
 strongly typed languages.
 
-During runtime each instantiated input_type gives rise to a local state. At a
+During runtime, each instantiated input_type gives rise to a local state. At a
 given time, there is a correspondence between (a) the sum type of all
 constructed input_types for the entire protocol and (b) the global protocol
 state.
 
-What does this type of formal specification gives us? 
+What does this type of formal specification give us? 
 1. facilitates correct implementation of the code -- i.e., correct by
    construction approach,
 2. facilitates formal verification of the code,
@@ -24,11 +24,11 @@ leveraging Rust's borrow-checker to impose linear type/logic constraints. Thus
 correct protocol execution may be imposed at compile time rather than at runtime
 for the utmost critical parts of the software.
 4. facilitates combining/reusing sub-protocols into larger protocols as
-   petrinets with their composable local states are ideal for that.
+   Petri nets with their composable local states are ideal for that.
 
 
 ## Protocol messages
-The description of the protocol messages exchanged between Alice and Bob are explained in detail in [protocol messages RFC](../04-protocol-messages.md). 
+The description of the protocol messages exchanged between Alice and Bob is explained in detail in [protocol messages RFC](../04-protocol-messages.md). 
 
 ## Alice
 - `Ab`: secp256k1 buy key;
@@ -201,3 +201,4 @@ Rec0b s1_b d -> ksa_b
 aggreg_ks_b ksa_b ksb -> ks_b
 
 ```
+

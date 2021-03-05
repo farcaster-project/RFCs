@@ -6,9 +6,9 @@
 # 05. Tasks & Blockchain Events
 
 ## Overview
-The `syncer` main function is to maintain the protocol state and the blockchain state in sync.
+The `syncer`'s main function is to maintain the protocol state and the blockchain state in sync.
 
-This RFC describe the syncer interface: `tasks` and `blockchain events`. Through this interface a daemon bi-directionally interacts with a blockchain.
+This RFC describes the syncer interface: `tasks` and `blockchain events`. Through this interface, a daemon bi-directionally interacts with a blockchain.
 
 ## Table of Contents
 
@@ -43,14 +43,14 @@ Tasks are available from any syncer, yet their parameters vary depending on the 
 
 This RFC lists available tasks that MUST be supported by syncers, unless noted otherwise, and their respective output messages: `blockchain events`. A task produces zero or more `events` during its lifetime.
 
-Every task is accompanied with an `id`, a positive integer which fits into the 32-bit signed integer space. This integer has no rules on its generation or any pattern required by its usage. Every emitted event has its own `id` field corresponding to the task which caused it.
+Every task is accompanied by an `id`, a positive integer that fits into the 32-bit signed integer space. This integer has no rules on its generation or any pattern required by its usage. Every emitted event has its own `id` field corresponding to the task which caused it.
 
 The `error` event is valid for every single task, and it takes the task's ID and provides an integer `code`, as well as optionally a string `message`.
 
 This document frequently references epochs, whose definition is dependent on the protocol in question. For Bitcoin, Monero, and other blockchain-based systems, the epoch is the block height. For systems without the context of a block height, Unix timestamps SHOULD be used.
 
 ### The `abort` Task
-Task consists in aborting the task with id `id`.
+Aborts the task with id `id`.
 
 Data: 
 - `id`: the task `id` that shall be aborted
@@ -83,7 +83,7 @@ For Monero, the following parameters:
 * `private_view`: The private view key of the address.
 * `from_height`: Previous blocks to scan for transactions sent to the specified address.
 
-`address_transaction` events are emitted as response to `watch_address` task.
+`address_transaction` events are emitted as a response to the `watch_address` task.
 
 ### The `watch_transaction` Task
 
@@ -98,15 +98,15 @@ Once a transaction is seen by the syncer, and passed the confirmation threshold,
 
 ### The `broadcast_transaction` Task
 
-`broadcast_transaction` tells a syncer to broadcast a transaction. The syncer MUST broadcast the transaction, unless the transaction already in the blockchain or in the mempool.
+`broadcast_transaction` tells a syncer to broadcast a transaction. The syncer MUST broadcast the transaction unless the transaction already in the blockchain or the mempool.
 
 The only parameter is:
 * `tx`: The raw transaction in its serialized format.
 
-The blockchain event in response is `transaction_broadcasted` event.
+The blockchain event in response is the `transaction_broadcasted` event.
 
 ## Blockchain Events
-The function of the Syncer is to emit events to accomplish its assigned tasks. Syncer's must emit events targeting the daemon (at a later stage of the project, potentially the client as well). Blockchain Events are produced by syncers in response to certain type of `tasks`. A task MAY produce multiple `blockchain event` messages. The `blockchain event` messages as defined below. 
+The function of the Syncer is to emit events to accomplish its assigned tasks. Syncer's must emit events targeting the daemon (at a later stage of the project, potentially the client as well). Blockchain Events are produced by syncers in response to certain types of `tasks`. A task MAY produce multiple `blockchain event` messages. The `blockchain event` messages are as defined below. 
 
 ### The `task_aborted` Event
 Event in response to `abort_task` Task, emitted only once.
@@ -122,7 +122,7 @@ Data:
 Upon task reception, syncers MUST send a `height_changed` event immediately to signify the current height.
 
 ### The `address_transaction` Event
-Once a `watch_address` address is involved in a transaction, `address_transaction`  emitted. It contains:
+Once a `watch_address` address is involved in a transaction, `address_transaction` is emitted. It contains:
 * `hash`: Transaction ID.
 * `amount`: Value of the amount sent to the specified address.
 
@@ -165,10 +165,11 @@ FIXME: move to state RFC
 
 When a task produces two different sets of blockchain events depending on when the task is handled by the syncer those two sets MUST have an equivalent impact on the state of the daemon at any point in time.
 
-Examples follows.
+Examples follow.
 
 #### `block_height` event
-Let's define `X` as the current block height. The task is sent to the syncer, initial plus two events are received, for `X`, `X+1`, and `X+2` new heights. At time `t2` the latest state is for `X+2`. If the daemon crashes at `t1` with height `X+1`, and later restarts, at time `t2`, it MUST had previously received `X+1` as initial event and then `X+2`. And finally if the daemon crashes at time `t2` and restarts, the initial blockchain event MUST contains `X+2`. Sets of events are different but equivalent for the daemon state.
+Let's define `X` as the current block height. The task is sent to the syncer, initial plus two events are received, for `X`, `X+1`, and `X+2` new heights. At time `t2` the latest state is for `X+2`. If the daemon crashes at `t1` with height `X+1`, and later restarts, at a time `t2`, it MUST have previously received `X+1` as the initial event and then `X+2`. Finally, if the daemon crashes at time `t2` and restarts, the initial blockchain event MUST contains `X+2`. Sets of events are different but equivalent for the daemon state.
 
 #### `transaction_broadcasted` event
-The daemon sends the task at time `t` and receives the successful `transaction broadcasted` event at time `t'`, if the daemon crashes between `t` and `t'`, rebroadcasting the task MUST result in the same successful event, despite the fact that the syncer MAY not broadcast the transaction to the full-node a second time.
+The daemon sends the task at a time `t` and receives the successful `transaction broadcasted` event at time `t'`, if the daemon crashes between `t` and `t'`, rebroadcasting the task MUST result in the same successful event, despite the fact that the syncer MAY not broadcast the transaction to the full-node a second time.
+

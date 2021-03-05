@@ -7,7 +7,7 @@
 
 ## Overview
 
-This RFC specifies the cryptographic primitives used to transfer secrets through transactions with adaptor signatures and specifies the cryptographic setup required at the beginning of a swap to guarentee funds safety.
+This RFC specifies the cryptographic primitives used to transfer secrets through transactions with adaptor signatures and specifies the cryptographic setup required at the beginning of a swap to guarantee funds safety.
 
 ## Table of Contents
 
@@ -62,13 +62,13 @@ where
 
 We describe an adaptor signature interface and two instantiations, one for ECDSA inside Bitcoin scripts and one for Schnorr inside Taproot scripts.
 
-An adaptor signature scheme extend a standard signature (`Gen`, `Sign`, `Vrfy`) scheme with:
+An adaptor signature scheme extends a standard signature (`Gen`, `Sign`, `Vrfy`) scheme with:
 
  * `EncGen`: An encryption key generation algorithm, in this protocol the encryption key generation is linked to the cross-group DLEQ proof.
 
  * `EncSig`: Encrypt a signature and return an adaptor signature. This RFC uses the public key tweaking method.
 
- * `EncVrfy`: Verify an adaptor signature based on public parameters, if validation passes the decripted adaptor signature is a valid signature.
+ * `EncVrfy`: Verify an adaptor signature based on public parameters, if validation passes the decrypted adaptor signature is a valid signature.
 
  * `DecSig`: Decrypt an adaptor signature by injecting the encryption key.
 
@@ -93,7 +93,7 @@ where
     R' = kG
 ```
 
-`PDLEQ` produces a zero-knowledge proof of knowledge of a same relation `k` between two pairs of elements in the same group, i.e. `(G, R')` and `(T, R)`.
+`PDLEQ` produces a zero-knowledge proof of knowledge of the same relation `k` between two pairs of elements in the same group, i.e. `(G, R')` and `(T, R)`.
 
  * `EncVrfy`:
 
@@ -109,7 +109,7 @@ where
     R' = kG
 ```
 
-`VDLEQ` verifies a zero-knowledge proof of knowledge of a same unknown relation `x` between two pairs of elements in the same group.
+`VDLEQ` verifies a zero-knowledge proof of knowledge of the same unknown relation `x` between two pairs of elements in the same group.
 
  * `DecSig`:
 
@@ -189,3 +189,4 @@ TODO
 
  * [[1] One-Time Verifiably Encrypted Signatures A.K.A. Adaptor Signatures](https://github.com/LLFourn/one-time-VES/blob/master/main.pdf)
  * [[2] BIP 0340: Schnorr Signatures for secp256k1](https://en.bitcoin.it/wiki/BIP_0340)
+
