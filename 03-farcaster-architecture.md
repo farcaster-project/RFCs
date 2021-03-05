@@ -55,7 +55,7 @@ The following table summarizes different aspects of each component.
 
 ### Client & Daemon segregation rationale
 
-The rationale behind segregating the client and the daemon currently is not for security reasons - the client signs the transactions received from the daemon blindly, implying full trust (see *Security considerations* in [06. Instructions & State Digests](./06-instructions-and-digests.md#security-considerations) RFC).
+The rationale behind segregating the client and the daemon currently is not for security reasons - the client signs the transactions received from the daemon blindly, implying full trust (see *Security considerations* in [06. Datum & Instructions](./06-datum-and-instructions.md#security-considerations) RFC).
 
 The client is the only component that has access to secret keys.
 
@@ -84,7 +84,7 @@ The Daemon MUST be fully aware of the complete state of the cross-chain atomic s
 
 - counter-party daemon protocol messages via inter-daemon communication (see [04. Protocol Messages](./04-protocol-messages.md)), 
 - blockchain events from both chains via syncers (see [05. Tasks & Blockchain Events](./05-tasks-and-events.md)),
-- user's instructions via Client communication (see [06. Instructions & State Digests](./06-instructions-and-digests.md)), and
+- user's instructions via Client communication (see [06. Datum & Instructions](./06-datum-and-instructions.md)), and
 - self-produced loopback messages
 
 The Daemon must create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a petrinet model of the protocol may be used to constrain the runtime environment that executes the user's respective swap role in the protocol, by only authorizing firing valid enabled protocol transitions.
@@ -98,7 +98,7 @@ A Daemon does not interact with a blockchain fullnode or a public API directly. 
 A syncer handles `tasks` requests from a daemon and produces `blockchain events` according to blockchain state changes.
 
 ### Client-Daemon communication
-Client and daemon communicate via `Instruction` and `State Digest` messages (see [06. Instructions & State Digests](./06-instructions-and-digests.md)). The architecture must allow a client and a daemon to run on different machines.
+Client and daemon communicate via `Instruction` and `State Digest` messages (see [06. Datum & Instructions](./06-datum-and-instructions.md)). The architecture must allow a client and a daemon to run on different machines.
 
 ### Loopback: self-generated input messages
 The daemon may generate self-addressed messages. Those messages may be used to trigger transitions only based on daemon's state, such as timers. Those transitions can e.g. represent the absence of counter-party daemon communication during a period of time, which may trigger the swap cancellation.

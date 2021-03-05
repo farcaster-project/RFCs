@@ -23,7 +23,8 @@ As sketched below, the `client`→`daemon` and `daemon`→`client` routes consis
 
 ## Table of Contents
   * [Security considerations](#security-considerations)
-  * [Datum](#datums-low-level)
+  * [Messages](#messages)
+  * [Datum Messages](#datum-messages)
     * [The `transaction` Datum](#the-transaction-datum)
     * [The `key` Datum](#the-key-datum)
     * [The `signature` Datum](#the-signature-datum)
@@ -56,11 +57,9 @@ For instance, if the client is Bob who initially owns BTC in a swap, and the can
 
 `**` *For a better understanding of the transaction structure see [08. Transactions](./08-transactions.md).*
 
-## Datum Messages
+## Messages
 
-`datum` messages must convey all required data a daemon or a client needs to fulfill its mission, such as the keys or the transactions' signatures.
-
-We define two categories of content found in `datum` messages:
+We define two categories of content composing the `datum` messages:
 
 1. Results of cryptographic operation
    - Signatures (partial and finalized)
@@ -69,11 +68,28 @@ We define two categories of content found in `datum` messages:
    - Zero knowledge proofs requires by the above protocols (e.g., cross-group discreet log equality)
 2. Transactions; following *PSBT standard* & *BIP 174* [[2,3]](#references)
 
-the third category is called `instruction` messages and represents:
+and a thirg category called `instruction` messages that represents:
 
 3. Control flow operations
    - Accepting a step in the swap process
    - User or protocol canceling the swap
+
+We illustrate the effect client's messages exert over a daemon, and its feedback loop back to the client. Both client and daemon have the responsibility to exchange valid `datum` and `instruction` messages based on their respective state and user actions. Please see the trust assumptions at [security considerations](#security-considerations).
+
+A protocol transition moves the protocol execution forward, that is a step in the swap process. The set of states that fulfills the predicates for enabling a given transition must be selected, in order to be able to carry out the step in the swap process.
+
+Please find below a high-level summary of this interaction:
+
+ 1. Valid `datum` and `instruction` messages sent by the client and/or the daemon controls their respective states.
+ 2. Daemon consumes client `datum` and `instruction` messages and
+ 3. Daemon fires transitions that are in one-to-one correspondence with client message (if predicate conditions met)
+ 4. As a consequence of firing protocol transitions, daemon's internal swap state may be modified
+ 5. If the swap state was modified, daemon must send client messages providing client with the data, i.e. `datum` messages, for next user executions. When applicable, Daemon must as well spawn Syncer tasks.
+ 6. Client then may give new `datum` and/or `instruction` messages and progress on the protocol execution (back to step 1)
+
+## Datum Messages
+
+`datum` messages must convey all required data a daemon or a client needs to fulfill its mission, such as the keys or the transactions' signatures.
 
 ### The `transaction` Datum
 
@@ -302,26 +318,15 @@ Provides Alice's daemon with the signature on the unsigned `punish (f)` transact
 
 ## Instructions: High level, Control flow messages
 
-The low level Instructions above behaves as if the Daemon controls the Client. The High level, control flow messages, triggers the Daemon to initiate the control of the client.
-
-We illustrate the effect client's control flow operations exert over a daemon, and its feedback loop back to the client. Both client and daemon have the responsibility to exchange valid `instruction` messages based on their respective state and user actions. Please see the trust assumptions at [security considerations](#security-considerations).
-
-A protocol transition moves the protocol execution forward, that is a step in the swap process. The set of states that fulfills the predicates for enabling a given transition must be selected, in order to be able to carry out the step in the swap process.
-
-Please find below a high-level summary of this interaction:
-
- 1. A valid client `instruction` message sent by the client to the daemon controls the daemon to fire a given enabled protocol transition.
- 2. Daemon consumes client `instruction` control flow message and
- 3. Daemon fires transitions that are in one-to-one correspondence with client instructions (if predicate conditions met)
- 4. As a consequence of firing protocol transitions, daemon's internal swap state may be modified
- 5. If the swap state was modified, daemon must send client messages providing client with the data for next user actions if any new actions available. When applicable, Daemon must as well spawn Syncer tasks.
- 6. Client then may give new instructions and progress on the protocol execution (back to step 1)
+We define `instruction` messages as "courtesy" messages exchanged between a client and a daemon to express user action or counter-party choice of e.g. aborting the swap.
 
 ### The `abort` Instruction
 
 **Send by**: Alice|Bob clients|daemon
 
 Provides clients or daemon the instruction to abort the swap, it is the daemon responsability to abort accordingly to the current swap-state. Upon daemon `abort` instruction the client must be able to provide any missing signatures.
+
+The `abort` instruction can come from the client because the user chose to abort the swap and can come from the daemon to instruct the client the fact that the counter-party chose to abort.
 
  1. type: ? (`abort`)
  2. data:
