@@ -89,9 +89,6 @@ To incentivize Bob to do the action of refunding his money a game takes place: i
 * #### *Public offer*:
    * A public offer is derived from the maker offer and contains *daemon*'s information such as public IP/Tor onion service. A public offer is serializable in a shareable friendly format. It is the maker's responsibility to propagate the public offer on a channel based on his preferences.
 
-* #### *State Digest*:
-   * A message sent by the *daemon* intended to instruct a *client* on what is the current state of a *swap*.
-
 * #### *Swap*:
    * Swap or *atomic swap*; The execution of a cryptographic protocol between two or more participants to allow an exchange of blockchain assets without involving a third party nor trust in participants.
 
