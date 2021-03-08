@@ -15,7 +15,9 @@ We distinguish between two phases: (1) negotiation and (2) swap phases. The nego
 
   * [Negotiation phase](#negotiation-phase)
     * [Maker](#maker)
-    * [Taking a public offer](#taking-a-public-offer)
+    * [Create an offer](#create-an-offer)
+    * [Create a public offer](#create-a-public-offer)
+    * [Take a public offer](#take-a-public-offer)
     * [Results of negotiation phase](#results-of-negotiation-phase)
     * [GUI Example](#gui-example)
     * [CLI Example](#cli-example)
@@ -30,7 +32,7 @@ A participant who wants to propose a swap to other participants will choose the 
 
 The maker starts her node in maker mode and registers all the parameters an offer requires, see below. The daemon start listening on a port or creates an onion service, depending on its configuration, and waits for an incoming connection. When ready, the daemon prints the *public offer*. The public offer contains all the parameters a taker needs to connect. The maker can then distribute the public offer over her preferred channels.
 
-#### Maker offer
+### Create an offer
 
 To create an offer, a maker registers the following list of required inputs:
 
@@ -45,7 +47,7 @@ The user client should provide an easy interface to define an offer through a Bu
 
 For the participant who plays Bob's role during the swap the fee strategy and the timelock durations are critical to validate to guarentee safety and funds recovery. To short timelock duration or to low fee strategy might allow Alice to punish Bob even if he tries to broadcast the correct refund transactions, the swap client should carefully check these parameters as a regular wallet whould for the fees.
 
-#### Maker's public offer
+### Create a public offer
 
 A maker public offer is an extended maker offer with the daemon's network parameters, such as options detailing how to connect to the daemon. The public offer must specify the node's connection identifier and must contain a valid signature.
 
@@ -53,7 +55,7 @@ The maker public offer must be as user-friendly as possible, as it is the respon
 
 The maker does not validate nor filter who can connect and take the public offer.
 
-### Taking a public offer
+### Take a public offer
 
 A taker receives a public offer, parses and visualizes it, and might accept it. If the taker wants to take the public offer he can try to connect to the maker and start the swap.
 
