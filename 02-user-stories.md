@@ -14,7 +14,7 @@ We distinguish between two phases: (1) negotiation and (2) swap phases. The nego
 ## Table of Contents
 
   * [Negotiation phase](#negotiation-phase)
-    * [Maker](#maker)
+    * [Propose a swap](#propose-a-swap)
     * [Create an offer](#create-an-offer)
     * [Create a public offer](#create-a-public-offer)
     * [Take a public offer](#take-a-public-offer)
@@ -26,9 +26,9 @@ We distinguish between two phases: (1) negotiation and (2) swap phases. The nego
 
 ## Negotiation phase
 
-### Maker
+### Propose a swap
 
-A participant who wants to propose a swap to other participants will choose the maker role.
+A participant who wants to propose a swap to other participants will choose the maker role and starts her node.
 
 The maker starts her node in maker mode and registers all the parameters an offer requires, see below. The daemon start listening on a port or creates an onion service, depending on its configuration, and waits for an incoming connection. When ready, the daemon prints the *public offer*. The public offer contains all the parameters a taker needs to connect. The maker can then distribute the public offer over her preferred channels.
 
@@ -57,7 +57,7 @@ The maker does not validate nor filter who can connect and take the public offer
 
 ### Take a public offer
 
-A taker receives a public offer, parses and visualizes it, and might accept it. If the taker wants to take the public offer he can try to connect to the maker and start the swap.
+A taker sees a public offer, parses and visualizes it, and might accept it. If the taker wants to take the public offer he can try to connect to the maker and start the swap. This RFC does not define where the public offers are listed nor how a participant might have access to them.
 
 As this protocol doesn't ensure that the public offer is still live nor already taken, this action can fail. The maker might have "cancel" the offer by shuting down her node, or other taker might have connected already to the node.
 
