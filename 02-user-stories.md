@@ -24,34 +24,40 @@ We distinguish between two phases: (1) negotiation and (2) swap phases. The nego
 
 ## Negotiation phase
 
-The negotiation phase can be done on a forum, with an OTC, within a DEX, etc. This RFC defines the interface between the two phases: negotiation and swap, and proposes a minimalistic negotiation protocol.
-
-It is worth mentioning that the negotiation phase proposed in this RFC does not contain any negotiation mechanism. It would be more accurately described as a *connect and accept* mechanism. Thus this mechanism can be extended and external matching engines could implement a negotiation protocol. This negotiation protocol could then end up with the described connect and accept protocol.
-
 ### Maker
 
-The maker starts her node in maker mode and registers all the parameters an offer requires. The daemon creates an onion service and waits for an incoming connection. When ready, the daemon prints the 'public offer'. The public offer contains all the parameters a taker needs to connect. The maker can then distribute the 'public offer' over her preferred channels.
+A participant who wants to propose a swap to other participants will choose the maker role.
+
+The maker starts her node in maker mode and registers all the parameters an offer requires, see below. The daemon start listening on a port or creates an onion service, depending on its configuration, and waits for an incoming connection. When ready, the daemon prints the *public offer*. The public offer contains all the parameters a taker needs to connect. The maker can then distribute the public offer over her preferred channels.
 
 #### Maker offer
 
-A maker offer is composed of:
+To create an offer, a maker registers the following list of required inputs:
 
- * The Arbitrating/Accordant blockchain identifier, e.g. BTC-XMR; *Must identify: blockchain chain and asset traded. E.g. bitcoin on mainnet or bitcoin on testnet. This can be done through a `chain_hash` parameter.*
- * The arbitrating blockchain asset amount
- * The accordant blockchain asset amount
- * The timelock durations used during the swap
- * The fee calculation strategy; *This might be static, within a range, or defined as a function*
- * The future maker swap role (Alice or Bob); *Taker role is derived from this as the protocol always have one Alice and one Bob*
+ * The Arbitrating/Accordant blockchain identifier, e.g. BTC-XMR; *Must identify: blockchain chain and asset traded. E.g. bitcoin on mainnet or bitcoin on testnet. This can be done through a `chain_hash` parameter or be defined by an RFC in Farcaster.*
+ * The arbitrating blockchain asset amount; *In the unit type defined by the blockchain.*
+ * The accordant blockchain asset amount; *In the unit type defined by the blockchain.*
+ * The timelock durations used during the swap, they define the two time frames for cancelling the swap on-chain and punishing Bob if he doesn't react after a swap cancellation; *In the unit type defined by the blockchain.*
+ * The fee calculation strategy, defines the transactions fee strategy to use on e.g. BTC transactions; *This might be fixe, within a range, or defined as a function or a more evolved type.*
+ * The future maker swap role (Alice or Bob); *Taker role is derived from this as the protocol always have one Alice and one Bob.*
+
+The user client should provide an easy interface to define an offer through a Buy or Sell point of view, and auto-fill the fee strategy based on user prefered fee estimators.
+
+For the participant who plays Bob's role during the swap the fee strategy and the timelock durations are critical to validate to guarentee safety and funds recovery. To short timelock duration or to low fee strategy might allow Alice to punish Bob even if he tries to broadcast the correct refund transactions, the swap client should carefully check these parameters as a regular wallet whould for the fees.
 
 #### Maker's public offer
 
-A maker public offer is an extended maker offer with the daemon's network parameters, such as the onion service or other options detailing how to connect to the daemon. The public offer must specify the node's long-term identifier and must contain a valid signature.
+A maker public offer is an extended maker offer with the daemon's network parameters, such as options detailing how to connect to the daemon. The public offer must specify the node's connection identifier and must contain a valid signature.
 
-The maker public offer must be as user-friendly as possible, as it is the responsibility of the user to share this public offer with a potential counter-party via the maker's preferred communication channels.
+The maker public offer must be as user-friendly as possible, as it is the responsibility of the user to share this public offer with a potential counter-party via the maker's preferred communication channels. Thus the format might still be binary, but parsers to quickly display the offer should be created.
+
+The maker does not validate nor filter who can connect and take the public offer.
 
 ### Taking a public offer
 
-A taker receives a public offer, parses and visualizes it, and might accept it. If the taker wants to take the public offer he can try to connect to the maker and start the swap. As this protocol doesn't ensure that the public offer is still live nor already taken, this action can fail.
+A taker receives a public offer, parses and visualizes it, and might accept it. If the taker wants to take the public offer he can try to connect to the maker and start the swap.
+
+As this protocol doesn't ensure that the public offer is still live nor already taken, this action can fail. The maker might have "cancel" the offer by shuting down her node, or other taker might have connected already to the node.
 
 ### Results of negotiation phase
 
@@ -62,7 +68,7 @@ At the end of the negotiation phase, participants must result with:
      * Blockchains used as an Arbitrating-Accordant asset pair, e.g. BTC-XMR
      * Amount exchanged of each asset, e.g. 200 XMR and 1.3 BTC
      * Transition from Maker-Taker roles into Alice-Bob roles
-     * Time parameters t1 and t2, i.e. protocol timelock parameters
+     * Timelock durations
      * Fee strategy for arbitrating transactions
 
 ### GUI Example
@@ -140,29 +146,27 @@ Connecting to counterparty daemon...
 
 ## Swap phase
 
-The swap phase starts for each role with a common set of parameters:
-
- * Blockchains used as an Arbitrating-Accordant asset pair, e.g. BTC-XMR
- * Amount exchanged of each asset, e.g. 200 XMR and 1.3 BTC
- * Time parameters t1 and t2, i.e. protocol timelock parameters
- * The fee strategy and its chosen parameters
- * The swap role played by the daemon
+The swap phase starts for each role with the common set of parameters defined in the chosen offer.
 
 plus for Alice's role:
 
- * The destination Bitcoin address
+ * The destination Arbitrating address
 
 and for Bob's role:
 
- * The refund Bitcoin address
+ * The refund Arbitrating address
+
+Those addresses are inputs asked by the client before the beginning of the swap and should follow the address *reuse* stategy for the concerned blockchain.
+
+During the swap phase the client may propose to the user an *abort* action. It is to the client implementation to define how a user can abort a conducting swap or not. We recommend that the client allows the user to *abort* only before detecting money locked on-chain.
 
 ### Steps
 
 We describe the high-level view of the swap phase with four steps:
 
  1. Initialization step
- 2. Bitcoin locking step
- 3. Monero locking step
+ 2. Arbitrating locking step
+ 3. Accordant locking step
  4. Swap step
 
 We describe a basic user experience with an atomic swap GUI client for Alice and Bob. This is provided for educational purposes and to give an idea to the reader, the swap GUI client may look different.
@@ -189,7 +193,7 @@ Alice and Bob start the pre-initialization. They exchange and verify parameters 
 - Alice → Bob: [`reveal_alice_session_params`](./04-protocol-messages.md#the-reveal_alice_session_params-message)
 - Bob → Alice: [`reveal_bob_session_params`](./04-protocol-messages.md#the-reveal_bob_session_params-message)
 
-#### 2. Bitcoin Locking Step (2-3 in the diagram)
+#### 2. Arbitrating Locking Step (2-3 in the diagram)
 After the parameters are exchanged and validated, Bob asks the user for funding. Upon receiving funds, Bob creates the transactions, signs the cancel path, and sends them to Alice with `core_arbitrating_setup` protocol message. He acquires Alice's signatures for the cancel path. The bitcoin are locked when Bob is able to trigger the cancel path and refund the assets, i.e. after reception of `refund_procedure_signatures` protocol message.
 
 ##### Messages exchanged:
@@ -197,7 +201,7 @@ After the parameters are exchanged and validated, Bob asks the user for funding.
 - Bob → Alice: [`core_arbitrating_setup`](./04-protocol-messages.md#the-core_arbitrating_setup-message)
 - Alice → Bob: [`refund_procedure_signatures`](./04-protocol-messages.md#the-refund_procedure_signatures-message)
 
-#### 3. Monero Locking Step (4 in the diagram)
+#### 3. Accordant Locking Step (4 in the diagram)
 Once Alice has received sufficient confirmations for Bob's `lock (b)` transaction to feel safe, Alice proceeds to lock her monero with the Monero `lock (x)` transaction.
 
 #### 4. Swap Step (5-6 in the diagram)
