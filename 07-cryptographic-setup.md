@@ -214,11 +214,22 @@ where
 
 ## Cross-group Discrete Logarithm Proof
 
-TODO
+We define a `cross_group_proof` type for the Arbitrating-Accordant blockchain pair dependent on the `private_key` groups. If the groups are the same the proof is set to null.
+
+A Cross-group Discrete Logarithm proving system is define with:
+
+ * `XDLGen`: An algorithm that generates the parameters based on the given security level.
+
+ * `XDLProve`: An algorithm that produces a proof in zero-knowledge of a relation `x` for the tuple `(xG', xH')` where `G` and `H` be prime-order groups where the discrete logarithm problem is assumed to be hard and `G' ∈ G` and `H' ∈ H`, among other proof elements.
+
+ * `XDLVrfy`: Verify the proof for a given relation `(xG', xH')`.
+
+An example of instantation of this system is describe in [[4] Discrete logarithm equality across groups](#references).
 
 ## References
 
  * [[1] One-Time Verifiably Encrypted Signatures A.K.A. Adaptor Signatures](https://github.com/LLFourn/one-time-VES/blob/master/main.pdf)
  * [[2] BIP 0340: Schnorr Signatures for secp256k1](https://en.bitcoin.it/wiki/BIP_0340)
  * [[3] Adaptor signature -Schnorr signature and ECDSA-](https://medium.com/crypto-garage/adaptor-signature-schnorr-signature-and-ecdsa-da0663c2adc4)
+ * [[4] Discrete logarithm equality across groups](https://web.getmonero.org/resources/research-lab/pubs/MRL-0010.pdf)
 
