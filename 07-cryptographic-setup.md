@@ -77,15 +77,23 @@ We define a `signature` type for the arbitrating blockchain role related to the 
 
 **Arbitrating example:** for Bitcoin ECDSA the `signature` is an ECDSA signature, and for Bitcoin Schnorr the `signature` is a Schnorr signature following [[2] BIP 0340: Schnorr Signatures for secp256k1](#references).
 
+The interface for interacting with arbitrating signatures is composed of three functions:
+
+ * `Gen`: A key generation algorithm, this function must follow the rules of the chosen `private_key` type.
+
+ * `Sign`: An algorithm that signs a given message as defined in the chosen signing primitive, e.g. ECDSA, Schnorr, etc.
+
+ * `Vrfy`: Verify a signature based on public parameters, if validation passes the signature is a valid signature.
+
 ## Adaptor Signatures
 
-We describe an adaptor signature interface and two instantiations, one for ECDSA inside Bitcoin scripts and one for Schnorr inside Taproot scripts.
+We define an `adaptor_signature` type for the arbitrating blockchain related to the `private_key`/`public_key` types defined previously.
 
 An adaptor signature scheme extends a standard signature (`Gen`, `Sign`, `Vrfy`) scheme with:
 
  * `EncGen`: An encryption key generation algorithm, in this protocol the encryption key generation is linked to the cross-group DLEQ proof.
 
- * `EncSig`: Encrypt a signature and return an adaptor signature. This RFC uses the public key tweaking method.
+ * `EncSig`: Encrypt a signature and return an adaptor signature. This RFC uses the public key tweaking method, see [[3] Adaptor signature -Schnorr signature and ECDSA-](#references) section *3. Adaptor Signatures* for examples.
 
  * `EncVrfy`: Verify an adaptor signature based on public parameters, if validation passes the decrypted adaptor signature is a valid signature.
 
@@ -94,6 +102,8 @@ An adaptor signature scheme extends a standard signature (`Gen`, `Sign`, `Vrfy`)
  * `RecKey`: Recover the key material needed for extracting the encryption key with `Rec`.
 
  * `Rec`: Recover the encryption key based on the adaptor signature and the decrypted signature.
+
+We describe an adaptor signature interface and two instantiations, one for ECDSA inside Bitcoin scripts and one for Schnorr inside Taproot scripts.
 
 ### ECDSA Scripts
 
@@ -113,6 +123,8 @@ where
 ```
 
 `PDLEQ` produces a zero-knowledge proof of knowledge of the same relation `k` between two pairs of elements in the same group, i.e. `(G, R')` and `(T, R)`.
+
+The `adaptor_signature` type is define as `(R, R', s', pi)` for this instantiation.
 
  * `EncVrfy`:
 
@@ -165,6 +177,8 @@ This notation follows BIP 340, with some simplication on even y coordinate check
  s' = k + tagged_hash( bytes(R + T) || bytes(P) || m )d
 ```
 
+The `adaptor_signature` type is define as `(R, s')` for this instantiation.
+
  * `EncVrfy`:
 
 ```
@@ -192,9 +206,7 @@ where
  t = s - s'
 ```
 
-BIP 340 Schnorr:
-
- * `Vrfy`:
+ * `Vrfy`: as defined in [[2] BIP 0340: Schnorr Signatures for secp256k1](#references)
 
 ```
  sG =? R + tagged_hash( bytes(R) || bytes(P) || m )P
@@ -208,4 +220,5 @@ TODO
 
  * [[1] One-Time Verifiably Encrypted Signatures A.K.A. Adaptor Signatures](https://github.com/LLFourn/one-time-VES/blob/master/main.pdf)
  * [[2] BIP 0340: Schnorr Signatures for secp256k1](https://en.bitcoin.it/wiki/BIP_0340)
+ * [[3] Adaptor signature -Schnorr signature and ECDSA-](https://medium.com/crypto-garage/adaptor-signature-schnorr-signature-and-ecdsa-da0663c2adc4)
 
