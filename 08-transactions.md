@@ -102,7 +102,7 @@ The `lock (b)` creates a (SegWit v1) Taproot UTXO `(ii)` with the locking script
 with `TapLeaf buy script`:
 
 ```
-<Alice's Ab PubKey> CHECKSIG <Bob's Bb(Ta) PubKey> CHECKSIGADD m 
+<Alice's Ab PubKey> CHECKSIG <Bob's Bb(Ta) PubKey> CHECKSIGADD m
 NUMEQUAL
 
 where
@@ -118,7 +118,7 @@ and `TapLeaf cancel script`, the cancel script, a 2-of-2 multisig with timelock 
 ```
 <num> [TIMEOUTOP]
 EQUALVERIFY DROP
-<Alice's Ac PubKey> CHECKSIG <Bob's Bc PubKey> CHECKSIGADD m 
+<Alice's Ac PubKey> CHECKSIG <Bob's Bc PubKey> CHECKSIGADD m
 NUMEQUAL
 
 where
@@ -428,7 +428,7 @@ Replace By Fee (RBF) should be integrated into the protocol such that multiple v
 
 In the swap protocol publishing transactions to the bitcoin mempool (=transaction pool) reveals secret keys that are required to sweep the monero wallet. Therefore it is paramount to carefully evaluate the temporal safety bounds of publishing transactions, as they may:
 
- - be raced by valid and pre-signed protocol's transactions that are de facto double-spends or 
+ - be raced by valid and pre-signed protocol's transactions that are de facto double-spends or
  - reverted by blockchain reorgs
 
 #### Protocol
@@ -439,22 +439,22 @@ The swap participant has a temporal safety parameter, `delta_irreversible`, in b
 
 ##### Funding
 
-After the atomic swap protocol initialization successfully completes, Bob can publish the funding transaction. Bob publishes the funding transaction, which is later mined at block height `t(funding)`. 
+After the atomic swap protocol initialization successfully completes, Bob can publish the funding transaction. Bob publishes the funding transaction, which is later mined at block height `t(funding)`.
 
-At `t(funding) + delta_irreversible` Alice assumes Bob's transaction is irreversible and may move on with the protocol execution. That is, Alice can publish her buy transaction. 
+At `t(funding) + delta_irreversible` Alice assumes Bob's transaction is irreversible and may move on with the protocol execution. That is, Alice can publish her buy transaction.
 
 ##### Buy
 
-However Alice should not wait too long for publishing the buy transaction as the cancellation path may become available, and then a race condition (double spend) between the swap (buy transaction) and the cancellation (cancel transaction) paths becomes possible. 
+However Alice should not wait too long for publishing the buy transaction as the cancellation path may become available, and then a race condition (double spend) between the swap (buy transaction) and the cancellation (cancel transaction) paths becomes possible.
 
 The safety parameter to prevent race conditions (=double spends) is `delta_race`, in blocks.
 
-The cancellation path becomes valid at time `t(funding) + delta(cancel)$`. Thus Alice has to publish her buy transaction the latest at 
+The cancellation path becomes valid at time `t(funding) + delta(cancel)$`. Thus Alice has to publish her buy transaction the latest at
 
     t(funding) + delta(cancel) - delta_race
 
 
-In sum, Alice's safety window to publish the buy transaction is from 
+In sum, Alice's safety window to publish the buy transaction is from
 
     t(funding) + delta_irreversible
 
@@ -477,7 +477,7 @@ The same logic applies to the cancelation path.
 
 ##### Cancel
 
-Cancel transaction should be published as soon as it becomes valid, that is, after 
+Cancel transaction should be published as soon as it becomes valid, that is, after
 
     t(funding) + delta(cancel)
 
@@ -485,7 +485,7 @@ The block height at which cancel transaction is mined is `t(cancel)`
 
 ##### Refund
 
-Refund transaction safety window for publication 
+Refund transaction safety window for publication
 
     t(cancel) + delta_irreversible
 
