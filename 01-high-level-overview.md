@@ -22,19 +22,21 @@ This RFC describes the high level concepts associated with the protocol such as 
 
 ## Phases
 
-This RFC describes two phases: a negotiation and a swap phase. The swap phase always follows the negotiation phase. The negotiation phase is used to bootstrap the swap parameters common to each participant and connect the swap daemons.
+This RFC describes two phases: a negotiation and a swap phase. The swap phase always follows the negotiation phase. The negotiation phase is used to bootstrap the swap parameters common to each participant and connect the swap daemons, this via the concept of a *public offer*. A public offer is a list of parameters describing what the swap will look like if executed. It contains the assets exchanged, how to connect the daemons, and the protocol specific parameters.
 
 ### Negotiation phase
 
 The negotiation phase can be done on a forum, with an OTC, within a DEX, etc. This RFC and the [02. User Stories](./02-user-stories.md) RFC define the interface between the two phases: negotiation and swap, and proposes a minimalistic negotiation protocol.
 
-It is worth mentioning that the negotiation phase proposed in the [02. User Stories](./02-user-stories.md) RFC does not contain any negotiation mechanism. It would be more accurately described as a *connect and accept* mechanism. Thus this mechanism can be extended and external matching engines could implement a negotiation protocol. This negotiation protocol could then end up with the described connect and accept protocol.
+It is worth mentioning that the negotiation phase proposed in the [02. User Stories](./02-user-stories.md) RFC does not contain any negotiation mechanism, e.g. price, amounts, etc. It would be more accurately described as a *discover, connect, and accept* mechanism. Thus this mechanism can be extended and external matching engines could implement a negotiation protocol. This negotiation protocol could then end up with the described *connect and accept* protocol.
 
 During the negotiation phase the *discovery* between participants is done through *public offers*. A public offer is created by one participant and shared, others can then parse and, if interested, accept the public offer. The acceptance is expressed by connecting to the node specified in the offer.
 
+This design is created such that services can be built on top of it, in a purely peer-to-peer network where offers are distributed amoung "swappers", or oriented as a publicly available service a la OTC where the offer always come from the same entity, or even inside more elaborated network within DEXs. Everything is compatible with the proposed design as the only constraints is the interface between the negociation and the swap phases.
+
 ### Swap phase
 
-The swap phase always follows the negotiation, daemons are connected to each other and ready to start the swap protocol. Below this RFC describe the roles participants can have during the phases, a role transition is operated by each participant between the phase transition, this role transition must be expressed between the negotiation phase and agreed on.
+The swap phase always follows the negotiation, daemons are connected to each other and ready to start the swap protocol. Below, this RFC describe the roles participants can have during every phases, a role transition is operated by each participant between the phase transition, this role transition is an important parameter that compose the public offer and must be agreed on.
 
 ## Roles
 
@@ -48,9 +50,11 @@ Those roles are distributed by the outgoing blockchains' capabilities involved i
 
 ### Negotiation: Taker & Maker
 
+To allow the interconnection among participants and sets the parameters of a trade we describe two negotiation roles: (1) Taker and (2) Maker. The former will browse the public offers and the latter will produce them.
+
 Taker and maker roles are dissociated from swap roles. They are used in the negotiation phase. A taker can later be transformed into an Alice or Bob role when moving from the negotiation phase into the swap phase, and vice versa.
 
-The maker role offers a trade. Its proposal sets the amounts, the asset pair, and what role each participant takes in the swap. There is no special limitation on what a proposal can be in theory. The taker then sends the offer to whom might accept it.
+The maker role offers a trade, via the public offer. Its proposal sets the amounts, the asset pair, and what role each participant takes in the swap. There is no special limitation on what a proposal can be in theory. The taker then sends the offer to whom might accept it.
 
 A taker visualizes an offer and chooses to try the trade or not.
 
