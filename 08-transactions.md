@@ -7,7 +7,7 @@
 
 ## Overview
 
-The protocol implemented in Farcaster is blockchain agnostic, however a strict list of features is required for the arbitrating blockchain involved in the swap (see [00. Introduction](./00-introduction.md) and [01. High-Level Overview](./01-high-level-overview.md)). This RFC describes a concrete implementation of the protocol with Bitcoin, or equivalent UTXO based blockchain, as the arbitrating blockchain and Monero, or equivalent UTXO based blockchain, as the accordant blockchain.
+The protocol implemented in Farcaster is blockchain agnostic, however a strict list of features is required for the arbitrating blockchain involved in the swap, see *Blockchain Prerequisites* in [00. Introduction](./00-introduction.md#blockchain-prerequisites). This RFC describes a concrete implementation of the protocol with Bitcoin, or equivalent UTXO based blockchain, as the arbitrating blockchain and Monero, or equivalent UTXO based blockchain, as the accordant blockchain.
 
 We distinguish transactions created and controlled by the protocol itself and external transactions. Dashed outline transactions are transactions created by external wallets, i.e. not the daemon nor the client. This allows no asumption on where the funds might arise from and retain full flexibility on the implementation side.
 
