@@ -25,9 +25,11 @@ This RFC specifies the inter-daemon communication messages used during swap phas
 
 ## Inter-daemon communication
 
-The inter-daemon communication must follow *'BOLT #8: Encrypted and Authenticated Transport'* [[2](#references)] standard from the Lightning Network specifications.
+The inter-daemon communication must follow [[2] BOLT #8: Encrypted and Authenticated Transport](#references) standard from the Lightning Network specifications.
 
-All communications between nodes are encrypted to provide confidentiality for all transcripts between nodes and are authenticated to avoid malicious interference. Each node has a known long-term identifier that is a public key on Bitcoin's `secp256k1` curve. This long-term public key is used within the protocol to establish an encrypted and authenticated connection with peers.
+All communications between nodes are encrypted to provide confidentiality for all transcripts between nodes and are authenticated to avoid malicious interference. Each node has a known connection identifier that is a public key on Bitcoin's `secp256k1` curve. This connection public key is used to establish an encrypted and authenticated connection with peers.
+
+When starting in maker mode, a daemon will start a listening service. The listening service uses the connection public key to decrypt and authentify entering connections. The listening service may create an onion service to hide the node location or may listen on an IPv4/IPv6 address directly.
 
 ## Messages
 
