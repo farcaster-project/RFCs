@@ -162,9 +162,9 @@ where
 ```
  t' = s^-1 ⋅ s'
 
-      /  s' if s'G = T
- t = |  -s' if s'G = T^-1
-      \  NaN otherwise
+     ┌  s' if s'G = T
+ t = ├ -s' if s'G = T^-1
+     └  NaN otherwise
 ```
 
 ### Taproot Schnorr Scripts
