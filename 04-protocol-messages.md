@@ -31,6 +31,8 @@ All communications between nodes are encrypted to provide confidentiality for al
 
 When starting in maker mode, a daemon will start a listening service. The listening service uses the connection public key to decrypt and authentify entering connections. The listening service may create an onion service to hide the node location or may listen on an IPv4/IPv6 address directly.
 
+Node address and connection public key are registred into the public offer, which must be signed before been shared. Other daemons can then connect and create an encrypted and autheticated channel. It is worth noting that connecting peers are not authentified by the listening node, anyone who knows the address can try to connect. For more detail on the public offer see [02. User Stories](./02-user-stories.md).
+
 ## Messages
 
 The inter-daemon messages must follow the *Type-Length-Value Format* defined in [[3] BOLT #1: Base Protocol](#references) standard from the Lightning Network specifications.
