@@ -83,9 +83,9 @@ An adaptor signature scheme extends a standard signature (`Gen`, `Sign`, `Vrfy`)
 ```
  pi = PDLEQ( (G, R'), (T, R), k )
  s' = k^-1 ⋅ ( hash(m) + f(R)d )
- 
+
  return (R, R', s', pi)
- 
+
 where
     f(): x-coordinate mod q
     P = dG
@@ -130,7 +130,7 @@ where
 
 ```
  t' = s^-1 ⋅ s'
- 
+
       /  s' if s'G = T
  t = |  -s' if s'G = T^-1
       \  NaN otherwise
@@ -150,7 +150,7 @@ This notation follows BIP 340, with some simplication on even y coordinate check
 
 ```
  s'G =? R + tagged_hash( bytes(R + T) || bytes(P) || m )P
- 
+
 where
     P = dG
 ```
