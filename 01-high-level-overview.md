@@ -26,9 +26,9 @@ This RFC describes two phases: a negotiation and a swap phase. The swap phase al
 
 ### Negotiation phase
 
-The negotiation phase can be done on a forum, with an OTC, within a DEX, etc. This RFC and the [02. User Stories](./02-user-stories.md) RFC define the interface between the two phases: negotiation and swap, and proposes a minimalistic negotiation protocol.
+The negotiation phase can be done on a forum, with an OTC, within a DEX, etc. This RFC and [02. User Stories](./02-user-stories.md) define the interface between the two phases: negotiation and swap, and proposes a minimalistic negotiation protocol.
 
-It is worth mentioning that the negotiation phase proposed in the [02. User Stories](./02-user-stories.md) RFC does not contain any negotiation mechanism, e.g. price, amounts, etc. It would be more accurately described as a *discover, connect, and accept* mechanism. Thus this mechanism can be extended and external matching engines could implement a negotiation protocol. This negotiation protocol could then end up with the described *connect and accept* protocol.
+It is worth mentioning that the negotiation phase proposed in [02. User Stories](./02-user-stories.md) does not contain any negotiation mechanism, e.g. price, amounts, etc. It would be more accurately described as a *discover, connect, and accept* mechanism. Thus this mechanism can be extended and external matching engines could implement a negotiation protocol. This negotiation protocol could then end up with the described *connect and accept* protocol.
 
 During the negotiation phase the *discovery* between participants is done through *public offers*. A public offer is created by one participant and shared, others can then parse and, if interested, accept the public offer. The acceptance is expressed by connecting to the node specified in the offer.
 

@@ -7,9 +7,7 @@
 
 ## Overview
 
-This RFC describes the roles and phases of a swap and presents simple user stories, mockups, and a basic cli example.
-
-We distinguish between two phases: (1) negotiation and (2) swap phases. The negotiation implies taker and maker roles, the swap phase implies Alice and Bob roles.
+This RFC describes the roles and phases of a swap and presents the user stories of each participant by the mean of mockups and examples. We distinguish between two phases: negotiation and swap phases, this RFC describe the interface between the phases. Those phases imply roles, and those roles allow user actions. This RFC describe the user actions available for each role during the phases.
 
 ## Table of Contents
 
