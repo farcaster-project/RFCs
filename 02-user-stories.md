@@ -86,7 +86,7 @@ As a maker I start my client and choose the maker role (**A. Choose a negotiatio
 As a taker I start my client and choose the taker role (**A. Choose a negotiation role**). When started in taker mode, my client prompts me a public offer (**C. Paste a public offer**). The pasted public offer is parsed and displayed to the user for verification and acceptance (**E. Visualize a public offer**). If I wants to take it, my daemon is started and connects to the daemon specified in the public offer. If the maker daemon is still up and no one already took the offer, the swap may succeed.
 
 ![GUI Negotiation Mockups](./02-user-stories/gui-negotiation-mockups.png)
-*Fig 1. Example of a GUI executing the 'connect and accept' mechanism*
+*Fig 1. Example of a GUI executing the 'discover, connect, and accept' mechanism*
 
 ### CLI Example
 
