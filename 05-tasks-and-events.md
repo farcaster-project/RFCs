@@ -180,11 +180,11 @@ In response to the `watch_transaction` task.
     - [`sha256`: `block`]: Hash of the block mining the transaction.
     - [`i32`: `confirmations`]: Number of blocks after `block`, return `-1` for `None`
 
- - semantics:
-    - for transaction not seen on mempool, emit `(0x0, None)`
-    - for transaction seen on mempool but not mined, emit `(0x0, Some(0))`
-    - for transaction mined, emit `(tx_block, Some(confirmations))` where `tx_block` is the block that the transaction got mined, and `confirmations` is the number of blocks extending `tx_block`
-    - when `confirmations` >= `confirmation_bound`, emit `(tx_block, Some(confirmation_bound))`. here `task` is considered successfully accomplished and terminates. at that time, transaction is considered final (=irreversible).
+ - Semantics:
+    - For transaction not seen on mempool, emit `(0x0, None)`
+    - For transaction seen on mempool but not mined, emit `(0x0, Some(0))`
+    - For transaction mined, emit `(tx_block, Some(confirmations))` where `tx_block` is the block that the transaction got mined, and `confirmations` is the number of blocks extending `tx_block`
+    - When `confirmations` >= `confirmation_bound`, emit `(tx_block, Some(confirmation_bound))`. Here `Task` is considered successfully accomplished and terminates. At that time, transaction is considered final (=irreversible).
 
 Thus:
 
