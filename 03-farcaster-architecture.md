@@ -69,15 +69,15 @@ It is worth noting that this diagram (Fig. 2) only shows one syncer, but a synce
 
 ### Networking stack
 
-Typed messages are striclty defined with their serialization and the inter-daemon networking stack is constrained and defined in [04. Protocol Messages](./04-protocol-messages.md), but we don't restrict the networking stack between `daemon`, `client` and `syncers`. The technological choice is let to the implementation with the feature constraint of running over the network if wanted by the user.
+Typed messages are strictly defined with their serialization and the inter-daemon networking stack is constrained and defined in [04. Protocol Messages](./04-protocol-messages.md), but we don't restrict the networking stack between `daemon`, `client` and `syncer`s. The technological choice is let to the implementation with the feature constraint of running over the network if wanted by the user.
 
 ### Client & Daemon segregation rationale
 
-The rationale behind segregating the client and the daemon currently is not for security reasons - the client creates and signs the transactions blindly based on received messages from the daemon, implying full trust (see *Security considerations* in [06. Datum & Instructions](./06-datum-and-instructions.md#security-considerations)).
+The rationale behind segregating the client and the daemon currently is not for security reasons - the client creates and signs the transactions blindly based on messages received from the daemon, implying full trust (see *Security considerations* in [06. Datum & Instructions](./06-datum-and-instructions.md#security-considerations)).
 
-The client is the only component that has access to secret keys that guarentee the safety of the swapped funds.
+The client is the only component that has access to secret keys that guarantee the safety of the swapped funds.
 
-The aim of this segregation is to improve flexibility and extensibility added by making the client peripheral to the swap stack, that is, other clients might be created, such as:
+The aim of this segregation is to improve flexibility and extensibility added by making the client peripheral to the fundamental swap stack - that is, other clients might be created, such as:
 
 - Clients supporting hardware wallets
 - Mobile applications (that may run the daemon in the background or in a private server),
@@ -98,11 +98,11 @@ Client and daemon communicate via `datum` and `instruction` messages (see [06. D
 
 Client and daemon must have an initialization protocol allowing one or the other to recover from a past swap state (see [09. Swap State](./09-swap-state.md)).
 
-Client passes `datum` and `instruction` messages to the daemon. That is, client may at the user's discretion fire one of the possible protocol transitions at each moment in time. A subset of transitions may require transactions, signatures, or keys as input which are transmitted via `datum` messages. Upon client's message reception, daemon must undertake the actions associated with the fired transition, and update the swap state accordingly. Daemon updates client with the same type of messages: `datum` and `instruction`, allowing the client to update its local state and produce the next needed daemon's `datum` messages.
+Client passes `datum` and `instruction` messages to the daemon. That is, client may at the user's discretion fire one of the possible protocol transitions at each moment in time. A subset of transitions may require transactions, signatures, or keys as input which are transmitted via `datum` messages. Upon receiving a client's message, daemon must undertake the actions associated with the fired transition, and update the swap state accordingly. Daemon updates client with the same type of messages: `datum` and `instruction`, allowing the client to update its local state and produce the next `datum` messages needed by the daemon.
 
 ### Why two bidirectional message types?
 
-We distinguish between `datum` messages who carry essential data for performing the swap such as keys, signatures, transactions, parameters, etc. and `instruction` that control the flow of the swap and may come from the user or the counter-party daemon, such as an `abort` operation.
+We distinguish between `datum` messages who carry essential data for performing the swap such as keys, signatures, transactions, parameters, etc. and `instruction`s that control the flow of the swap and may come from the user or the counter-party daemon, such as an `abort` operation.
 
 ## The `daemon` component
 
@@ -113,15 +113,15 @@ Its main function is to manage the safe progression of the execution of the cros
 The daemon must be fully aware of the complete state of the cross-chain atomic swap execution. To achieve that it must listen to:
 
 - Counter-party `daemon` protocol messages via inter-daemon communication (see [04. Protocol Messages](./04-protocol-messages.md)),
-- Blockchain events from both blockchains via `syncers` (see [05. Tasks & Blockchain Events](./05-tasks-and-events.md)),
+- Blockchain events from both blockchains via `syncer`s (see [05. Tasks & Blockchain Events](./05-tasks-and-events.md)),
 - User's data and instructions via a `client` (see [06. Datum & Instructions](./06-datum-and-instructions.md)), and
 - Self-produced loopback messages
 
-The Daemon must create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve that a Petri net model of the protocol may be used to constrain the runtime environment that executes the user's respective swap role in the protocol (see [01. High Level Overview](./01-high-level-overview.md)), by only authorizing firing valid enabled protocol transitions.
+The Daemon must create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve this, a Petri net model of the protocol may be used to constrain the runtime environment that executes the user's respective swap role in the protocol (see [01. High Level Overview](./01-high-level-overview.md)), by only authorizing firing valid enabled protocol transitions.
 
 ### Counter-party daemon communication
 
-The Daemon has a bidirectional communication channel with the swap counter-party's daemon. This inter-daemon communication is used to pass protocol messages between the swap counterparties. To bootstrap this communication channel we distinguish two phases: the negotiation and the swap phase. The negotiation phase allow users to discover swaps through public offers and connect their daemons (see [02. User Stories](./02-user-stories.md)).
+The Daemon has a bidirectional communication channel with the swap counter-party's daemon. This inter-daemon communication is used to pass protocol messages between the swap counterparties. To bootstrap this communication channel we distinguish two phases: the negotiation and the swap phase. The negotiation phase allows users to discover swaps through public offers and connect their daemons (see [02. User Stories](./02-user-stories.md)).
 
 ### Loopback: self-generated input messages
 
