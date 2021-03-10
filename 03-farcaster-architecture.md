@@ -133,4 +133,4 @@ A syncer is specific to a blockchain and can handle a list of `tasks` related to
 
 ### Blockchain communication
 
-A syncer can choose how to interact with the blockchain, this can be done solely through RPC calls or involve more advanced features such as consuming the 0MQ streams proposed by a full node. The simplest implementation of a syncer would made use of public high level blockchain API.
+A syncer can choose how to interact with its specified blockchain, this can be done solely through RPC calls or involve more advanced features such as e.g. consuming the 0MQ streams proposed by a full node. The simplest implementation of a syncer would made use of public high level blockchain API, however this would only be acceptable when no value is transacted.
