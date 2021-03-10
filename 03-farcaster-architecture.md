@@ -14,6 +14,7 @@ This RFC describes the overall architecture and how the software stack of Farcas
   * [Global Architecture](#global-architecture)
     * [Main components](#main-components)
     * [Components interaction](#components-interaction)
+    * [Networking stack](#networking-stack)
     * [Client & Daemon segregation rationale](#client--daemon-segregation-rationale)
   * [The `client` component](#the-client-component)
     * [Client-Daemon communication](#client-daemon-communication)
@@ -59,12 +60,16 @@ Each component have a specific assigned role, they all work together to complete
 
 Each swap component is represented as a black box that consumes input messages and produces output messages. Each input and output message is a typed message. Components subscribe to types of messages, e.g. the client may not consume messages produced by syncers but will subscribe to daemon's messages.
 
-Typed messages are defined to specified the interfaces between the components and to document what type of data is needed to be exchanged between this three high level components. In reallity the daemon can be slpit into multiple small services, but the interaction with the `client` and the `syncers` must follow the RFCs.
+Typed messages are defined to specified the interfaces between the components and to document what type of data is needed to be exchanged between this three high level components. In reallity the daemon can be slpit into multiple small services, but the interaction with the `client` and the `syncers` must follow the defined interfaces.
 
 ![Typed messages exchanged between components](./03-farcaster-architecture/messages-architecture.png)
 *Fig 2. Typed messages exchanged between components*
 
 It is worth noting that this diagram (Fig. 2) only shows one syncer, but a syncer per blockchain is required. Conceptually even more than one syncer per blockchain makes sense if you don't run or trust the syncer you are using, in that case, one can aggregate and compare different data sources and detect discrepancies.
+
+### Networking stack
+
+Typed messages are striclty defined with their serialization and the inter-daemon networking stack is constrained and defined in [04. Protocol Messages](./04-protocol-messages.md), but we don't restrict the networking stack between `daemon`, `client` and `syncers`. The technological choice is let to the implementation with the feature constraint of running over the network if wanted by the user.
 
 ### Client & Daemon segregation rationale
 
