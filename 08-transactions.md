@@ -7,9 +7,9 @@
 
 ## Overview
 
-The protocol implemented in Farcaster is blockchain agnostic, thus a strict list of features is required for the arbitrating blockchain involved in the swap (see [00. Introduction](./00-introduction.md) and [01. High-Level Overview](./01-high-level-overview.md)). This RFC describes a concrete implementation of the protocol with Bitcoin as the arbitrating blockchain and Monero as the accordant blockchain.
+The protocol implemented in Farcaster is blockchain agnostic, however a strict list of features is required for the arbitrating blockchain involved in the swap, see *Blockchain Prerequisites* in [00. Introduction](./00-introduction.md#blockchain-prerequisites). This RFC describes a concrete implementation of the protocol with Bitcoin, or equivalent UTXO based blockchain, as the arbitrating blockchain and Monero, or equivalent UTXO based blockchain, as the accordant blockchain.
 
-We distinguish transactions created and controlled by the protocol itself and external transactions. Dashed outline transactions are transactions created by external wallets, i.e. not the daemon nor the client.
+We distinguish transactions created and controlled by the protocol itself and external transactions. Dashed outline transactions are transactions created by external wallets, i.e. not the daemon nor the client. This allows no asumption on where the funds might arise from and retain full flexibility on the implementation side.
 
 ## Table of Contents
 
@@ -30,13 +30,13 @@ We distinguish transactions created and controlled by the protocol itself and ex
 
 ## Bitcoin
 
-This RFC defines the Bitcoin transactions. These transactions can be constructed with three different approaches:
+This section defines the Bitcoin transactions. These transactions can be constructed with three different approaches:
 
  * **ECDSA Scripts**, with SegWit v0 outputs and ECDSA signatures
  * **Taproot Schnorr Scripts**, with SegWit v1 outputs and Schnorr signatures and on-chain multi-signature using TapLeaf scripts
  * **Taproot Schnorr MuSig2**, with SegWit v1 outputs and Schnorr signatures and MuSig2 off-chain multi-signature protocol
 
-The latter is the preferred option for privacy but depends on feature activation on the Bitcoin chain and MuSig2 protocol. This RFC describes for each transaction the three approaches.
+The latter is the preferred option for privacy but depends on feature activation on the Bitcoin chain and MuSig2 protocol. This RFC describes the three approaches for each transaction.
 
 #### Timelocks
 
@@ -59,6 +59,10 @@ The `funding (a)` transaction is an externally created transaction that serves t
 The transaction can have `n` inputs and `m` outputs but MUST create 1 and only 1 P2WPKH (SegWit v0) UTXO `(i)` for the given address during initialization.
 
 The P2WPKH rationale is to have better support in the bitcoin wallet ecosystem, this can be moved to a (SegWit v1) P2TR later when support is added in wallets.
+
+**Validation rules:**
+
+This transaction has no particular validation rules by either of the swap roles.
 
 ### Lock
 
@@ -84,6 +88,21 @@ where
     Ta: Alice's adaptor key
 ```
 
+**Validation rules:**
+
+Upon transaction reception Alice must validate:
+
+ * the buy script is composed of a 2-of-2 multisig with:
+    * the first public key is `Ab`
+    * the second public key is `Bb`
+ * the cancel script is well formed
+    * the timelock `<num>` is set accordingly to the agreed parameter
+    * the timelock operation `[TIMEOUTOP]` is set accordingly to the agreed parameter
+    * the timelock operation `[TIMEOUTOP]` is followed by a `DROP` operation
+    * the `DROP` is followed by a 2-of-2 multisig with:
+        * the first public key is `Ac`
+        * the second public key is `Bc`
+
 #### Taproot Schnorr Scripts
 
 The `lock (b)` creates a (SegWit v1) Taproot UTXO `(ii)` with the locking script `OP_1 0x20 <Q pubkey>`:
@@ -102,7 +121,7 @@ The `lock (b)` creates a (SegWit v1) Taproot UTXO `(ii)` with the locking script
 with `TapLeaf buy script`:
 
 ```
-<Alice's Ab PubKey> CHECKSIG <Bob's Bb(Ta) PubKey> CHECKSIGADD m 
+<Alice's Ab PubKey> CHECKSIG <Bob's Bb(Ta) PubKey> CHECKSIGADD m
 NUMEQUAL
 
 where
@@ -118,7 +137,7 @@ and `TapLeaf cancel script`, the cancel script, a 2-of-2 multisig with timelock 
 ```
 <num> [TIMEOUTOP]
 EQUALVERIFY DROP
-<Alice's Ac PubKey> CHECKSIG <Bob's Bc PubKey> CHECKSIGADD m 
+<Alice's Ac PubKey> CHECKSIG <Bob's Bc PubKey> CHECKSIGADD m
 NUMEQUAL
 
 where
@@ -166,6 +185,14 @@ Consumes the `lock`'s output `(ii)` with:
 ```
 
 and leaks the adaptor `Ta` on `<Bob's Bb(Ta) signature>` to Bob.
+
+**Validation rules:**
+
+Upon Bob's `Bb(Ta)` signature reception Alice must validate:
+
+ * the signature received is:
+    * valid for `Bb`
+    * a valid adaptor for `Bb(Ta)`
 
 #### Taproot Schnorr Scripts
 
@@ -219,6 +246,29 @@ where
     Ap: Alice's punish key; and
     Tb: Bob's adaptor key
 ```
+
+**Validation rules:**
+
+Upon transaction reception Alice must validate:
+
+ * the refund script is composed of a 2-of-2 multisig with:
+    * the first public key is `Ar`
+    * the second public key is `Br`
+ * the punish script is well formed
+    * the timelock `<num>` is set accordingly to the agreed parameter
+    * the timelock operation `[TIMEOUTOP]` is set accordingly to the agreed parameter
+    * the timelock operation `[TIMEOUTOP]` is followed by a `DROP` operation
+    * the `DROP` is followed by `CHECKSIG` on `Ap` public key
+
+Upon Bob's `Bc` signature reception Alice must validate:
+
+ * the signature received is:
+    * valid for `Bc`
+
+Upon Alice's `Ac` signature reception Bob must validate:
+
+ * the signature received is:
+    * valid for `Ac`
 
 #### Taproot Schnorr Scripts
 
@@ -318,6 +368,14 @@ Consumes the `cancel (d)`'s output `(iii)` with:
 
 and leaks the adaptor `Tb` on `<Alice's Ar(Tb) signature>` to Alice.
 
+**Validation rules:**
+
+Upon Alice's `Ar(Tb)` signature reception Bob must validate:
+
+ * the signature received is:
+    * valid for `Ar`
+    * a valid adaptor for `Ar(Tb)`
+
 #### Taproot Schnorr Scripts
 
 The script-path witness that consumes `cancel`'s P2TR UTXO:
@@ -345,6 +403,10 @@ Consumes the `cancel`'s Taproot output `(iii)` with one valid signature for `<Q'
 ### Punish
 
 The `punish (f)` transaction consumes `cancel (d)`'s output `(iii)` and transfers the funds to Alice and is available as soon as the timelock is passed.
+
+**Validation rules:**
+
+This transaction has no particular validation rules by either of the swap roles.
 
 #### ECDSA Scripts
 
@@ -428,7 +490,7 @@ Replace By Fee (RBF) should be integrated into the protocol such that multiple v
 
 In the swap protocol publishing transactions to the bitcoin mempool (=transaction pool) reveals secret keys that are required to sweep the monero wallet. Therefore it is paramount to carefully evaluate the temporal safety bounds of publishing transactions, as they may:
 
- - be raced by valid and pre-signed protocol's transactions that are de facto double-spends or 
+ - be raced by valid and pre-signed protocol's transactions that are de facto double-spends or
  - reverted by blockchain reorgs
 
 #### Protocol
@@ -439,22 +501,22 @@ The swap participant has a temporal safety parameter, `delta_irreversible`, in b
 
 ##### Funding
 
-After the atomic swap protocol initialization successfully completes, Bob can publish the funding transaction. Bob publishes the funding transaction, which is later mined at block height `t(funding)`. 
+After the atomic swap protocol initialization successfully completes, Bob can publish the funding transaction. Bob publishes the funding transaction, which is later mined at block height `t(funding)`.
 
-At `t(funding) + delta_irreversible` Alice assumes Bob's transaction is irreversible and may move on with the protocol execution. That is, Alice can publish her buy transaction. 
+At `t(funding) + delta_irreversible` Alice assumes Bob's transaction is irreversible and may move on with the protocol execution. That is, Alice can publish her buy transaction.
 
 ##### Buy
 
-However Alice should not wait too long for publishing the buy transaction as the cancellation path may become available, and then a race condition (double spend) between the swap (buy transaction) and the cancellation (cancel transaction) paths becomes possible. 
+However Alice should not wait too long for publishing the buy transaction as the cancellation path may become available, and then a race condition (double spend) between the swap (buy transaction) and the cancellation (cancel transaction) paths becomes possible.
 
 The safety parameter to prevent race conditions (=double spends) is `delta_race`, in blocks.
 
-The cancellation path becomes valid at time `t(funding) + delta(cancel)$`. Thus Alice has to publish her buy transaction the latest at 
+The cancellation path becomes valid at time `t(funding) + delta(cancel)$`. Thus Alice has to publish her buy transaction the latest at
 
     t(funding) + delta(cancel) - delta_race
 
 
-In sum, Alice's safety window to publish the buy transaction is from 
+In sum, Alice's safety window to publish the buy transaction is from
 
     t(funding) + delta_irreversible
 
@@ -477,7 +539,7 @@ The same logic applies to the cancelation path.
 
 ##### Cancel
 
-Cancel transaction should be published as soon as it becomes valid, that is, after 
+Cancel transaction should be published as soon as it becomes valid, that is, after
 
     t(funding) + delta(cancel)
 
@@ -485,7 +547,7 @@ The block height at which cancel transaction is mined is `t(cancel)`
 
 ##### Refund
 
-Refund transaction safety window for publication 
+Refund transaction safety window for publication
 
     t(cancel) + delta_irreversible
 
