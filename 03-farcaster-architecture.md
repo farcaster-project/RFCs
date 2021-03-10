@@ -58,8 +58,8 @@ The client is the only component that has access to secret keys.
 The aim of this segregation is to improve flexibility and extensibility added by making the client peripheral to the swap stack, that is, other clients might be created, such as:
 
 - clients supporting hardware wallets
-- mobile applications (that may run the daemon in the background or in a private server), 
-- heavy- or light-weight desktop GUIs, 
+- mobile applications (that may run the daemon in the background or in a private server),
+- heavy- or light-weight desktop GUIs,
 - scripted/automated backend clients (e.g. run by market makers, OTCs etc)
 
 ### Components interaction
