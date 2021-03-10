@@ -68,16 +68,18 @@ It is worth noting that this diagram (Fig. 2) only shows one syncer, but a synce
 
 ### Client & Daemon segregation rationale
 
-The rationale behind segregating the client and the daemon currently is not for security reasons - the client signs the transactions received from the daemon blindly, implying full trust (see *Security considerations* in [06. Datum & Instructions](./06-datum-and-instructions.md#security-considerations) RFC).
+The rationale behind segregating the client and the daemon currently is not for security reasons - the client creates and signs the transactions blindly based on received messages from the daemon, implying full trust (see *Security considerations* in [06. Datum & Instructions](./06-datum-and-instructions.md#security-considerations)).
 
-The client is the only component that has access to secret keys.
+The client is the only component that has access to secret keys that guarentee the safety of the swapped funds.
 
 The aim of this segregation is to improve flexibility and extensibility added by making the client peripheral to the swap stack, that is, other clients might be created, such as:
 
-- clients supporting hardware wallets
-- mobile applications (that may run the daemon in the background or in a private server),
-- heavy- or light-weight desktop GUIs,
-- scripted/automated backend clients (e.g. run by market makers, OTCs etc)
+- Clients supporting hardware wallets
+- Mobile applications (that may run the daemon in the background or in a private server),
+- Heavy- or light-weight desktop GUIs,
+- Scripted/automated backend clients (e.g. run by market makers, OTCs etc)
+
+We give a partial example of a `cli` client and a simple example of a `gui` client in [02. User Stories](./02-user-stories.md) to illustrate two implementation of a client.
 
 ## The `client` component
 
@@ -89,7 +91,7 @@ Client and daemon communicate via `datum` and `instruction` messages (see [06. D
 
 `datum` and `instruction` messages are asynchronous and may fail, the daemon must handle missing messages from a client, and vice versa, and may modify the swap state in response.
 
-Client and daemon must have an initialization protocol allowing one or the other to recover from a past swap state, see [09. Swap State](./09-swap-state.md).
+Client and daemon must have an initialization protocol allowing one or the other to recover from a past swap state (see [09. Swap State](./09-swap-state.md)).
 
 Client passes `datum` and `instruction` messages to the daemon. That is, client may at the user's discretion fire one of the possible protocol transitions at each moment in time. A subset of transitions may require transactions, signatures, or keys as input which are transmitted via `datum` messages. Upon client's message reception, daemon must undertake the actions associated with the fired transition, and update the swap state accordingly. Daemon updates client with the same type of messages: `datum` and `instruction`, allowing the client to update is local state and produce the next needed daemon's `datum` messages.
 
