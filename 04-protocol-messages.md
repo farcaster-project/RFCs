@@ -41,7 +41,7 @@ The following convenience types extend 'BOLT #1' fundamental types:
 
  * `swap_id`: a 32-byte swap unique identifier
 
-Cryptographic and transaction types are assumed to be generic, so e.g. different public key types can be used, i.e. multiple arbitrating blockchain with multiple cryptographic primitive can be supported latter.
+Cryptographic and transaction types are assumed to be generic, so e.g. different public key types can be used, i.e. multiple arbitrating blockchain with multiple cryptographic primitive can be supported latter. These types such as `signature` and `adaptor_signature` are defined in [07. Cryptographic Setup](./07-cryptographic-setup.md) and may vary depending on the cryptography used on the arbitrating blockchain.
 
 ### The `commit_alice_session_params` Message
 
@@ -158,7 +158,7 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
     - [`u16`: `refund_len`]
     - [`refund_len * byte`: `refund`] The arbitrating `refund (e)` transaction
     - [`u16`: `cancel_sig_len`]
-    - [`cancel_sig_len * byte`: `cancel_sig`] The `Bc` `cancel (d)` arbitrating `signature` type
+    - [`cancel_sig_len * byte`: `cancel_sig`] The `Bc` `cancel (d)` arbitrating `signature`
 
 ### The `refund_procedure_signatures` Message
 
@@ -170,9 +170,9 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
  2. data:
     - [`swap_id`: `swap_id`] The swap unique identifier
     - [`u16`: `cancel_sig_len`]
-    - [`cancel_sig_len * byte`: `cancel_sig`] The `Ac` `cancel (d)` arbitrating `signature` type
+    - [`cancel_sig_len * byte`: `cancel_sig`] The `Ac` `cancel (d)` arbitrating `signature`
     - [`u16`: `refund_adaptor_sig_len`]
-    - [`refund_adaptor_sig_len * byte`: `refund_adaptor_sig`] The `Ar(Tb)` `refund (e)` arbitrating `adaptor_signature` type
+    - [`refund_adaptor_sig_len * byte`: `refund_adaptor_sig`] The `Ar(Tb)` `refund (e)` arbitrating `adaptor_signature`
 
 
 ### The `buy_procedure_signature` Message
@@ -187,7 +187,7 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
     - [`u16`: `buy_len`]
     - [`buy_len * byte`: `buy`] The arbitrating `buy (c)` transaction
     - [`u16`: `buy_adaptor_sig_len`]
-    - [`buy_adaptor_sig_len * byte`: `buy_adaptor_sig`] The `Bb(Ta)` `buy (c)` arbitrating `adaptor_signature` type
+    - [`buy_adaptor_sig_len * byte`: `buy_adaptor_sig`] The `Bb(Ta)` `buy (c)` arbitrating `adaptor_signature`
 
 ### The `abort` Message
 
