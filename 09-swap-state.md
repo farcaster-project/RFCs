@@ -3,95 +3,106 @@
 ## Daemon state
 The daemon encodes the swap state-space as a Petri net. The marking of the Petri net encodes the swap state. Only swap states resulting from a valid protocol execution are included in the state-space. A valid protocol execution respects the state transition rules.
 
-The daemon handles the swap state and its state transitions on behalf of the client and following its instructions. The swap state indicates the step on the protocol execution the user is currently in.  For each given state, zero or more state transitions are enabled as a function of a list of time-ordered daemon execution logs. That is, depending on the protocol execution path taken, these are the next available user actions.
-
-## Execution logs
-The execution logs include incoming messages to the daemon and outgoing messages emitted by the daemon. 
-
-Incoming: (i) blockchain events, (ii) protocol messages, (iii) client instructions, or (iv) daemon loopback messages. 
-Outgoing: (i) syncer tasks, (ii) protocol messages, (iii) client state digest messages, or (iv) daemon loopback messages.
+The daemon handles the swap state and its state transitions on behalf of the client and following its instructions. The swap state indicates the step on the protocol execution the user is currently in.  For each given state, zero or more state transitions are enabled as a function of a list of time-ordered daemon transcripts. That is, depending on the protocol execution path taken, these are the next available user actions.
 
 ## State transition
-Upon swap state transition, the daemon must update the client through state digest messages, including proposals for the next client instruction.
+Upon swap `state transition`, the daemon must update the client through `datum` messages, which in turn provides the resources for client to create new `datum` to further command the daemon forward.
 
-For each swap state, only a subset of inputs is valid. The daemon must contextually filter all of its inputs before applying them. Filtering can happen in parallel for every stream of inputs. All filtered streams are then combined, each element of this final stream are applied to the current state.
+The daemon must contextually filter all of its input messages, such as, this message relates to syncer, that to client etc. It writes to `transcript` the messages in the order it processes them, on a single thread.  All filtered streams may then combined if needed, and each element of this final stream are applied to the current state.
 
-The first task of the combined input stream must be a save on disk. After each transition, the swap state must be saved on disk as the last checkpoint. The daemon must be able to start with a given checkpoint, a saved stream of inputs, and a protocol.
+The first task is to save to disk the input messages, creating the execution transcripts. After each transition is applied to state, the swap state must be saved on disk as the last checkpoint. The daemon must be able to recover (1) from a given checkpoint (containing the last recorded state), and (2) a stream of input messages that followed the checkpoint, and the protocol descriptor. 
 
-The swap state can be viewed as an ordered set of incoming messages. On a crash, the daemon must be able to load the last checkpoint and apply the stream of inputs (saved and incoming inputs) uncontained in the loaded checkpoint.
+The state may be recovered purely on the basis of the transcripts using a fold operation that returns the last markings. The state recovery process must not produce new messages.
+
+The swap state can be derived from an ordered set of incoming messages. On a crash, the daemon must be able to load the last checkpoint and apply the stream of inputs (saved and incoming inputs) uncontained in the loaded checkpoint.
 
 By ensuring that daemon output messages can be replayed safely, like tasks, the work already performed since the last saved checkpoint can be replayed safely.
 
-## State digests
-State digests are messages sent by the daemon to the client. They relay the information needed to construct the client state. The client state determines what is presented to the user interface, by exposing the currently valid user instructions. These messages both allow the client to display the correct actions a user can perform and create the necessary instructions consumed by the daemon to continue the swap protocol.
+## Datum messages
+Datum messages are generic messages bidirectionally exchanged by client and daemon, that allow the construction of types that are needed for protocol progression, such as a signature or transaction. They convey the information needed to construct the state on the other side. The instantiation of the type is equivalent to placing a token in a petrinet. The marking of the net encodes the full state, and this one token is thus a partial state. 
 
-**Format**:
+## Transcripts 
+Transcripts are time-ordered, and composed of 
+  - Syncer's blockchain `Event` Accordant
+  - Syncer's blockchain `Event` Arbitrating
+  - Client data bundles, `Bundles`
+  - Counter-party Daemon `Protocol` messages
+  - Own Daemon `Protocol` messages 
+  - Own Daemon Internal-timers, `Loopback`
+  - Published task from Daemon to Accordant Syncer, `Task`
+  - Published task from Daemon to Arbitrating Syncer, `Task`
 
-- Current marking of Petri net representation of swap
-- Data required for firing a given transition
+The transcripts include incoming messages to the daemon and outgoing messages emitted by the daemon.
 
-## The `state_digest` Message
-Provides the client with the current swap state digest. By applying the fired transitions to the current Petri net of the client, the client can infer which transitions are available to fire.
+The transcripts shall be written from a single thread and have sequential order for each component.
 
- 1. type: 33790 (`state_digest`)
- 2. data:
-    - [`u16`: `fired_transitions_len`]
-    - [`fired_transitions_len * type`: `fired_transitions`] Vector of # of firings per transition since last state digest
-    - [`sha256`: `marking_hash`] Hash of the current marking so that client can verify it applied the transitions correctly
-    - [`u16`: `fireable_transition_data_len`]
-    - [`fireable_transition_data_len * type`: `fireable_transition_data`] Map of fireable transitions to the data that the client requires to produce the authentication the daemon requires to fire it, such as transaction signatures
+## Transcript state recovery
 
+`L` is the complete set of valid transcripts produced by valid protocol runs and `Σ` is the set of protocol states, the state-space.
 
-## Recover state
-`L` is the complete set of valid logs produced by valid protocol executions and `Σ` is the set of protocol states, the state-space.
-
-There is a function, `recover_state` or `r`,
+There is a function, `recover_state` or `r` that reads all the `transcripts`,
 
 ```
                 L → Σ
-                r(logs) = σ
+                r(transcripts) = σ
 ```
-
-that takes the time-ordered execution logs composed of 
-
-- blockchain event 1, `Ev1`
-- blockchain event 2, `Ev2`
-- client instructions, `Inst`
-- counter-party protocol messages, `Prot2`
-- self protocol messages, `Prot1`
-- internal-timers, `Loopback`
-- published task, `Task1`
-- published task, `Task2`
 
 and that outputs a protocol state, `σ`.
 
-## Update state
-There is a function, `update_state` or `u`,
+The recovery operation would take the following form in pseudocode:
 
-```
-                Σ × L → Σ
-                u(σt−1, Δlogs) = σt
+``` rust
+let recovered_state: State = transcripts.fold(initial, |state, transcript| state.apply(transcript));
 ```
 
-where `σt−1` is the previous state and `σt` is the final state, and `Δlogs` are the logs between `t-1` and `t`.
+Although desirable, transcript state recovery may not be essential, as checkpoint recovery is also possible, and easier to implement.
 
-The protocol state may be encoded as markings of a Petri net.
+### Checkpoint recovery
 
-In practice, the code may be implemented as a fold operation over a stream of events taking a Petri net marking as the initial state that internally outputs the new marking (which encodes the new protocol state). Then tap the wire after the fold operation to monitor the state.
+`Checkpoint` must provide all the data to instantiate the types that underlie the state. They are expensive and shall be used only on critical sections.
+
+`Checkpoint id` includes the `transcript index`, from when the checkpoint was set if transcripts are on.
+
+Recovering from a checkpoint means `initial` from the code above shall be replaced by `checkpoint`, and `transcripts` should be read from `transcript index` on.
 
 ## Recovery process between components
-The recovery process is different depending on the components. Client and daemon are trusted, the prerequisites are not the same as e.g. inter-daemon.
+
+The above mechanism with transcripts or checkpoints shall be used for recovery on different parts of the components that require proper state recovery for safety reasons. 
+
+A less rigid approach might suffice for less critical parts.
+
+Any interaction prior to the coins being locked can be safely ignored. Recovery prior to locking funds is handy but optional. 
 
 ### Inter-daemon
-Daemon to daemon communication must have a mechanism to reconnect and gracefully recover from the latest saved state. This is the most critical recovery of the protocol as recovering to the wrong state may permit counter-party to steal funds.
+Before Bitcoin and Monero are locked, inter-daemon may fail with no further issues, and may not need recovery. 
 
-TODO(h4sh3d): elaborate a be more precise
+`checkpoint pre-lock`: Both Alice and Bob, just before locking their coins, shall make a checkpoint. 
+`checkpoint post-buyprocsig`: Both Alice and Bob shall amend the `checkpoint pre-lock` by concatenating the `buy_procedure_signature` message, after its sent by Bob's to Alice's daemons. 
+
+After that message the critical daemon-to-daemon communication is over. 
+
+Daemon to daemon communication shall have a mechanism to reconnect and gracefully recover from the checkpoints recommended above. 
+
 
 ### Client-Daemon
-Both daemon and client must implement mechanisms to re-establish their connection and safely recover from a previously saved state.
 
-TODO(h4sh3d): elaborate a be more precise
+#### Daemon side
+
+After `Signed adaptor buy` and `Signed arbitrating lock transactions`, a `checkpoint` is taken on Bob's Daemon side. Thereafter Bob locks the Bitcoin. Note that this corresponds to Bob's `checkpoint pre-lock`, so no new checkpoint needed.
+
+After `Signed adaptor refund` and `Cosign arbitrating cancel` are received by Daemon, and just before locking the Monero, Alice's Daemon makes a `checkpoint`. Again, this corresponds to Alice's `checkpoint pre-lock`, so no new checkpoint needed.
+
+#### Client side
+The client has to checkpoint its own id, swap parameters and daemon id, and must have access to secret keys. From that it must be able to use the daemon to recover its own state, since daemon is a trusted component.
+
+Thereafter no more checkpoints for the client.
+
+All the interaction from `buy_procedure_signature` until the end of swap are critical, but must be safely re-playable within a trusted daemon, client and syncer setup.
+
+Both daemon and client must implement mechanisms to re-establish their connection and Daemon helps Client to safely recover from a previous state.
 
 ### Syncer-Daemon
-As tasks can be replayed safely the daemon and syncer do not need any particular recovery mechanism.
 
+As tasks can be replayed safely, the daemon and syncer do not need any particular recovery mechanism. 
+
+Syncer shall recover to the same set of tasks as before crashing.
