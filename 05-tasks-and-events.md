@@ -178,15 +178,16 @@ In response to the `watch_transaction` task.
  2. data:
     - [`i32`: `id`]: The task identifier that emits this event
     - [`sha256`: `block`]: Hash of the block mining the transaction.
-    - [`u16`: `confirmations`]: Number of blocks after `block`
+    - [`i32`: `confirmations`]: Number of blocks after `block`, return `-1` for `None`
 
  - semantics:
-    - for transaction not seen on mempool, emit `(0x0, none)`
-    - for transaction seen on mempool but not mined, emit `(0x0, some(0))`
-    - for transaction mined, emit `(tx_block, some(confirmations))` where `tx_block` is the block that the transaction got mined, and `confirmations` is the number of blocks extending `tx_block`
-    - when `confirmations` >= `confirmation_bound`, emit `(tx_block, some(confirmation_bound))`. here `task` is considered successfully accomplished and terminates. at that time, transaction is considered final (=irreversible).
+    - for transaction not seen on mempool, emit `(0x0, None)`
+    - for transaction seen on mempool but not mined, emit `(0x0, Some(0))`
+    - for transaction mined, emit `(tx_block, Some(confirmations))` where `tx_block` is the block that the transaction got mined, and `confirmations` is the number of blocks extending `tx_block`
+    - when `confirmations` >= `confirmation_bound`, emit `(tx_block, Some(confirmation_bound))`. here `task` is considered successfully accomplished and terminates. at that time, transaction is considered final (=irreversible).
 
 Thus:
+
 ```
 for each transaction being watched by Syncer:
   for every new block arrival extending the chain that the transaction was mined:
