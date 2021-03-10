@@ -15,13 +15,13 @@ This RFC describes the overall architecture and how the software stack of Farcas
     * [Main components](#main-components)
     * [Components interaction](#components-interaction)
     * [Client & Daemon segregation rationale](#client--daemon-segregation-rationale)
-  * [Client](#client)
+  * [The `client` component](#the-client-component)
     * [Client-Daemon communication](#client-daemon-communication)
     * [Why two bidirectional message types?](#why-two-bidirectional-message-types)
-  * [Daemon](#daemon)
+  * [The `daemon` component](#the-daemon-component)
     * [Counter-party daemon communication](#counter-party-daemon-communication)
     * [Loopback: self-generated input messages](#loopback-self-generated-input-messages)
-  * [Syncer](#syncer)
+  * [The `syncer` component](#the-syncer-component)
     * [Blockchain communication](#blockchain-communication)
 
 ## Global Architecture
@@ -79,7 +79,7 @@ The aim of this segregation is to improve flexibility and extensibility added by
 - heavy- or light-weight desktop GUIs,
 - scripted/automated backend clients (e.g. run by market makers, OTCs etc)
 
-## Client
+## The `client` component
 
 The client is the only component aware of the user's private keys and acts as a "swap wallet", creating and signing the blockchain transactions and communicating with the daemon through typed messages.
 
@@ -97,7 +97,7 @@ Client passes `datum` and `instruction` messages to the daemon. That is, client 
 
 We distinguish between `datum` messages who carry essential data for performing the swap such as keys, signatures, transactions, parameters, etc. and `instruction` that control the flow of the swap and may come from the user or the counter-party daemon, such as an `abort` operation.
 
-## Daemon
+## The `daemon` component
 
 The Daemon is the central component responsible for orchestrating the protocol execution.
 
@@ -120,7 +120,7 @@ The Daemon has a bidirectional communication channel with the swap counter-party
 
 The daemon may generate self-addressed messages. Those messages may be used to trigger transitions only based on the daemon's state, such as timers. Those transitions can e.g. represent the absence of counter-party daemon communication during a period of time, which may trigger the swap cancellation process.
 
-## Syncer
+## The `syncer` component
 
 A syncer is specific to a blockchain and can handle a list of `tasks` related to it. Those `tasks` will be completed in different manners depending on the blockchain type and/or the blockchain state. Syncers allow the daemon to abstract a part of the logic needed to interact with a blockchain with a defined interface composed of `tasks` and `blockchain events` (see [05. Tasks & Blockchain Events](./05-tasks-and-events.md)).
 
