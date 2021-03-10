@@ -95,8 +95,8 @@ Bitcoin also has this task return historical transactions, with a possible rate 
 For Monero, the following parameters:
 
  2. data:
-    - [`u16`: `scalar_len`]
-    - [`scalar_len * byte`: `public_spend`]: The public spend key of the address.
+    - [`u16`: `point_len`]
+    - [`point_len * byte`: `public_spend`]: The public spend key of the address.
     - [`u16`: `scalar_len`]
     - [`scalar_len * byte`: `private_view`]: The private view key of the address.
     - [`u64`: `from_height`]: Previous blocks to scan for transactions sent to the specified address.
