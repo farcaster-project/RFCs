@@ -60,7 +60,7 @@ Each component have a specific assigned role, they all work together to complete
 
 Each swap component is represented as a black box that consumes input messages and produces output messages. Each input and output message is a typed message. Components subscribe to types of messages, e.g. the client may not consume messages produced by syncers but will subscribe to daemon's messages.
 
-Typed messages are defined to specified the interfaces between the components and to document what type of data is needed to be exchanged between this three high level components. In reallity the daemon can be slpit into multiple small services, but the interaction with the `client` and the `syncers` must follow the defined interfaces.
+Typed messages are defined to specified the interfaces between the components and to document what type of data is needed to be exchanged between this three high level components. In reallity the daemon can be split into multiple small services, but the interaction with the `client` and the `syncers` must follow the defined interfaces.
 
 ![Typed messages exchanged between components](./03-farcaster-architecture/messages-architecture.png)
 *Fig 2. Typed messages exchanged between components*
@@ -98,7 +98,7 @@ Client and daemon communicate via `datum` and `instruction` messages (see [06. D
 
 Client and daemon must have an initialization protocol allowing one or the other to recover from a past swap state (see [09. Swap State](./09-swap-state.md)).
 
-Client passes `datum` and `instruction` messages to the daemon. That is, client may at the user's discretion fire one of the possible protocol transitions at each moment in time. A subset of transitions may require transactions, signatures, or keys as input which are transmitted via `datum` messages. Upon client's message reception, daemon must undertake the actions associated with the fired transition, and update the swap state accordingly. Daemon updates client with the same type of messages: `datum` and `instruction`, allowing the client to update is local state and produce the next needed daemon's `datum` messages.
+Client passes `datum` and `instruction` messages to the daemon. That is, client may at the user's discretion fire one of the possible protocol transitions at each moment in time. A subset of transitions may require transactions, signatures, or keys as input which are transmitted via `datum` messages. Upon client's message reception, daemon must undertake the actions associated with the fired transition, and update the swap state accordingly. Daemon updates client with the same type of messages: `datum` and `instruction`, allowing the client to update its local state and produce the next needed daemon's `datum` messages.
 
 ### Why two bidirectional message types?
 
@@ -133,4 +133,4 @@ A syncer is specific to a blockchain and can handle a list of `tasks` related to
 
 ### Blockchain communication
 
-A syncer can choose how to interact with its specified blockchain, this can be done solely through RPC calls or involve more advanced features such as e.g. consuming the 0MQ streams proposed by a full node. The simplest implementation of a syncer would made use of public high level blockchain API, however this would only be acceptable when no value is transacted.
+A syncer can choose how to interact with its specified blockchain, this can be done solely through RPC calls or involve more advanced features such as e.g. consuming the 0MQ streams proposed by a full node.
