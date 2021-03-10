@@ -177,7 +177,7 @@ This notation follows BIP 340, with some simplication on even y coordinate check
  s' = k + tagged_hash( bytes(R + T) || bytes(P) || m )d
 ```
 
-The `adaptor_signature` type is define as `(R, s')` for this instantiation.
+The `adaptor_signature` type is defined as `(R, s')` for this instantiation.
 
  * `EncVrfy`:
 
@@ -220,7 +220,7 @@ A Cross-group Discrete Logarithm proving system is define with:
 
  * `XDLGen`: An algorithm that generates the parameters based on the given security level.
 
- * `XDLProve`: An algorithm that produces a proof in zero-knowledge of a relation `x` for the tuple `(xG', xH')` where `G` and `H` be prime-order groups where the discrete logarithm problem is assumed to be hard and `G' ∈ G` and `H' ∈ H`, among other proof elements.
+ * `XDLProve`: An algorithm that produces a proof in zero-knowledge of a relation `x` for the tuple `(xG', xH')` where `G` and `H` are prime-order groups where the discrete logarithm problem is assumed to be hard and `G' ∈ G` and `H' ∈ H`, among other proof elements.
 
  * `XDLVrfy`: Verify the proof for a given relation `(xG', xH')`.
 
