@@ -52,17 +52,17 @@ This document frequently references epochs, whose definition is dependent on the
 ### The `abort` Task
 Aborts the task with id `id`.
 
-Data: 
+Data:
 - `id`: the task `id` that shall be aborted
 
-To update a task with id `id`, Syncer must receive an `abort` task aborting with `id` parameter, and subsequently submit a new instance of this task which shall have a new `id`. 
+To update a task with id `id`, Syncer must receive an `abort` task aborting with `id` parameter, and subsequently submit a new instance of this task which shall have a new `id`.
 
 ### The `watch_height` Task
 
 `watch_height` asks the syncer for notifications about updates to the blockchain's `height` and associated `block` id. This task MUST be implemented for any coin with a blockchain. This task MAY be implemented for any coin without a blockchain. If it is not implemented, an error event must be sent in response to any attempt to start this task.
 
 Required parameters are:
-* `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, this task MUST be maintained, barring the case where an `abort` task aborts it. 
+* `lifetime`: Epoch at which the syncer SHOULD drop this task. Until then, this task MUST be maintained, barring the case where an `abort` task aborts it.
 
 Parameters may be added to specify which blockchain, in order to support any network utilizing multiple.
 
@@ -92,9 +92,9 @@ For Monero, the following parameters:
 Required parameters are:
 * `hash`: Transaction hash.
 * `confirmation_bound`: Upper bound on the confirmation count until which the syncer should report updates on the block depth of the transaction. This task MUST be maintained until this threshold is reached or until `lifetime` has passed.
-* `lifetime`: Epoch at which the syncer SHOULD drop this task. This task MUST be maintained until this threshold is reached or until `confirmation_bound` has been reached. 
+* `lifetime`: Epoch at which the syncer SHOULD drop this task. This task MUST be maintained until this threshold is reached or until `confirmation_bound` has been reached.
 
-Once a transaction is seen by the syncer, and passed the confirmation threshold, a `transaction_confirmations` event is emitted. 
+Once a transaction is seen by the syncer, and passed the confirmation threshold, a `transaction_confirmations` event is emitted.
 
 ### The `broadcast_transaction` Task
 
@@ -106,7 +106,7 @@ The only parameter is:
 The blockchain event in response is the `transaction_broadcasted` event.
 
 ## Blockchain Events
-The function of the Syncer is to emit events to accomplish its assigned tasks. Syncer's must emit events targeting the daemon (at a later stage of the project, potentially the client as well). Blockchain Events are produced by syncers in response to certain types of `tasks`. A task MAY produce multiple `blockchain event` messages. The `blockchain event` messages are as defined below. 
+The function of the Syncer is to emit events to accomplish its assigned tasks. Syncer's must emit events targeting the daemon (at a later stage of the project, potentially the client as well). Blockchain Events are produced by syncers in response to certain types of `tasks`. A task MAY produce multiple `blockchain event` messages. The `blockchain event` messages are as defined below.
 
 ### The `task_aborted` Event
 Event in response to `abort_task` Task, emitted only once.
@@ -116,7 +116,7 @@ Data:
 
 ### The `height_changed` Event
 `watch_height` task was previously defined. That task emits `height changed` blockchain events. Upon new block arrival and reorgs, a `height_changed` event is emitted. It contains:
-* `block`: current block_hash 
+* `block`: current block_hash
 * `height`: current blockchain height.
 
 Upon task reception, syncers MUST send a `height_changed` event immediately to signify the current height.
@@ -132,7 +132,7 @@ Further fields may be defined depending on the asset. Any asset based on a block
 ### The `transaction_confirmations` Event
 In response to the `watch_transaction` task.
 
-- Data: 
+- Data:
   * `block`: hash of the block mining the transaction.
   * `confirmations`: Number of blocks after `block`
 
@@ -140,12 +140,12 @@ In response to the `watch_transaction` task.
     - For transaction not seen on mempool, emit `(0x0, None)`
     - For transaction seen on mempool but not mined, emit `(0x0, Some(0))`
     - For transaction mined, emit `(tx_block, Some(confirmations))` where `tx_block` is the block that the transaction got mined, and `confirmations` is the number of blocks extending `tx_block`
-    - When `confirmations` >= `confirmation_bound`, emit `(tx_block, Some(confirmation_bound))`. Here `Task` is considered successfully accomplished and terminates. At that time, transaction is considered final (=irreversible). 
+    - When `confirmations` >= `confirmation_bound`, emit `(tx_block, Some(confirmation_bound))`. Here `Task` is considered successfully accomplished and terminates. At that time, transaction is considered final (=irreversible).
 
 Thus:
 ```
 for each transaction being watched by Syncer:
-  for every new block arrival extending the chain that the transaction was mined: 
+  for every new block arrival extending the chain that the transaction was mined:
     if confirmations <= confirmation_bound:
       Syncer emits: `(tx_block, Some(confirmations))`
 ```
@@ -161,7 +161,7 @@ This message contains:
 
 
 FIXME: move to state RFC
-### Equivalence of Event Sets 
+### Equivalence of Event Sets
 
 When a task produces two different sets of blockchain events depending on when the task is handled by the syncer those two sets MUST have an equivalent impact on the state of the daemon at any point in time.
 
