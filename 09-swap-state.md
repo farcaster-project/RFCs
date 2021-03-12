@@ -57,50 +57,42 @@ let recovered_state: State = transcripts.fold(initial, |state, transcript| state
 
 Although desirable, transcript state recovery may not be essential, as checkpoint recovery is also possible, and easier to implement.
 
-### Checkpoint recovery
+## Checkpoint recovery
 
 `Checkpoint` must provide all the data to instantiate the types that underlie the state. They are expensive and shall be used only on critical sections.
 
-
-
-Daemon assumes Client and Syncer are stateless.
-
-
-
+### Inter-daemon
 Any interaction prior to the coins being locked can be safely ignored. Recovery prior to locking funds is handy but optional. 
 
-### Inter-daemon
 Before Bitcoin and Monero are locked, inter-daemon may fail with no further issues, and may not need recovery. 
 
 `checkpoint pre-lock`: Both Alice and Bob, just before locking their coins, shall make a checkpoint. 
 `checkpoint post-buyprocsig`: Both Alice and Bob shall amend the `checkpoint pre-lock` by concatenating the `buy_procedure_signature` message, after its sent by Bob's to Alice's daemons. 
-After `Signed adaptor refund` and `Cosign arbitrating cancel` are received by Daemon, and just before locking the Monero, Alice's Daemon makes a `checkpoint`. Again, this corresponds to Alice's `checkpoint pre-lock`, so no new checkpoint needed.
 
-After that message the critical daemon-to-daemon communication is over. 
+### Client-Daemon-Syncer (same user)
+
+Daemon assumes Client and Syncer are stateless.
+
+All the interaction from `buy_procedure_signature` protocol message until the end of swap are critical. Nonetheless its within a trusted setup composed of own Daemon, Client and Syncer setup, where it can be safely re-playable.
+
+The Daemon keeps track of its state but assumes Client and Syncer are stateless. 
+
+#### Daemon side
+
 Upon Daemon recovery, Daemon must watch for all transactions it knows about through the syncers, in order to detect if swap evolved since the last checkpoint, before taking action. Thus Daemon must create tasks for watching for transactions, before publishing them, in order to make sure the recovery process is building upon the original run, for example.
-
-Daemon to daemon communication shall have a mechanism to reconnect and gracefully recover from the checkpoints recommended above. 
-
 
 #### Client side
 
 The Client has to backup to disk: its own id, swap parameters and Daemon id, and must have access to secret keys. From that Daemon's messages are used to continue the swap, since Daemon is a trusted component. After a crash, a recovering Client must receive Daemon's datum messages, which are parametric on Daemon's swap state. From such messages Client may provide the additional signatures to complete the swap, if needed. As such Client is mostly stateless.
 
-After `Signed adaptor buy` and `Signed arbitrating lock transactions`, a `checkpoint` is taken on Bob's Daemon side. Thereafter Bob locks the Bitcoin. Note that this corresponds to Bob's `checkpoint pre-lock`, so no new checkpoint needed.
+The data needed for client to recover were already store on Daemon's checkpoints:
+  - After `Signed adaptor buy` and `Signed arbitrating lock transactions`, a `checkpoint` is taken on Bob's Daemon side. Thereafter Bob locks the Bitcoin. Note that this corresponds to Bob's `checkpoint pre-lock`, so no new checkpoint needed.
+  - After `Signed adaptor refund` and `Cosign arbitrating cancel` are received by Daemon, and just before locking the Monero, Alice's Daemon makes a `checkpoint`. Again, this corresponds to Alice's `checkpoint pre-lock`, so no new checkpoint needed.
 
-After `Signed adaptor refund` and `Cosign arbitrating cancel` are received by Daemon, and just before locking the Monero, Alice's Daemon makes a `checkpoint`. Again, this corresponds to Alice's `checkpoint pre-lock`, so no new checkpoint needed.
-
-#### Client side
-The client has to checkpoint its own id, swap parameters and daemon id, and must have access to secret keys. From that it must be able to use the daemon to recover its own state, since daemon is a trusted component.
-
-Thereafter no more checkpoints for the client.
-
-All the interaction from `buy_procedure_signature` until the end of swap are critical, but must be safely re-playable within a trusted daemon, client and syncer setup.
-
-Both daemon and client must implement mechanisms to re-establish their connection and Daemon helps Client to safely recover from a previous state.
+Both daemon-client, and daemon-syncer must implement mechanisms to re-establish their connection.
 
 ### Syncer-Daemon
 
-As tasks can be replayed safely, the daemon and syncer do not need any particular recovery mechanism. 
+As tasks can be replayed safely, the daemon and syncer do not need any particular recovery mechanism.
 
 Syncer shall recover to the same set of tasks as before crashing.
