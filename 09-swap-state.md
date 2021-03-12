@@ -10,11 +10,11 @@ Upon swap `state transition`, the daemon must update the client through `datum` 
 
 The daemon must contextually filter all of its input messages, such as, this message relates to syncer, that to client etc. It writes to `transcript` the messages in the order it processes them, on a single thread.  All filtered streams may then combined if needed, and each element of this final stream are applied to the current state.
 
-The first task is to save to disk the input messages, creating the execution transcripts. After each transition is applied to state, the swap state must be saved on disk as the last checkpoint. The daemon must be able to recover (1) from a given checkpoint (containing the last recorded state), and (2) a stream of input messages that followed the checkpoint, and the protocol descriptor. 
+The first task is to save to disk the input messages, creating the execution transcripts. After each transition is applied to state, the swap state may be saved on disk (if safety critical) as the last checkpoint. The daemon must be able to recover (1) from a given checkpoint (containing the last recorded state), and (2) may recover from a stream of input messages that followed the checkpoint, and the protocol descriptor. The latter recovery mechanism allows recovery to any swap state, but may not be needed, as in the current protocol there are not many safety critical states (namely 2 for each participant's daemon). All other states must be safely derived from these critical states.
 
-The state may be recovered purely on the basis of the transcripts using a fold operation that returns the last markings. The state recovery process must not produce new messages.
+The state may be recovered purely on the basis of the transcripts using a fold operation that returns the state. The state recovery process must not produce new messages (= no side-effects).
 
-The swap state can be derived from an ordered set of incoming messages. On a crash, the daemon must be able to load the last checkpoint and apply the stream of inputs (saved and incoming inputs) uncontained in the loaded checkpoint.
+The swap state can be derived from an ordered set of incoming messages. On a crash, the daemon may be able to load the last checkpoint and apply the stream of inputs (saved and incoming inputs) uncontained in the loaded checkpoint.
 
 By ensuring that daemon output messages can be replayed safely, like tasks, the work already performed since the last saved checkpoint can be replayed safely.
 
@@ -61,15 +61,11 @@ Although desirable, transcript state recovery may not be essential, as checkpoin
 
 `Checkpoint` must provide all the data to instantiate the types that underlie the state. They are expensive and shall be used only on critical sections.
 
-`Checkpoint id` includes the `transcript index`, from when the checkpoint was set if transcripts are on.
 
-Recovering from a checkpoint means `initial` from the code above shall be replaced by `checkpoint`, and `transcripts` should be read from `transcript index` on.
 
-## Recovery process between components
+Daemon assumes Client and Syncer are stateless.
 
-The above mechanism with transcripts or checkpoints shall be used for recovery on different parts of the components that require proper state recovery for safety reasons. 
 
-A less rigid approach might suffice for less critical parts.
 
 Any interaction prior to the coins being locked can be safely ignored. Recovery prior to locking funds is handy but optional. 
 
@@ -78,15 +74,17 @@ Before Bitcoin and Monero are locked, inter-daemon may fail with no further issu
 
 `checkpoint pre-lock`: Both Alice and Bob, just before locking their coins, shall make a checkpoint. 
 `checkpoint post-buyprocsig`: Both Alice and Bob shall amend the `checkpoint pre-lock` by concatenating the `buy_procedure_signature` message, after its sent by Bob's to Alice's daemons. 
+After `Signed adaptor refund` and `Cosign arbitrating cancel` are received by Daemon, and just before locking the Monero, Alice's Daemon makes a `checkpoint`. Again, this corresponds to Alice's `checkpoint pre-lock`, so no new checkpoint needed.
 
 After that message the critical daemon-to-daemon communication is over. 
+Upon Daemon recovery, Daemon must watch for all transactions it knows about through the syncers, in order to detect if swap evolved since the last checkpoint, before taking action. Thus Daemon must create tasks for watching for transactions, before publishing them, in order to make sure the recovery process is building upon the original run, for example.
 
 Daemon to daemon communication shall have a mechanism to reconnect and gracefully recover from the checkpoints recommended above. 
 
 
-### Client-Daemon
+#### Client side
 
-#### Daemon side
+The Client has to backup to disk: its own id, swap parameters and Daemon id, and must have access to secret keys. From that Daemon's messages are used to continue the swap, since Daemon is a trusted component. After a crash, a recovering Client must receive Daemon's datum messages, which are parametric on Daemon's swap state. From such messages Client may provide the additional signatures to complete the swap, if needed. As such Client is mostly stateless.
 
 After `Signed adaptor buy` and `Signed arbitrating lock transactions`, a `checkpoint` is taken on Bob's Daemon side. Thereafter Bob locks the Bitcoin. Note that this corresponds to Bob's `checkpoint pre-lock`, so no new checkpoint needed.
 
