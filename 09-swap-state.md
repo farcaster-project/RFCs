@@ -1,4 +1,25 @@
-# Swap State
+<pre>
+  State: draft
+  Created: 2021-02-24
+</pre>
+
+# 09. Swap State
+
+## Overview
+
+This RFC describes the how the components manage the state of a swap during the execution of the protocol. The state is an aggregate of events generated or received by each components of the system.
+
+## Table of Contents
+
+  * [Daemon state](#daemon-state)
+  * [State transition](#state-transition)
+  * [Datum messages](#datum-messages)
+  * [Transcripts](#transcripts)
+  * [Transcript state recovery](#transcript-state-recovery)
+  * [Checkpoint recovery](#checkpoint-recovery)
+    * [Inter-daemon](#inter-daemon)
+    * [Client-Daemon-Syncer (same user)](#client-daemon-syncer-same-user)
+    * [Syncer-Daemon](#syncer-daemon)
 
 ## Daemon state
 The daemon encodes the swap state-space as a Petri net. The marking of the Petri net encodes the swap state. Only swap states resulting from a valid protocol execution are included in the state-space. A valid protocol execution respects the state transition rules.
