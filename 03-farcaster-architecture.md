@@ -69,11 +69,11 @@ It is worth noting that this diagram (Fig. 2) only shows one syncer, but a synce
 
 ### Networking stack
 
-Typed messages are strictly defined with their serialization and the inter-daemon networking stack is constrained and defined in [04. Protocol Messages](./04-protocol-messages.md), but we don't restrict the networking stack between `daemon`, `client` and `syncer`s. The technological choice is let to the implementation with the feature constraint of running over the network if wanted by the user.
+Typed messages are strictly defined with their serialization and the inter-daemon networking stack is constrained and defined in [04. Protocol Messages](./04-protocol-messages.md), but we don't restrict the networking stack between `daemon`, `client` and `syncer`s. The technological choice is left up to the implementation, but must support running all interactions over the network, whenever required by the user.
 
 ### Client & Daemon segregation rationale
 
-The rationale behind segregating the client and the daemon currently is not for security reasons - the client creates and signs the transactions blindly based on messages received from the daemon, implying full trust (see *Security considerations* in [06. Datum & Instructions](./06-datum-and-instructions.md#security-considerations)).
+The rationale behind segregating the client and the daemon is currently not motivated by security reasons - the client creates and signs the transactions blindly based on messages received from the daemon, therefore implying full trust (see *Security considerations* in [06. Datum & Instructions](./06-datum-and-instructions.md#security-considerations)).
 
 The client is the only component that has access to secret keys that guarantee the safety of the swapped funds.
 
