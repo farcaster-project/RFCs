@@ -10,15 +10,8 @@
 This RFC specifies the messages exchanged between the user's swap client and its own daemon.
 As sketched below, the `client`→`daemon` and `daemon`→`client` routes consists of `datum` and `instruction` messages. They control the state transitions of an ongoing swap. The `client` must present control choices to the end-user during the progression of the protocol execution.
 
-```
-
-                                     sk,pk           datum         pk
-                                    -----------        &        -------------
-                                    | client  |   instruction   | daemon    |
-                                    -----------  <----------->  -------------
-
-```
-*Fig 1. Sketch of interaction between a client and a daemon. Note only client has access to secret keys (sk).*
+![Client and daemon interaction](./06-datum-and-instructions/datum-instructions.png)
+*Fig 1. Interactions between a client and a daemon.*
 
 `datum` and `instructions` messages must follow the *'Type-Length-Value Format (TLV format)'* defines in *'BOLT #1: Base Protocol'* [[1](#references)] standard from the Lightning Network specifications.
 
