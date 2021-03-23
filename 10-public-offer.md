@@ -103,11 +103,11 @@ A public offer MUST follow the specified format below to be considered as valid.
 ```
 < [0x46, 0x43, 0x53, 0x57, 0x41, 0x50] MAGIC BYTES > < [u16] version > < [u8] network >
 < [u8; 4] arbitrating identifier > < [u8; 4] accordant identifier >
-< [u8] amount len > < [u8; amount len] arbitrating amount value >
-< [u8] amount len > < [u8; amount len] accordant amount value >
-< [u8] timeout len > < [u8; amount len] cancel timeout value >
-< [u8] timeout len > < [u8; amount len] punish timeout value >
-< [u8] fee strategy > < [u8] value len > < [u8; value len] fixed or minimum value > (< [u8] value len > < [u8; value len] maximum value >)
+< [u8] len > < [u8; len] arbitrating amount value >
+< [u8] len > < [u8; len] accordant amount value >
+< [u8] len > < [u8; len] cancel timeout value >
+< [u8] len > < [u8; len] punish timeout value >
+< [u8] fee strategy > < [u8] len > < [u8; len] fixed or minimum value > (< [u8] len > < [u8; len] maximum value >)
 < [u8] future maker role >
 ```
 
