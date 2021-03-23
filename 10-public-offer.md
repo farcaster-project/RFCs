@@ -96,6 +96,7 @@ A public offer MUST follow the specified format below to be considered as valid.
     * `0x02` for the range fee, followed by
         * one unsigned integer byte defining the number of bytes to parse per value
         * an array of bytes `[bytes]` representing the value of minimum fee interpreted for its respective blockchain; bytes are serialized with the native blockchain consensus rules.
+        * one unsigned integer byte defining the number of bytes to parse per value
         * an array of bytes `[bytes]` representing the value of maximum fee interpreted for its respective blockchain; bytes are serialized with the native blockchain consensus rules.
  * The future maker swap role as one byte: `0x01` for Alice and `0x02` for Bob
 
@@ -106,7 +107,7 @@ A public offer MUST follow the specified format below to be considered as valid.
 < [u8] amount len > < [u8; amount len] accordant amount value >
 < [u8] timeout len > < [u8; amount len] cancel timeout value >
 < [u8] timeout len > < [u8; amount len] punish timeout value >
-< [u8] fee strategy > < [u8] value len > < [u8; value len] fixed or minimum value > (< [u8; value len] maximum value >)
+< [u8] fee strategy > < [u8] value len > < [u8; value len] fixed or minimum value > (< [u8] value len > < [u8; value len] maximum value >)
 < [u8] future maker role >
 ```
 
