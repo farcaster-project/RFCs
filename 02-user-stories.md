@@ -26,7 +26,7 @@ This RFC describes the roles and phases of a swap and presents the user stories 
 
 ### Propose a swap
 
-As a participant who wants to propose a swap to other participants, I will choose the maker role and start my node so that I can create a public offer, share it, and latter a taker will be able to connect to my node and execute the swap with me.
+As a participant who wants to propose a swap to other participants, I will choose the maker role and start my node so that I can create a public offer, share it, and later a taker will be able to connect to my node and execute the swap with me.
 
 The maker starts her node in maker mode and registers all the parameters an offer requires, see below for more details. The daemon start listening on a port or creates an onion service, depending on its configuration, and waits for an incoming connection. When ready, the daemon prints the *public offer*. The public offer contains all the parameters a taker needs to connect. The maker can then distribute the public offer over her preferred channels.
 
@@ -79,11 +79,11 @@ We present a simple user interface for starting with the role of a maker or a ta
 
 #### Maker
 
-As a maker I start my client and choose the maker role (**A. Choose a negotiation role**). When started in maker mode, my client will ask me a list of required inputs (**B. Create an offer**). When completed my client starts my daemon in listening mode. When the daemon is ready, the client displays the public offer (**D. Start and display the public offer**) and waits for an incoming connection. It is now my responsability to share and forward this public offer to potential swappers.
+As a maker, I start my client and choose the maker role (**A. Choose a negotiation role**). When started in maker mode, my client will ask me a list of required inputs (**B. Create an offer**). When completed my client starts my daemon in listening mode. When the daemon is ready, the client displays the public offer (**D. Start and display the public offer**) and waits for an incoming connection. It is now my responsability to share and forward this public offer to potential swappers.
 
 #### Taker
 
-As a taker I start my client and choose the taker role (**A. Choose a negotiation role**). When started in taker mode, my client prompts me a public offer (**C. Paste a public offer**). The pasted public offer is parsed and displayed to the user for verification and acceptance (**E. Visualize a public offer**). If I wants to take it, my daemon is started and connects to the daemon specified in the public offer. If the maker daemon is still up and no one already took the offer, the swap may succeed.
+As a taker, I start my client and choose the taker role (**A. Choose a negotiation role**). When started in taker mode, my client prompts me a public offer (**C. Paste a public offer**). The pasted public offer is parsed and displayed to the user for verification and acceptance (**E. Visualize a public offer**). If I want to take it, my daemon is started and connects to the daemon specified in the public offer. If the maker daemon is still up and no one already took the offer, the swap may succeed.
 
 ![GUI Negotiation Mockups](./02-user-stories/gui-negotiation-mockups.png)
 *Fig 1. Example of a GUI executing the 'discover, connect, and accept' mechanism*
