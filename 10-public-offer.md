@@ -127,5 +127,5 @@ For Bitcoin, the timelocs values must be serialized as a four bytes unsigned lit
 
 ## References
 
- * [[1] BIP 44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
- * [[2] SLIP 44](https://github.com/satoshilabs/slips/blob/master/slip-0044.md#slip-0044--registered-coin-types-for-bip-0044)
+ * [[1] BIP 44: Multi-Account Hierarchy for Deterministic Wallets](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
+ * [[2] SLIP 44: Registered coin types for BIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md#slip-0044--registered-coin-types-for-bip-0044)
