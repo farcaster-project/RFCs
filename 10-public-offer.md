@@ -11,7 +11,16 @@ This RFC describe and formalize the content of a public offer and its serializat
 
 ## Table of Contents
 
-TODO
+  * [Content](#content)
+    * [Version](#version)
+    * [Network](#Network)
+    * [Asset identifiers](#asset-identifiers)
+    * [Amounts](#amounts)
+    * [Fee strategy](#fee-strategy)
+    * [Future swap role](#future-swap-role)
+  * [Serialization](#serialization)
+    * [Amounts](#amounts)
+    * [Timelocks](#timelocks)
 
 ## Content
 
