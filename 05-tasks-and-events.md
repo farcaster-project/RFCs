@@ -208,16 +208,3 @@ The `broadcast_transaction` task defined above produces upon successful transact
     - [`tx_len * byte`: `tx`]: The raw transaction in its serialized format.
     - [`i32`: `success_broadcast`]: The status code, return 0 if broadcast is successful
 
-FIXME: move to state RFC
-### Equivalence of Event Sets
-
-When a task produces two different sets of blockchain events depending on when the task is handled by the syncer those two sets MUST have an equivalent impact on the state of the daemon at any point in time.
-
-Examples follow.
-
-#### `block_height` event
-Let's define `X` as the current block height. The task is sent to the syncer, initial plus two events are received, for `X`, `X+1`, and `X+2` new heights. At time `t2` the latest state is for `X+2`. If the daemon crashes at `t1` with height `X+1`, and later restarts, at a time `t2`, it MUST have previously received `X+1` as the initial event and then `X+2`. Finally, if the daemon crashes at time `t2` and restarts, the initial blockchain event MUST contains `X+2`. Sets of events are different but equivalent for the daemon state.
-
-#### `transaction_broadcasted` event
-The daemon sends the task at a time `t` and receives the successful `transaction broadcasted` event at time `t'`, if the daemon crashes between `t` and `t'`, rebroadcasting the task MUST result in the same successful event, despite the fact that the syncer MAY not broadcast the transaction to the full-node a second time.
-
