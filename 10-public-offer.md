@@ -21,6 +21,7 @@ This RFC describe and formalize the content of a public offer and its serializat
   * [Serialization](#serialization)
     * [Amounts](#amounts)
     * [Timelocks](#timelocks)
+  * [References](#references)
 
 ## Content
 
