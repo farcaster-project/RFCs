@@ -7,13 +7,17 @@
 
 ## Overview
 
-This RFC describe and formalize the content of a public offer and its serialization format.
+This RFC describe and formalize the content of a public offer and its serialization format. The public offer is used during the first phase for discovery and connection purposes among participants. A public offer encodes trade data and participants data.
 
 ## Table of Contents
 
 TODO
 
 ## Content
+
+Public offers carries data about two specific blockchain, those data need to be interpreted in their blockchain context. A serialized binary value for a timelock can only be interpreted if the blockchain for which the value has been serialized is known. A timelock value for Bitcoin, e.g. 4 bytes unsigned interger for `nSequence`, might be interpreted differently than an Etherum timelock value. The parser must then be generic and may fail to interpret blockchain specific data if the wrong blockchain is used.
+
+A public offer as of version 1 contains the following fields:
 
  * Public offer magic bytes and **version** format
  * **Network** to used on both assets to perform the swap
@@ -27,11 +31,11 @@ TODO
  * The future **maker swap role**
  * TODO add peer connection parameters
 
+This version 1 is the simplest offer possible, it does not contain asset amount ranges to be traded nor room for price negotiation.
+
 ### Version
 
-The public offer version contains six magic bytes and two bytes for the version and features, forming in total an 8 bytes array.
-
-This RFC describe the version 1 and the list of features is declared as an empty list.
+The public offer version contains six magic bytes and two bytes for the version and features. The bytes used for the vesion contains also feature flags, this RFC describe the version 1 and the list of features is declared as an empty list, so no flags are expected, leading the two bytes to have the value `1` after deserializing them.
 
 ### Network
 
