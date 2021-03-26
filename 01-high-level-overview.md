@@ -22,7 +22,7 @@ This RFC describes the high level concepts associated with the protocol such as 
 
 ## Phases
 
-This RFC describes two phases: a negotiation and a swap phase. The swap phase always follows the negotiation phase. The negotiation phase is used to bootstrap the swap parameters common to each participant and connect the swap daemons, this via the concept of a *public offer*. A public offer is a list of parameters describing what the swap will look like if executed. It contains the assets exchanged, how to connect the daemons, and the protocol specific parameters.
+This RFC describes two phases: a negotiation and a swap phase. The swap phase always follows the negotiation phase. The negotiation phase is used to bootstrap the swap parameters common to each participant and connect the swap daemons, this via the concept of a *public offer*. A public offer is a list of parameters describing what the swap will look like if executed. It contains the assets exchanged, how to connect the daemons, and the protocol specific parameters, see [10. Public Offer](./10-public-offer.md).
 
 ### Negotiation phase
 
