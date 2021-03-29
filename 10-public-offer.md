@@ -127,13 +127,13 @@ A public offer MUST follow the specified format below to be considered as valid.
 
 ### Amounts
 
-For Bitcoin, the amounts must be serialized as a eight bytes unsigned little endian integer representing the number of satoshi.
+For Bitcoin, the amounts must be serialized as a eight bytes unsigned little endian integer representing the number of satoshi, i.e. 1e-10 bitcoin.
 
-For Monero, the amounts must be serialized as a eight bytes unsigned little endian integer representing the number of monerujo.
+For Monero, the amounts must be serialized as a eight bytes unsigned little endian integer representing the number of piconero, i.e. 1e-12 monero.
 
 ### Timelocks
 
-For Bitcoin, the timelocs values must be serialized as a four bytes unsigned little endian integer representing the `nSequence` field in the transaction and the number to push on the witness stack with a `CHECKSEQUENCEVERIFY` opcode.
+For Bitcoin, the timelocks values must be serialized as a four bytes unsigned little endian integer representing the `nSequence` field in the transaction and the number to push on the witness stack with a `CHECKSEQUENCEVERIFY` opcode.
 
 ## References
 
