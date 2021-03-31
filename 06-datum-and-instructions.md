@@ -45,9 +45,9 @@ As sketched below, the `client`→`daemon` and `daemon`→`client` routes consis
 
 From a security perspective, an important distinction between the client and the daemon is that the daemon only knows public keys - private keys are the privy treasure of the client`(*)`. Nonetheless, the daemon MUST be viewed as a trusted component, since it exclusively verifies the correctness of the counterparty's data, controls the swap state, and can misreport progression of the swap to the client or mislead the client into invalid protocol states.
 
-For instance, if the client is Bob who initially owns BTC in a swap, and the cancel path is invoked, if the client signs the `refund (e)` transaction and instructs the daemon to relay it, a malicious daemon could abstain from relaying it, resulting in a loss of funds for Bob, if he does not detect this error and submit the signed transaction via an alternate route before Alice can submit the `punish (f)` transaction to punish Bob `(**)`.
+For instance, assuming the client is Bob who initially owns BTC in a swap, and the cancel path is invoked: If the client signs the `refund (e)` transaction and instructs the daemon to relay it, a malicious daemon could abstain from relaying it, resulting in a loss of funds for Bob, if he does not detect this error and submit the signed transaction via an alternate route before Alice can submit the `punish (f)` transaction to punish Bob `(**)`.
 
-`*` *With the exception of all privates keys needed to read the blockchain state, e.g. the private view key when the accordant blockchain is Monero.*
+`*` *With the exception of all private keys needed to read the blockchain state, e.g. the private view key when the accordant blockchain is Monero.*
 
 `**` *For a better understanding of the transaction structure see [08. Transactions](./08-transactions.md).*
 
@@ -68,7 +68,7 @@ and a third category called `instruction` messages that represents:
    - Accepting a step in the swap process
    - User or protocol canceling the swap
 
-We illustrate the effect client's messages exert over a daemon, and its feedback loop back to the client. Both client and daemon have the responsibility to exchange valid `datum` and `instruction` messages based on their respective state and user actions. Please see the trust assumptions at [security considerations](#security-considerations).
+We illustrate the effect the client's messages exert over a daemon, and its feedback loop back to the client. Both client and daemon have the responsibility to exchange valid `datum` and `instruction` messages based on their respective state and user actions. Please see the trust assumptions at [security considerations](#security-considerations).
 
 A protocol transition moves the protocol execution forward, that is a step in the swap process. The set of states that fulfills the predicates for enabling a given transition must be selected, in order to be able to carry out the step in the swap process.
 
@@ -135,7 +135,7 @@ The type of the key is derived from the `key_id`:
 
 ### The `signature` Datum
 
-The `signature` datum is used to convey signatures between clients and daemons. When this datum comes from a client it is usually a signature freshly generated or adapted by the client, when the datum is emitted by the daemon to the client it is usually a adaptor signature to be adapted by the client.
+The `signature` datum is used to convey signatures between clients and daemons. When this datum comes from a client, it is usually a signature freshly generated or adapted by the client. When the datum is emitted by the daemon to the client, it is usually a adaptor signature to be adapted by the client.
 
  1. type: ? (`signature`)
  2. data:
@@ -186,11 +186,11 @@ The type of the parameter is derived from the `param_id`:
 
 ## Datum Bundles
 
-Datum described above are succinct and are used to convey atomic chunk of data (datum) between clients and daemons. We also present here the bundles used during the different steps of the swap by both Alice and Bob. A bundle is an aggregate of 1 or more `datum` generally related to each others.
+Datum described above are succinct and are used to convey atomic chunk of data (datum) between clients and daemons. We also present here the bundles used during the different steps of a swap by both Alice and Bob. A bundle is an aggregate of 1 or more `datum` generally related to each others.
 
 ### The `alice_session_params` Bundle
 
-**Send by**: Alice clients|Bob daemon
+**Sent by**: Alice clients|Bob daemon
 
 Provides the (counter-party) daemon with all the information required for the initialization step of a swap.
 
@@ -210,7 +210,7 @@ Provides the (counter-party) daemon with all the information required for the in
 
 ### The `bob_session_params` Bundle
 
-**Send by**: Bob clients|Alice daemon
+**Sent by**: Bob clients|Alice daemon
 
 Provides the (counter-party) daemon with all the information required for the initialization step of a swap.
 
@@ -229,7 +229,7 @@ Provides the (counter-party) daemon with all the information required for the in
 
 ### The `cosigned_arbitrating_cancel` Bundle
 
-**Send by**: Alice|Bob clients
+**Sent by**: Alice|Bob clients
 
 Provides daemon with a signature on the unsigned `cancel (d)` transaction.
 
@@ -239,7 +239,7 @@ Provides daemon with a signature on the unsigned `cancel (d)` transaction.
 
 ### The `core_arbitrating_transactions` Bundle
 
-**Send by**: Bob clients|Alice daemon
+**Sent by**: Bob clients|Alice daemon
 
 Provides Bob's daemon or Alice's clients the core set of arbritrating transactions.
 
@@ -251,7 +251,7 @@ Provides Bob's daemon or Alice's clients the core set of arbritrating transactio
 
 ### The `signed_adaptor_buy` Bundle
 
-**Send by**: Bob clients|Alice daemon
+**Sent by**: Bob clients|Alice daemon
 
 Provides Bob's daemon or Alice's client with an adaptor signature for the unsigned `buy (c)` transaction.
 
@@ -261,7 +261,7 @@ Provides Bob's daemon or Alice's client with an adaptor signature for the unsign
 
 ### The `fully_signed_buy` Bundle
 
-**Send by**: Alice clients|Bob daemon
+**Sent by**: Alice clients|Bob daemon
 
 Provides Alice's daemon or Bob's clients with the two signatures on the unsigned `buy (c)` transaction.
 
@@ -272,7 +272,7 @@ Provides Alice's daemon or Bob's clients with the two signatures on the unsigned
 
 ### The `signed_adaptor_refund` Bundle
 
-**Send by**: Alice clients|Bob daemon
+**Sent by**: Alice clients|Bob daemon
 
 Provides Alice's daemon or Bob's clients with a signature on the unsigned `refund (e)` transaction.
 
@@ -282,7 +282,7 @@ Provides Alice's daemon or Bob's clients with a signature on the unsigned `refun
 
 ### The `fully_signed_refund` Bundle
 
-**Send by**: Bob clients|Alice daemon
+**Sent by**: Bob clients|Alice daemon
 
 Provides Bob's daemon or Alice's clients with the two signatures on the unsigned `refund (e)` transaction.
 
@@ -293,7 +293,7 @@ Provides Bob's daemon or Alice's clients with the two signatures on the unsigned
 
 ### The `signed_arbitrating_lock` Bundle
 
-**Send by**: Bob clients
+**Sent by**: Bob clients
 
 Provides Bob's daemon with the signature on the unsigned `lock (b)` transaction.
 
@@ -303,7 +303,7 @@ Provides Bob's daemon with the signature on the unsigned `lock (b)` transaction.
 
 ### The `signed_arbitrating_punish` Bundle
 
-**Send by**: Alice clients
+**Sent by**: Alice clients
 
 Provides Alice's daemon with the signature on the unsigned `punish (f)` transaction.
 
@@ -316,11 +316,11 @@ We define `instruction` messages as "courtesy" messages exchanged between a clie
 
 ### The `abort` Instruction
 
-**Send by**: Alice|Bob clients|daemon
+**Sent by**: Alice|Bob clients|daemon
 
-Provides clients or daemon the instruction to abort the swap, it is the daemon responsability to abort accordingly to the current swap-state. Upon daemon `abort` instruction the client must be able to provide any missing signatures.
+Provides clients or daemon the instruction to abort the swap, it is the daemon's responsibility to abort according to the current swap-state. Upon daemon `abort` instruction, the client must be able to provide any missing signatures.
 
-The `abort` instruction can come from the client because the user chose to abort the swap and can come from the daemon to instruct the client the fact that the counter-party chose to abort.
+The `abort` instruction can come from the client because the user chose to abort the swap and can come from the daemon to inform the client of the fact that the counter-party chose to abort.
 
  1. type: ? (`abort`)
  2. data:
@@ -329,7 +329,7 @@ The `abort` instruction can come from the client because the user chose to abort
 
 #### Daemon's  response to `abort` Instruction
 
-**Send by**: Bob and Alice daemon
+**Sent by**: Bob and Alice daemon
 
 `abort` instruction MAY trigger Tasks, and their downstream effects, depending on who called it and the current swap-state, such as:
     - Bob or Alice: `publish_tx cancel` | `watch_tx cancel`
@@ -340,11 +340,11 @@ The `abort` instruction can come from the client because the user chose to abort
 
 ### The `next` Instruction
 
-**Send by**: Alice|Bob clients
+**Sent by**: Alice|Bob clients
 
 Provides daemon the instruction to follow the swap protocol, daemon can create locking steps during the protocol execution and require client to acknowledge the execution progression.
 
-The `next_code` may be used when next require a choice by the client.
+The `next_code` may be used when `next` requires a choice by the client.
 
  1. type: ? (`next`)
  2. data:
