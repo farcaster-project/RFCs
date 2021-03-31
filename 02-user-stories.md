@@ -100,7 +100,7 @@ $ swap-cli --make
 > XMR: 10
 > Cancel Timelock: 4
 > Punish Timelock: 10
-> Fee strategy ([F]ixe, [R]ange, [D]ynamique): R
+> Fee strategy ([F]ixed, [R]ange, [D]ynamic): R
 > Fee range (sat/vB): 10-40
 > Role ([A]lice,[B]ob): A
 
