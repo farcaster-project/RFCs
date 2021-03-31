@@ -157,6 +157,13 @@ where
     R' = kG
 ```
 
+ * `RecKey`:
+
+Convenience function for making ECDSA and Schnorr APIs consistent.
+```
+return (T, s')
+```
+
  * `Rec`:
 
 ```
@@ -200,6 +207,13 @@ where
     P = dG
     R = kG
     T = tG
+```
+
+ * `RecKey`:
+
+Convenience function for making ECDSA and Schnorr APIs consistent.
+```
+return s'
 ```
 
  * `Rec`:
