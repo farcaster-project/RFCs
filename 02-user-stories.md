@@ -26,7 +26,7 @@ This RFC describes the roles and phases of a swap and presents the user stories 
 
 ### Propose a swap
 
-As a participant who wants to propose a swap to other participants, I will choose the maker role and start my node so that I can create a public offer, share it, and later a taker will be able to connect to my node and execute the swap with me.
+As a participant who wants to propose a swap to other participants, I will choose the maker role and start my node so that I can create a public offer, see [10. Public Offer](./10-public-offer.md), share it, and later a taker will be able to connect to my node and execute the swap with me.
 
 The maker starts her node in maker mode and registers all the parameters an offer requires, see below for more details. The daemon start listening on a port or creates an onion service, depending on its configuration, and waits for an incoming connection. When ready, the daemon prints the *public offer*. The public offer contains all the parameters a taker needs to connect. The maker can then distribute the public offer over her preferred channels.
 

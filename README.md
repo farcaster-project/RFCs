@@ -36,6 +36,9 @@ Specifies the Bitcoin and Monero transactions involved in a swap with their temp
 ### [09. Swap state](./09-swap-state.md)
 Specifies what the swap state is, state-digests summarizing the swap state, what information has to be logged for recovery, how to recover state,  and recovery from failure.
 
+### [10. Public Offer](./10-public-offer.md)
+Specifies the public offer format and features for version 1 allowing makers in the negotiation phase to describe a potential swap and to takers to connects to makers and potentially trade.
+
 ## Acknowledgments
 
 This project was funded by the Monero community through the [Community Crowdfunding System (CCS)](https://ccs.getmonero.org/). Thanks to all contributors and generous anonymous donnors!
