@@ -83,7 +83,7 @@ Although desirable, transcript state recovery may not be essential, as checkpoin
 `Checkpoint`s must provide all the data to instantiate the types that underlie the state. They are expensive and shall be used only on critical sections.
 
 ### Inter-daemon
-Any interaction prior to the coins being locked can be safely ignored. Recovery to a state prior to locking funds is handy but optional. 
+Any interaction prior to the coins being locked can safely be ignored. Recovery to a state prior to locking funds is handy but optional. 
 
 Before Bitcoin and Monero are locked, inter-daemon may fail with no further issues, and may not need recovery. 
 
@@ -110,7 +110,7 @@ The data needed for Client to recover were already stored on Daemon's checkpoint
   - After `Signed adaptor buy` and `Signed arbitrating lock transactions`, a `checkpoint` is taken on Bob's Daemon side. Thereafter Bob locks the Bitcoin. Note that this corresponds to Bob's `checkpoint pre-lock`, so no new checkpoint needed.
   - After `Signed adaptor refund` and `Cosign arbitrating cancel` are received by Daemon, and just before locking the Monero, Alice's Daemon makes a `checkpoint`. Again, this corresponds to Alice's `checkpoint pre-lock`, so no new checkpoint is needed.
 
-Both daemon-client and daemon-syncer must implement mechanisms to re-establish their connection.
+Both daemon-client and daemon-syncer pairings must implement mechanisms to re-establish their connection.
 
 ### Syncer-Daemon
 
