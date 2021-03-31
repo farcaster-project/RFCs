@@ -167,6 +167,8 @@ where
      └  NaN otherwise
 ```
 
+ * `Vrfy`: as defined in [[5] BIP 0143: Transaction Signature Verification for Version 0 Witness Program](#references)
+
 ### Taproot Schnorr Scripts
 
 This notation follows BIP 340, with some simplication on even y coordinate check for private keys:
@@ -232,4 +234,5 @@ An example of instantation of this system is describe in [[4] Discrete logarithm
  * [[2] BIP 0340: Schnorr Signatures for secp256k1](https://en.bitcoin.it/wiki/BIP_0340)
  * [[3] Adaptor signature -Schnorr signature and ECDSA-](https://medium.com/crypto-garage/adaptor-signature-schnorr-signature-and-ecdsa-da0663c2adc4)
  * [[4] Discrete logarithm equality across groups](https://web.getmonero.org/resources/research-lab/pubs/MRL-0010.pdf)
+ * [[5] BIP 0143: Transaction Signature Verification for Version 0 Witness Program](https://en.bitcoin.it/wiki/BIP_0143)
 
