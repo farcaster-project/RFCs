@@ -127,7 +127,7 @@ A public offer MUST follow the specified format below to be considered as valid.
 
 ### Amounts
 
-For Bitcoin, the amounts must be serialized as a eight bytes unsigned little endian integer representing the number of satoshi, i.e. 1e-10 bitcoin.
+For Bitcoin, the amounts must be serialized as a eight bytes unsigned little endian integer representing the number of satoshi, i.e. 1e-8 bitcoin.
 
 For Monero, the amounts must be serialized as a eight bytes unsigned little endian integer representing the number of piconero, i.e. 1e-12 monero.
 
