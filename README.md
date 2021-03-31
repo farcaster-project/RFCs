@@ -1,6 +1,6 @@
 # Farcaster Specifications
 
-Hello hitchhiker and welcome onboard to the Farcaster Specifications! The RFCs describe components that glue together to form a swap protocol between two blockchain based assets, currently focusing on Bitcoin and Monero.
+Hello hitchhiker, and welcome onboard to the Farcaster Specifications! The RFCs describe components that glue together to form a swap protocol between two blockchain based assets, currently focusing on Bitcoin and Monero.
 
 ## Overview
 
@@ -22,23 +22,23 @@ Provides an overview of the technical architecture of the Farcaster software sta
 Specifies the messages exchanged between daemons during a swap and the peer-to-peer management between daemons.
 
 ### [05. Tasks & Blockchain Events](./05-tasks-and-events.md)
-Specifies the tasks that syncers make available to daemons for the monitoring of chain-state through blockchain events and the broadcasting of transactions.
+Specifies the tasks that syncers make available to daemons for the monitoring of chain-state through blockchain events and the broadcast of transactions.
 
 ### [06. Datum & Instructions](./06-datum-and-instructions.md)
-Specifies the messages that daemons and clients expects to receive from each other. They control the state transitions of an ongoing swap and allow information to flow between a client and a daemon.
+Specifies the messages that daemons and clients expect to receive from each other. They control the state transitions of an ongoing swap and allow information to flow between a client and a daemon.
 
 ### [07. Cryptographic Setup](./07-cryptographic-setup.md)
-Specifies the cryptographic primitives used to transfer secrets through transactions with adaptor signatures and specifies the cryptographic setup required at the beginning of a swap to guarentee funds safety.
+Specifies the cryptographic primitives used to transfer secrets through transactions with adaptor signatures and specifies the cryptographic setup required at the beginning of a swap to guarantee safety of funds.
 
 ### [08. Transactions](./08-transactions.md)
-Specifies the Bitcoin and Monero transactions involved in a swap with their temporal safety. Variants of Bitcoin transactions are described depending on the SegWit version and multi-signature protocol used.
+Specifies the Bitcoin and Monero transactions involved in a swap with their temporal safety. Describes variants of Bitcoin transactions, depending on the SegWit version and multi-signature protocol used.
 
 ### [09. Swap state](./09-swap-state.md)
-Specifies what the swap state is, state-digests summarizing the swap state, what information has to be logged for recovery, how to recover state,  and recovery from failure.
+Specifies what the swap state is, state-digests summarizing the swap state, what information has to be logged for recovery, and how to recover state after failure.
 
 ### [10. Public Offer](./10-public-offer.md)
-Specifies the public offer format and features for version 1 allowing makers in the negotiation phase to describe a potential swap and to takers to connects to makers and potentially trade.
+Specifies the public offer format and features for version 1, allowing makers in the negotiation phase to describe a potential swap, and allowing takers to connects to makers and thus potentially trade.
 
 ## Acknowledgments
 
-This project was funded by the Monero community through the [Community Crowdfunding System (CCS)](https://ccs.getmonero.org/). Thanks to all contributors and generous anonymous donnors!
+This project was funded by the Monero community through the [Community Crowdfunding System (CCS)](https://ccs.getmonero.org/). Thanks to all contributors and generous anonymous donors!
