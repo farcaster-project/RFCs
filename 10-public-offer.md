@@ -55,7 +55,7 @@ Three network are defined to scope the swap:
  * Testnet
  * Local
 
-Only the mainnet network is used to swap valuable assets, the other networks are for test purposes only and do not in any circumstances move real value.
+Only the mainnet network is used to swap valuable assets, the other networks are for test purposes only and do not under any circumstances move real value.
 
 ### Asset identifiers
 
@@ -63,7 +63,7 @@ An asset is identified based on the [BIP44/SLIP44 [1,2]](#references), the testn
 
 ### Amounts
 
-Amounts must represent the value in its native smaller granularity format or are otherwise considered as invalid. For example, Bitcoin amounts must be expressed in `satoshi` and Monero amounts in `monerujo`.
+Amounts must represent the value in its native smallest granularity format or are otherwise considered as invalid. For example, Bitcoin amounts must be expressed in `satoshi` and Monero amounts in `monerujo`.
 
 ### Timeouts
 
