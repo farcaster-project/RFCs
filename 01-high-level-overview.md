@@ -54,7 +54,7 @@ To allow the interconnection among participants and set the parameters of a trad
 
 Taker and maker roles are dissociated from swap roles. They are used in the negotiation phase. A taker can later be transformed into an Alice or a Bob role when moving from the negotiation phase into the swap phase, and vice versa.
 
-The maker role offers a trade, via the public offer. Its proposal sets the amounts, the asset pair, and what role each participant takes in the swap. There is no special limitation on what a proposal can be in theory. The taker then sends the offer to whom might accept it.
+The maker role offers a trade, via the public offer. Its proposal sets the amounts, the asset pair, and what role each participant takes in the swap. There is no special limitation on what a proposal can be in theory. The maker then sends the offer to potential takers.
 
 A taker inspects an offer and decides whether or not to engage in the trade.
 
