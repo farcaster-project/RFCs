@@ -27,7 +27,7 @@ We describe the cryptographic keys needed by both swap roles defined in [01. Hig
 
 A `private_key` type and a `public_key` type is defined for the arbitrating blockchain for each cryptographic approaches and for the accordant blockchain.
 
-For each public key describe in the following section we assume the knowledge of the corresponding private key.
+For each public key describe in the following section we assume knowledge of the corresponding private key.
 
 **Arbitrating example:** for Bitcoin ECDSA the `public_key` is an ECDSA `secp256k1` public key, and for Bitcoin Schnorr the `public_key` is a Schnorr `secp256k1` public key.
 
@@ -83,7 +83,7 @@ The interface for interacting with arbitrating signatures is composed of three f
 
  * `Sign`: An algorithm that signs a given message as defined in the chosen signing primitive, e.g. ECDSA, Schnorr, etc.
 
- * `Vrfy`: Verify a signature based on public parameters, if validation passes the signature is a valid signature.
+ * `Vrfy`: Verify a signature based on public parameters. If validation passes, the signature is a valid signature.
 
 ## Adaptor Signatures
 
@@ -230,7 +230,7 @@ return s'
 
 ## Cross-group Discrete Logarithm Proof
 
-We define a `cross_group_proof` type for the Arbitrating-Accordant blockchain pair dependent on the `private_key` groups. If the groups are the same the proof is set to null.
+We define a `cross_group_proof` type for the Arbitrating-Accordant blockchain pair dependent on the `private_key` groups. If the groups are the same, the proof is set to null.
 
 A Cross-group Discrete Logarithm proving system is define with:
 
@@ -240,7 +240,7 @@ A Cross-group Discrete Logarithm proving system is define with:
 
  * `XDLVrfy`: Verify the proof for a given relation `(xG', xH')`.
 
-An example of instantation of this system is describe in [[4] Discrete logarithm equality across groups](#references).
+An example instantiation of this system is described in [[4] Discrete logarithm equality across groups](#references).
 
 ## References
 

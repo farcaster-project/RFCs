@@ -31,7 +31,7 @@ This RFC describes the syncer interface: `tasks` and `blockchain events`. Throug
 
 ## Tasks
 
-A syncer is responsible for carrying out assigned `tasks` received through incoming `tasks` messages, its input messages. To achieve that goal a syncer connects to a blockchain, through a full node or equivalent, and uses e.g. RPC calls and 0MQ notification streams to compute and emit `blockchain events` messages, its output messages.
+A syncer is responsible for carrying out assigned `tasks` received through incoming `tasks` messages, which are its sole input messages from the `daemon`. To achieve that goal a syncer connects to a blockchain, through a full node or equivalent, and uses e.g. RPC calls and 0MQ notification streams to compute and emit `blockchain events` messages, its output messages.
 
 Tasks MUST follow those rules:
 
@@ -47,7 +47,7 @@ Every task is accompanied by an `id`, a positive integer that fits into the 32-b
 
 The `error` event is valid for every single task, and it takes the task's ID and provides an integer `code`, as well as optionally a string `message`.
 
-This document frequently references epochs, whose definition is dependent on the protocol in question. For Bitcoin, Monero, and other blockchain-based systems, the epoch is the block height. For systems without the context of a block height, Unix timestamps SHOULD be used.
+This document frequently references epochs. The definition of epochs is dependent on the protocol in question. For Bitcoin, Monero, and other blockchain-based systems, the epoch is the block height. For systems without the context of a block height, Unix timestamps SHOULD be used.
 
 ### The `abort` Task
 
@@ -61,7 +61,7 @@ To update a task with identifier `id`, Syncer must receive an `abort` task abort
 
 ### The `watch_height` Task
 
-`watch_height` asks the syncer for notifications about updates to the blockchain's `height` and associated `block` id. This task MUST be implemented for any coin with a blockchain. This task MAY be implemented for any coin without a blockchain. If it is not implemented, an error event must be sent in response to any attempt to start this task.
+`watch_height` asks the syncer for notifications about updates to the blockchain's `height` and associated `block` id. This task MUST be implemented for any coin with a blockchain. This task MAY be implemented for any coin without a blockchain. If it is not implemented, an `error` event must be sent in response to any attempt to start this task.
 
 Required parameters are:
 
@@ -184,7 +184,7 @@ In response to the `watch_transaction` task.
     - For transaction not seen on mempool, emit `(0x0, None)`
     - For transaction seen on mempool but not mined, emit `(0x0, Some(0))`
     - For transaction mined, emit `(tx_block, Some(confirmations))` where `tx_block` is the block that the transaction got mined, and `confirmations` is the number of blocks extending `tx_block`
-    - When `confirmations` >= `confirmation_bound`, emit `(tx_block, Some(confirmation_bound))`. Here `Task` is considered successfully accomplished and terminates. At that time, transaction is considered final (=irreversible).
+    - When `confirmations` >= `confirmation_bound`, emit `(tx_block, Some(confirmation_bound))`. Hereafter, `Task` is considered successful and terminates. At that time, transaction is considered final (=irreversible).
 
 Thus:
 

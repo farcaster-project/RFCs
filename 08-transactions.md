@@ -9,7 +9,7 @@
 
 The protocol implemented in Farcaster is blockchain agnostic, however a strict list of features is required for the arbitrating blockchain involved in the swap, see *Blockchain Prerequisites* in [00. Introduction](./00-introduction.md#blockchain-prerequisites). This RFC describes a concrete implementation of the protocol with Bitcoin, or equivalent UTXO based blockchain, as the arbitrating blockchain and Monero, or equivalent UTXO based blockchain, as the accordant blockchain.
 
-We distinguish transactions created and controlled by the protocol itself and external transactions. Dashed outline transactions are transactions created by external wallets, i.e. not the daemon nor the client. This allows no asumption on where the funds might arise from and retain full flexibility on the implementation side.
+We distinguish transactions created and controlled by the protocol itself and external transactions. Dashed outline transactions are transactions created by external wallets, i.e. not the daemon nor the client. This allows no assumption on where the funds might arise from and retain full flexibility on the implementation side.
 
 ## Table of Contents
 
@@ -36,7 +36,7 @@ This section defines the Bitcoin transactions. These transactions can be constru
  * **Taproot Schnorr Scripts**, with SegWit v1 outputs and Schnorr signatures and on-chain multi-signature using TapLeaf scripts
  * **Taproot Schnorr MuSig2**, with SegWit v1 outputs and Schnorr signatures and MuSig2 off-chain multi-signature protocol
 
-The latter is the preferred option for privacy but depends on feature activation on the Bitcoin chain and MuSig2 protocol. This RFC describes the three approaches for each transaction.
+The latter is the preferred option for privacy but depends on feature activation on the Bitcoin chain and MuSig2 protocol. This RFC describes the three approaches for each of the protocol's transactions.
 
 #### Timelocks
 
@@ -90,7 +90,7 @@ where
 
 **Validation rules:**
 
-Upon transaction reception Alice must validate:
+Upon receiving the transaction, Alice must validate:
 
  * the buy script is composed of a 2-of-2 multisig with:
     * the first public key is `Ab`
@@ -188,7 +188,7 @@ and leaks the adaptor `Ta` on `<Bob's Bb(Ta) signature>` to Bob.
 
 **Validation rules:**
 
-Upon Bob's `Bb(Ta)` signature reception Alice must validate:
+Upon receiving Bob's `Bb(Ta)` signature, Alice must validate:
 
  * the signature received is:
     * valid for `Bb`
@@ -249,7 +249,7 @@ where
 
 **Validation rules:**
 
-Upon transaction reception Alice must validate:
+Upon receiving the transaction, Alice must validate:
 
  * the refund script is composed of a 2-of-2 multisig with:
     * the first public key is `Ar`
@@ -260,12 +260,12 @@ Upon transaction reception Alice must validate:
     * the timelock operation `[TIMEOUTOP]` is followed by a `DROP` operation
     * the `DROP` is followed by `CHECKSIG` on `Ap` public key
 
-Upon Bob's `Bc` signature reception Alice must validate:
+Upon receiving Bob's `Bc` signature, Alice must validate:
 
  * the signature received is:
     * valid for `Bc`
 
-Upon Alice's `Ac` signature reception Bob must validate:
+Upon receiving Alice's `Ac` signature, Bob must validate:
 
  * the signature received is:
     * valid for `Ac`
@@ -370,7 +370,7 @@ and leaks the adaptor `Tb` on `<Alice's Ar(Tb) signature>` to Alice.
 
 **Validation rules:**
 
-Upon Alice's `Ar(Tb)` signature reception Bob must validate:
+Upon receiving Alice's `Ar(Tb)` signature, Bob must validate:
 
  * the signature received is:
     * valid for `Ar`
@@ -406,7 +406,7 @@ The `punish (f)` transaction consumes `cancel (d)`'s output `(iii)` and transfer
 
 **Validation rules:**
 
-This transaction has no particular validation rules by either of the swap roles.
+This transaction has no particular validation rules enforced by either of the swap roles.
 
 #### ECDSA Scripts
 
@@ -468,15 +468,15 @@ Bitcoin transaction must be designed in a way where if Taproot and MuSig2 are us
 
 But in most cases, `c` and `d` will be different because `d` will be used with the TapLeaf script.
 
-Also, when a script-path spend is chosen, the script and the control block should look indistinguishable from a common protocol such as Lightning Network to increase the anonymity pool.
+Also, when a script-path spend is chosen, the script and the control block should look indistinguishable from a common protocol - such as Lightning Network - to increase the anonymity pool.
 
 ### Transaction fee
 
-On the arbitrating blockchain, a chain of three transactions is created, the two last transactions must be are created in advance and their fees must be determined at creation.
+On the arbitrating blockchain, a chain of three transactions is created, the two last transactions must be created in advance, and their fees must be determined at creation.
 
-We describe in this chapter some heuristic to set the fees.
+We describe in this chapter a heuristic for setting the fees.
 
-Let's define `f(tx, c)`, a function returning the fee over time for a transaction `tx` based on a coeficient `c`.
+Let's define `f(tx, c)`, a function returning the fee over time for a transaction `tx` based on a coefficient `c`.
 
 If `c(buy) = 1`, then `c(cancel) > 1`, such that at time `t` when `buy` and `cancel` are both available `cancel` has a higher probability to be mined.
 
@@ -528,14 +528,14 @@ where
 
     delta_irreversible < delta_race < delta(cancel)
 
-A reasonable guesstimate:
+A reasonable (i.e. safely conservative) guesstimate:
 
     delta_race ~= 10 x delta_irreversible
 
 
 Note that `delta_irreversible` and `delta_race` must be proportional to the amount transacted. Additionally `delta_race` is proportional to mempool congestion.
 
-The same logic applies to the cancelation path.
+The same logic applies to the cancellation path.
 
 ##### Cancel
 
@@ -557,7 +557,7 @@ to
 
 It can be argued that the higher bound of the refund transaction window can be extended, not deliberately and safely, but in emergency cases where Bob could not be online. The refund transaction must be published before the punish transaction gets mined, as they consume the same output from the cancel transaction.
 
-The counterargument is that if Bob publishes the refund transaction then Alice can retrieve the secret key and will get the monero, and might as well get the bitcoin if she wins the race.
+The counterargument is that if Bob publishes the refund transaction, Alice can retrieve the secret key and will get the monero, and might as well get the bitcoin if she wins the race.
 
 While if she only gets the bitcoin, and the monero stays locked, Bob could set up a new swap to unlock the already locked monero (no cost for Alice) and propose a nice reward to Alice for revealing her private key. That is a fairly graceful failure.
 

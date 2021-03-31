@@ -45,7 +45,7 @@ Cryptographic and transaction types are assumed to be generic, so e.g. different
 
 ### The `commit_alice_session_params` Message
 
-**Send by**: Alice
+**Sent by**: Alice
 
 `commit_alice_session_params` forces Alice to commit to the result of her cryptographic setup before receiving Bob's setup. This is done to remove adaptive behavior.
 
@@ -64,7 +64,7 @@ If not needed for the accordant blockchain the view key commitment must be set t
 
 ### The `commit_bob_session_params` Message
 
-**Send by**: Bob
+**Sent by**: Bob
 
 `commit_bob_session_params` forces Bob to commit to the result of his cryptographic setup before receiving Alice's setup. This is done to remove adaptive behavior.
 
@@ -82,7 +82,7 @@ If not needed for the accordant blockchain the view key commitment must be set t
 
 ### The `reveal_alice_session_params` Message
 
-**Send by**: Alice
+**Sent by**: Alice
 
 `reveal_alice_session_params` reveals the parameters commited by the `commit_alice_session_params` message.
 
@@ -114,7 +114,7 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
 
 ### The `reveal_bob_session_params` Message
 
-**Send by**: Bob
+**Sent by**: Bob
 
 `reveal_bob_session_params` reveals the parameters commited by the `commit_bob_session_params` message.
 
@@ -144,7 +144,7 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
 
 ### The `core_arbitrating_setup` Message
 
-**Send by**: Bob
+**Sent by**: Bob
 
 `core_arbitrating_setup` sends the `lock (b)`, `cancel (d)` and `refund (e)` arbitrating transactions from Bob to Alice, as well as Bob's signature for the `cancel (d)` transaction.
 
@@ -162,9 +162,9 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
 
 ### The `refund_procedure_signatures` Message
 
-**Send by**: Alice
+**Sent by**: Alice
 
-`refund_procedure_signatures` is intended to transmit Alice's signature for the `cancel (d)` transaction and Alice's adaptor signature for the `refund (e)` transaction. Upon reception, Bob must validate the signatures.
+`refund_procedure_signatures` transmits Alice's signature for the `cancel (d)` transaction and Alice's adaptor signature for the `refund (e)` transaction. Upon receipt, Bob must validate the signatures.
 
  1. type: 33720 (`refund_procedure_signatures`)
  2. data:
@@ -177,9 +177,9 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
 
 ### The `buy_procedure_signature` Message
 
-**Send by**: Bob
+**Sent by**: Bob
 
-`buy_procedure_signature`is intended to transmit Bob's adaptor signature for the `buy (c)` transaction and the transaction itself. Upon reception, Alice must validate the transaction and the adaptor signature.
+`buy_procedure_signature`is intended to transmit Bob's adaptor signature for the `buy (c)` transaction and the transaction itself. Upon receipt, Alice must validate the transaction and the adaptor signature.
 
  1. type: 33730 (`buy_procedure_signature`)
  2. data:
@@ -191,11 +191,11 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
 
 ### The `abort` Message
 
-**Send by**: Alice|Bob
+**Sent by**: Alice|Bob
 
 `abort` is an `OPTIONAL` courtesy message from either swap partner to inform the counterparty that they have aborted the swap with an `OPTIONAL` message body to provide the reason.
 
-Upon reception, the daemon must engage the cancel path if necessary and should respond with an `abort` message.
+Upon receipt, the daemon must engage the cancel path if necessary and should respond with an `abort` message.
 
  1. type: 33799 (`abort`)
  2. data:
