@@ -56,7 +56,7 @@ Taker and maker roles are dissociated from swap roles. They are used in the nego
 
 The maker role offers a trade, via the public offer. Its proposal sets the amounts, the asset pair, and what role each participant takes in the swap. There is no special limitation on what a proposal can be in theory. The maker then sends the offer to potential takers.
 
-A taker inspects an offer and decides whether or not to engage in the trade.
+A taker inspects an offer and decides whether or not to engage in the offered trade.
 
 ### Swap: Alice & Bob
 
