@@ -7,7 +7,7 @@
 
 ## Overview
 
-This RFC describe and formalize the content of a public offer and its serialization format. The public offer is used during the first phase for discovery and connection purposes among participants. A public offer encodes trade data and participants data.
+This RFC describes and formalizes the content of a public offer and its serialization format. The public offer is used during the first phase for discovery and connection purposes among participants. A public offer encodes trade data and participants' data.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ This RFC describe and formalize the content of a public offer and its serializat
 
 ## Content
 
-Public offers carries data about two specific blockchain, those data need to be interpreted in their blockchain context. A serialized binary value for a timelock can only be interpreted if the blockchain for which the value has been serialized is known. A timelock value for Bitcoin, e.g. 4 bytes unsigned interger for `nSequence`, might be interpreted differently than an Etherum timelock value. The parser must then be generic and may fail to interpret blockchain specific data if the wrong blockchain is used.
+Public offers carry data about two specific blockchain, those data need to be interpreted in their blockchain context. A serialized binary value for a timelock can only be interpreted if the blockchain for which the value has been serialized is known. A timelock value for Bitcoin, e.g. 4 bytes unsigned interger for `nSequence`, might be interpreted differently than an Etherum timelock value. The parser must then be generic and may fail to interpret blockchain specific data if the wrong blockchain is used.
 
 A public offer as of version 1 contains the following fields:
 
@@ -45,17 +45,17 @@ This version 1 is the simplest offer possible, it does not contain asset amount 
 
 ### Version
 
-The public offer version contains six magic bytes and two bytes for the version and features. The bytes used for the vesion contains also feature flags, this RFC describe the version 1 and the list of features is declared as an empty list, so no flags are expected, leading the two bytes to have the value `1` after deserializing them.
+The public offer version contains six magic bytes and two bytes for the version and features. The bytes used for the vesion contains also feature flags, this RFC describes the version 1 and the list of features is declared as an empty list, so no flags are expected, leading the two bytes to have the value `1` after deserializing them.
 
 ### Network
 
-Three network are define to scope the swap:
+Three network are defined to scope the swap:
 
  * Mainnet
  * Testnet
  * Local
 
-Only the mainnet network is used to swap valuable assets, the other networks are for test purposes only and do not in any circonstances move real value.
+Only the mainnet network is used to swap valuable assets, the other networks are for test purposes only and do not in any circumstances move real value.
 
 ### Asset identifiers
 
@@ -63,11 +63,11 @@ An asset is identified based on the [BIP44/SLIP44 [1,2]](#references), the testn
 
 ### Amounts
 
-Amounts must represent the value in its native smaller granularity format or is otherwise considered as invalid. For example Bitcoin amounts must be expressed in satoshi and Monero amounts in monerujo.
+Amounts must represent the value in its native smaller granularity format or are otherwise considered as invalid. For example, Bitcoin amounts must be expressed in `satoshi` and Monero amounts in `monerujo`.
 
 ### Timeouts
 
-Timeout values are interpreted based on the arbitrating chain. For example if Bitcoin is used as the arbitrating blockchain the values must represents the `nSequence` input field of the transactions with a `CHECKSEQUENCEVERIFY` opcode, for other blockchain the value might be interpreted differently.
+Timeout values are interpreted based on the arbitrating chain. For example, if Bitcoin is used as the arbitrating blockchain, the values must represent the `nSequence` input field of the transactions with a `CHECKSEQUENCEVERIFY` opcode. For other blockchains, the value might be interpreted differently.
 
 ### Fee strategy
 
@@ -78,7 +78,7 @@ Two fee strategy are defined:
  * Range
     * Contain two values: (1) minimum [inclusive], and (2) maximum [inclusive]
 
-A fixed fee strategy will always apply the same fee on every transactions. A range strategy allows users to define a minimum and a maximum of fee to apply on every transactions. Values are interpreted based on the arbitrating blockchain. For example in Bitcoin values must define how many satoshis per virtual byte the fee should use.
+A fixed fee strategy will always apply the same fee on every transaction. A range strategy allows users to define a minimum and a maximum of fee to apply on every transaction. Values are interpreted based on the arbitrating blockchain. For example in Bitcoin values must define how many satoshis per virtual byte the fee should use.
 
 ### Future swap role
 
@@ -87,7 +87,7 @@ As defined in [01. High Level Overview](./01-high-level-overview.md) two swap ro
  * Alice
  * Bob
 
-A swap as defined in Farcaster always involve one and only one Alice and one and only one Bob. Defining the future maker swap role is enough to derive the future taker swap role.
+A swap as defined in Farcaster always involves one and only one Alice and one and only one Bob. Defining the future maker swap role is enough to derive the future taker swap role.
 
 ## Serialization
 
@@ -127,13 +127,13 @@ A public offer MUST follow the specified format below to be considered as valid.
 
 ### Amounts
 
-For Bitcoin, the amounts must be serialized as a eight bytes unsigned little endian integer representing the number of satoshi, i.e. 1e-8 bitcoin.
+For Bitcoin, amounts must be serialized as an 8-byte unsigned little endian integer representing the number of satoshi, i.e. 1e-8 bitcoin.
 
-For Monero, the amounts must be serialized as a eight bytes unsigned little endian integer representing the number of piconero, i.e. 1e-12 monero.
+For Monero, amounts must be serialized as an 8-byte unsigned little endian integer representing the number of piconero, i.e. 1e-12 monero.
 
 ### Timelocks
 
-For Bitcoin, the timelocks values must be serialized as a four bytes unsigned little endian integer representing the `nSequence` field in the transaction and the number to push on the witness stack with a `CHECKSEQUENCEVERIFY` opcode.
+For Bitcoin, a timelock value must be serialized as an 4-byte unsigned little endian integer representing the `nSequence` field in the transaction and the number to push on the witness stack with a `CHECKSEQUENCEVERIFY` opcode.
 
 ## References
 
