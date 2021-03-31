@@ -7,8 +7,8 @@
 
 ## Overview
 
-This RFC specifies the messages exchanged between the user's swap client and its own daemon.
-As sketched below, the `client`→`daemon` and `daemon`→`client` routes consists of `datum` and `instruction` messages. They control the state transitions of an ongoing swap. The `client` must present control choices to the end-user during the progression of the protocol execution.
+This RFC specifies the messages exchanged between the user's swap client and its daemon.
+As sketched below, the `client`→`daemon` and `daemon`→`client` routes consist of `datum` and `instruction` messages. They control the state transitions of an ongoing swap. The `client` must present control choices to the end-user during the progression of the protocol execution.
 
 ![Client and daemon interaction](./06-datum-and-instructions/datum-instructions.png)
 *Fig 1. Interactions between a client and a daemon.*
@@ -43,7 +43,7 @@ As sketched below, the `client`→`daemon` and `daemon`→`client` routes consis
 
 ## Security considerations
 
-From a security perspective, an important distinction between the client and the daemon is that the daemon only knows public keys - private keys are the privy treasure of the client`(*)`. Nonetheless, the daemon MUST be viewed as a trusted component, since it exclusively verifies the correctness of the counterparty's data, controls the swap state, and can misreport progression of the swap to the client or mislead the client into invalid protocol states.
+From a security perspective, an important distinction between the client and the daemon is that the daemon only knows public keys - private keys are the privy treasure of the client`(*)`. Nonetheless, the daemon MUST be viewed as a trusted component, since it exclusively verifies the correctness of the counterparty's data, controls the swap state, and can misreport the progress of the swap to the client or mislead the client into invalid protocol states.
 
 For instance, assuming the client is Bob who initially owns BTC in a swap, and the cancel path is invoked: If the client signs the `refund (e)` transaction and instructs the daemon to relay it, a malicious daemon could abstain from relaying it, resulting in a loss of funds for Bob, if he does not detect this error and submit the signed transaction via an alternate route before Alice can submit the `punish (f)` transaction to punish Bob `(**)`.
 
@@ -58,7 +58,7 @@ We define two categories of content composing the `datum` messages:
 1. Results of cryptographic operation
    - Signatures (partial and finalized)
    - Keys (public keys and exceptional private 'view' keys)
-   - Off-chain multi signature protocol messages (e.g., musig2)
+   - Off-chain multi-signature protocol messages (e.g., musig2)
    - Zero knowledge proofs requires by the above protocols (e.g., cross-group discreet log equality)
 2. Transactions; following *PSBT standard* & *BIP 174* [[2,3]](#references)
 
@@ -68,17 +68,17 @@ and a third category called `instruction` messages that represents:
    - Accepting a step in the swap process
    - User or protocol canceling the swap
 
-We illustrate the effect the client's messages exert over a daemon, and its feedback loop back to the client. Both client and daemon have the responsibility to exchange valid `datum` and `instruction` messages based on their respective state and user actions. Please see the trust assumptions at [security considerations](#security-considerations).
+We illustrate the effect the client's messages exert over a daemon and its feedback loop back to the client. Both client and daemon have the responsibility to exchange valid `datum` and `instruction` messages based on their respective state and user actions. Please see the trust assumptions at [security considerations](#security-considerations).
 
-A protocol transition moves the protocol execution forward, that is a step in the swap process. The set of states that fulfills the predicates for enabling a given transition must be selected, in order to be able to carry out the step in the swap process.
+A protocol transition moves the protocol execution forward, that is a step in the swap process. The set of states that fulfills the predicates for enabling a given transition must be selected, to be able to carry out the step in the swap process.
 
 Please find below a high-level summary of this interaction:
 
- 1. Valid `datum` and `instruction` messages sent by the client and/or the daemon controls their respective states.
+ 1. Valid `datum` and `instruction` messages sent by the client and/or the daemon control their respective states.
  2. Daemon consumes client `datum` and `instruction` messages and
  3. Daemon fires transitions that are in one-to-one correspondence with client message (if predicate conditions met)
- 4. As a consequence of firing protocol transitions, daemon's internal swap state may be modified
- 5. If the swap state was modified, daemon must send client messages providing client with the data, i.e. `datum` messages, for next user executions. When applicable, Daemon must as well spawn Syncer tasks.
+ 4. As a consequence of firing protocol transitions, the daemon's internal swap state may be modified
+ 5. If the swap state was modified, the daemon must send client messages providing the client with the data, i.e. `datum` messages, for the next user executions. When applicable, Daemon must as well spawn Syncer tasks.
  6. Client then may give new `datum` and/or `instruction` messages and progress on the protocol execution (back to step 1)
 
 ## Datum Messages
@@ -135,7 +135,7 @@ The type of the key is derived from the `key_id`:
 
 ### The `signature` Datum
 
-The `signature` datum is used to convey signatures between clients and daemons. When this datum comes from a client, it is usually a signature freshly generated or adapted by the client. When the datum is emitted by the daemon to the client, it is usually a adaptor signature to be adapted by the client.
+The `signature` datum is used to convey signatures between clients and daemons. When this datum comes from a client, it is usually a signature freshly generated or adapted by the client. When the datum is emitted by the daemon to the client, it is usually an adaptor signature to be adapted by the client.
 
  1. type: ? (`signature`)
  2. data:
@@ -163,11 +163,11 @@ The `proof` datum is used by clients to provides cryptographic proofs needed to 
 The proof type is derived from the `proof_id`:
 
  1. `proof_id`:
-    - `0x01`: Cross-group discrete logarthim proof
+    - `0x01`: Cross-group discrete logarithm proof
 
 ### The `parameter` Datum
 
-The `parameter` datum is used to convey parameters between clients and daemons such as: addresses, timelocks, fee strategies, etc. They are mostly used by clients to instruct daemons about user parameters and offer parameters.
+The `parameter` datum is used to convey parameters between clients and daemons such as addresses, timelocks, fee strategies, etc. They are mostly used by clients to instruct daemons about user parameters and offer parameters.
 
  1. type: ? (`parameter`)
  2. data:
@@ -186,7 +186,7 @@ The type of the parameter is derived from the `param_id`:
 
 ## Datum Bundles
 
-Datum described above are succinct and are used to convey atomic chunk of data (datum) between clients and daemons. We also present here the bundles used during the different steps of a swap by both Alice and Bob. A bundle is an aggregate of 1 or more `datum` generally related to each others.
+Datum described above is succinct and used to convey an atomic chunk of data (datum) between clients and daemons. We also present here the bundles used during the different steps of a swap by both Alice and Bob. A bundle is an aggregate of 1 or more `datum` generally related to each other.
 
 ### The `alice_session_params` Bundle
 
@@ -241,7 +241,7 @@ Provides daemon with a signature on the unsigned `cancel (d)` transaction.
 
 **Sent by**: Bob clients|Alice daemon
 
-Provides Bob's daemon or Alice's clients the core set of arbritrating transactions.
+Provides Bob's daemon or Alice's clients the core set of arbitrating transactions.
 
  1. data:
     - The `lock (b)` transaction
@@ -318,7 +318,7 @@ We define `instruction` messages as "courtesy" messages exchanged between a clie
 
 **Sent by**: Alice|Bob clients|daemon
 
-Provides clients or daemon the instruction to abort the swap, it is the daemon's responsibility to abort according to the current swap-state. Upon daemon `abort` instruction, the client must be able to provide any missing signatures.
+Provides clients or daemons the instruction to abort the swap, it is the daemon's responsibility to abort according to the current swap-state. Upon daemon `abort` instruction, the client must be able to provide any missing signatures.
 
 The `abort` instruction can come from the client because the user chose to abort the swap and can come from the daemon to inform the client of the fact that the counter-party chose to abort.
 
@@ -342,7 +342,7 @@ The `abort` instruction can come from the client because the user chose to abort
 
 **Sent by**: Alice|Bob clients
 
-Provides daemon the instruction to follow the swap protocol, daemon can create locking steps during the protocol execution and require client to acknowledge the execution progression.
+Provides daemon the instruction to follow the swap protocol, daemon can create locking steps during the protocol execution and require the client to acknowledge the execution progression.
 
 The `next_code` may be used when `next` requires a choice by the client.
 

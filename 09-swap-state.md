@@ -27,11 +27,11 @@ The daemon encodes the swap state-space as a Petri net. The marking of the Petri
 The daemon handles the swap state and its state transitions on behalf of the client and following the client's instructions. The swap state indicates the protocol execution step the user is currently on. For each given state, zero or more state transitions are enabled as a function of a list of time-ordered daemon transcripts. That is, depending on the protocol execution path taken, these are the next available user actions.
 
 ## State transition
-Upon swap `state transition`, the daemon must update the client through `datum` messages, which in turn provides the resources for client to create new `datum` to further command the daemon forward.
+Upon swap `state transition`, the daemon must update the client through `datum` messages, which in turn provides the resources for the client to create a new `datum` to further command the daemon forward.
 
 The daemon must contextually filter all of its input messages with respect to the interaction component (client, syncer, or counter-party-daemon) they relate to. It writes to `transcript` the messages in the order it processes them, on a single thread.  All filtered streams may then be combined if needed, and each element of this final stream is applied to the current state.
 
-The first task is to save to disk the input messages, creating the execution transcripts. After each transition is applied to state, the swap state may be saved on disk (if safety critical) as the last checkpoint. The daemon must be able to recover (1) from a given checkpoint (containing the last recorded state), and (2) may recover from a stream of input messages that followed the checkpoint, and the protocol descriptor. The latter recovery mechanism allows recovery to any swap state, but may not be needed, as in the current protocol there are not many safety critical states (namely 2 for each participant's daemon). All other states must be safely derived from these critical states.
+The first task is to save to disk the input messages, creating the execution transcripts. After each transition is applied to the state, the swap state may be saved on disk (if safety critical) as the last checkpoint. The daemon must be able to recover (1) from a given checkpoint (containing the last recorded state), and (2) may recover from a stream of input messages that followed the checkpoint, and the protocol descriptor. The latter recovery mechanism allows recovery to any swap state, but may not be needed, as in the current protocol there are not many safety critical states (namely 2 for each participant's daemon). All other states must be safely derived from these critical states.
 
 The state may be recovered purely on the basis of the transcripts using a fold operation that returns the state. The state recovery process must not produce new messages (= no side-effects).
 
@@ -40,7 +40,7 @@ The swap state can be derived from an ordered set of incoming messages. On a cra
 By ensuring that daemon output messages can be replayed safely, like tasks, the work already performed since the last saved checkpoint can be replayed safely.
 
 ## Datum messages
-Datum messages are generic messages --- bidirectionally exchanged by client and daemon --- which allow the construction of types that are needed for protocol progression, such as a signature or transaction. They convey the information needed to construct the state on the other side. The instantiation of the type is equivalent to placing a token in a petrinet. The marking of the net encodes the full state, and this one token is thus a partial state. 
+Datum messages are generic messages --- bidirectionally exchanged by client and daemon --- which allow the construction of types that are needed for protocol progressions, such as a signature or transaction. They convey the information needed to construct the state on the other side. The instantiation of the type is equivalent to placing a token in a petrinet. The marking of the net encodes the full state, and this one token is thus a partial state. 
 
 ## Transcripts 
 Transcripts are time-ordered, and composed of 
@@ -94,7 +94,7 @@ Before Bitcoin and Monero are locked, inter-daemon may fail with no further issu
 
 Daemon assumes Client and Syncer are stateless.
 
-All the interactions from the `buy_procedure_signature` protocol message until the end of swap are critical. Nonetheless, since it's within a trusted setup composed of own Daemon, Client and Syncer setup, it can be safely replayed.
+All the interactions from the `buy_procedure_signature` protocol message until the end of the swap are critical. Nonetheless, since it's within a trusted setup composed of its own Daemon, Client, and Syncer setup, it can be safely replayed.
 
 The Daemon keeps track of its state but assumes Client and Syncer are stateless. 
 
@@ -104,10 +104,10 @@ Upon Daemon recovery, Daemon must watch for all transactions it knows about thro
 
 #### Client side
 
-The Client has to backup to disk: its own id, swap parameters and Daemon id, and must have access to secret keys. From this backup, Daemon's messages sent during the recovery process are used to resume the swap, since Daemon is a trusted component. After a crash, a recovering Client must receive Daemon's datum messages, which are parametric on Daemon's swap state. From such messages, Client may provide the additional signatures to complete the swap, if needed. As such, Client is mostly stateless.
+The Client has to backup to disk: its own id, swap parameters, and Daemon id, and must have access to secret keys. From this backup, Daemon's messages sent during the recovery process are used to resume the swap, since Daemon is a trusted component. After a crash, a recovering Client must receive Daemon's datum messages, which are parametric on Daemon's swap state. From such messages, the Client may provide the additional signatures to complete the swap, if needed. As such, the Client is mostly stateless.
 
-The data needed for Client to recover were already stored on Daemon's checkpoints:
-  - After `Signed adaptor buy` and `Signed arbitrating lock transactions`, a `checkpoint` is taken on Bob's Daemon side. Thereafter Bob locks the Bitcoin. Note that this corresponds to Bob's `checkpoint pre-lock`, so no new checkpoint needed.
+The data needed for the Client to recover were already stored on Daemon's checkpoints:
+  - After `Signed adaptor buy` and `Signed arbitrating lock transactions`, a `checkpoint` is taken on Bob's Daemon side. Thereafter Bob locks the Bitcoin. Note that this corresponds to Bob's `checkpoint pre-lock`, so no new checkpoint is needed.
   - After `Signed adaptor refund` and `Cosign arbitrating cancel` are received by Daemon, and just before locking the Monero, Alice's Daemon makes a `checkpoint`. Again, this corresponds to Alice's `checkpoint pre-lock`, so no new checkpoint is needed.
 
 Both daemon-client and daemon-syncer pairings must implement mechanisms to re-establish their connection.

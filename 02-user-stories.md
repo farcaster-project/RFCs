@@ -7,7 +7,7 @@
 
 ## Overview
 
-This RFC describes the roles and phases of a swap and presents the user stories of each participant by the mean of mockups and examples. We distinguish between two phases: negotiation and swap phases, this RFC describe the interface between the phases. Those phases imply roles, and those roles allow user actions. This RFC describe the user actions available for each role during the phases.
+This RFC describes the roles and phases of a swap and presents the user stories of each participant by the mean of mockups and examples. We distinguish between two phases: negotiation and swap phase, while this RFC describes the interface between the phases. The phases imply roles, which in turn allow user actions. This RFC describes the user actions available for each role during the phases.
 
 ## Table of Contents
 
@@ -28,7 +28,7 @@ This RFC describes the roles and phases of a swap and presents the user stories 
 
 As a participant who wants to propose a swap to other participants, I will choose the maker role and start my node so that I can create a public offer, see [10. Public Offer](./10-public-offer.md), share it, and later a taker will be able to connect to my node and execute the swap with me.
 
-The maker starts her node in maker mode and registers all the parameters an offer requires, see below for more details. The daemon start listening on a port or creates an onion service, depending on its configuration, and waits for an incoming connection. When ready, the daemon prints the *public offer*. The public offer contains all the parameters a taker needs to connect. The maker can then distribute the public offer over her preferred channels.
+The maker starts her node in maker mode and registers all the parameters an offer requires, see below for more details. The daemon starts listening on a port or creates an onion service, depending on its configuration, and waits for an incoming connection. When ready, the daemon prints the *public offer*. The public offer contains all the parameters a taker needs to connect. The maker can then distribute the public offer over her preferred channels.
 
 ### Create an offer
 
@@ -37,29 +37,29 @@ To create an offer, a maker registers the following list of required inputs:
  * The Arbitrating/Accordant blockchain identifier, e.g. BTC-XMR; *Must identify: blockchain chain and asset traded. E.g. bitcoin on mainnet or bitcoin on testnet. This can be done through a `chain_hash` parameter or be defined by an RFC in Farcaster.*
  * The arbitrating blockchain asset amount; *In the unit type defined by the blockchain.*
  * The accordant blockchain asset amount; *In the unit type defined by the blockchain.*
- * The timelock durations used during the swap, they define the two time frames for cancelling the swap on-chain and punishing Bob if he doesn't react after a swap cancellation; *In the unit type defined by the blockchain.*
- * The fee calculation strategy, defines the transactions fee strategy to use on e.g. BTC transactions; *This might be fixe, within a range, or defined as a function or a more evolved type.*
+ * The timelock durations used during the swap, they define the two-time frames for canceling the swap on-chain and punishing Bob if he doesn't react after a swap cancellation; *In the unit type defined by the blockchain.*
+ * The fee calculation strategy defines the transactions fee strategy to use on e.g. BTC transactions; *This might be fixed, within a range, or defined as a function or a more evolved type.*
  * The future maker swap role (Alice or Bob); *Taker role is derived from this as the protocol always have one Alice and one Bob.*
 
-The client user interface should provide an easy way to define an offer through e.g. a Buy or Sell point of view, and may auto-fill the fee strategy based on user prefered fee estimators.
+The client user interface should provide an easy way to define an offer through e.g. a Buy or Sell point of view, and may auto-fill the fee strategy based on user preferred fee estimators.
 
-For the participant who plays Bob's role during the swap the fee strategy and the timelock durations are critical values to guarentee safety and potential funds recovery. Too short timelock duration or too low fee strategy might allow Alice to punish Bob even if he behaves accordingly to the protocol. The swap client should carefully check these parameters as a regular wallet whould do for the fees.
+For the participant who plays Bob's role during the swap, the fee strategy and the timelock durations are critical values to guarantee safety and potential funds recovery. A too short timelock duration or too low fee strategy might allow Alice to punish Bob even if he behaves accordingly to the protocol. The swap client should carefully check these parameters as a regular wallet would do for the fees.
 
 ### Create a public offer
 
-A maker public offer is an extended maker offer with the daemon's network parameters, such as options detailing how to connect to the daemon. The public offer must specify the node's connection identifier and must contain a valid signature to reduce on-transit offer's modification.
+A maker public offer is an extended maker offer with the daemon's network parameters, such as options detailing how to connect to the daemon. The public offer must specify the node's connection identifier and must contain a valid signature to reduce the on-transit offer's modification.
 
 The maker public offer must be as user-friendly as possible, as it is the responsibility of the user to share this public offer with a potential counter-party via the maker's preferred communication channels. Thus the format might still be binary, but parsers should be created to ease integration on diverse platforms.
 
-The maker does not validate nor filter who can connect and take the public offer, at least not at the protocol level yet. Daemon can be extended by adding a whitelist of daemon that can connects in the future or "private" networks can be used to share the public offer, thus this does not prevent the offer to be reshared on other networks.
+The maker does not validate nor filter who can connect and take the public offer, at least not at the protocol level yet. The daemon can be extended by adding a whitelist of daemons that can connect in the future or "private" networks can be used to share the public offer, thus this does not prevent the offer to be reshared on other networks.
 
 ### Take a public offer
 
-As a participant who wants to find a swap, I will browse forums, chats, IRCs and all other places where I can find public offers from makers so that I can choose one fitting my needs and try to connect and execute the swap.
+As a participant who wants to find a swap, I will browse forums, chats, IRCs, and all other places where I can find public offers from makers so that I can choose one fitting my needs and try to connect and execute the swap.
 
 A taker sees a public offer, parses and visualizes it, and might accept it. If the taker wants to take the public offer he can try to connect to the maker and start the swap. This RFC does not define where the public offers are listed nor how a participant might have access to them.
 
-As this protocol does not ensure that the public offer is still live nor already taken, this action can fail. The maker might have "cancel" the offer by shuting down her node, or other taker might have connected already to the node.
+As this protocol does not ensure that the public offer is still live nor already taken, this action can fail. The maker might have "cancel" the offer by shutting down her node, or other takers might have connected already to the node.
 
 ### Results of negotiation phase
 
@@ -79,7 +79,7 @@ We present a simple user interface for starting with the role of a maker or a ta
 
 #### Maker
 
-As a maker, I start my client and choose the maker role (**A. Choose a negotiation role**). When started in maker mode, my client will ask me a list of required inputs (**B. Create an offer**). When completed my client starts my daemon in listening mode. When the daemon is ready, the client displays the public offer (**D. Start and display the public offer**) and waits for an incoming connection. It is now my responsability to share and forward this public offer to potential swappers.
+As a maker, I start my client and choose the maker role (**A. Choose a negotiation role**). When started in maker mode, my client will ask me for a list of required inputs (**B. Create an offer**). When completed my client starts my daemon in listening mode. When the daemon is ready, the client displays the public offer (**D. Start and display the public offer**) and waits for an incoming connection. It is now my responsibility to share and forward this public offer to potential swappers.
 
 #### Taker
 
@@ -150,9 +150,9 @@ And, in addition, for Bob's role:
 
  * The refund Arbitrating address
 
-Those addresses are inputs asked by the client before the beginning of the swap and should follow the address *reuse* stategy for the concerned blockchain.
+Those addresses are inputs asked by the client before the beginning of the swap and should follow the address *reuse* strategy for the concerned blockchain.
 
-During the swap phase the client may propose to the user an *abort* action. It is up to the client implementation to define whether a user can abort a running swap, and how this should be done. We recommend that the client allows the user to *abort* only before detecting money locked on-chain.
+During the swap phase, the client may propose to the user an *abort* action. It is up to the client implementation to define whether a user can abort a running swap, and how this should be done. We recommend that the client allows the user to *abort* only before detecting money locked on-chain.
 
 ### Steps
 
@@ -165,7 +165,7 @@ We describe the high-level view of the swap phase with four steps:
 
 We describe a basic user experience with an atomic swap GUI client for Alice and Bob. This is provided for educational purposes and to give an idea to the reader; the swap GUI client may look different depending on the platform (mobile, desktop, cli, etc) and potential wallet integration.
 
-The design proposed here does not make any assumption about wallet integration. All the funds can be sourced from external wallets with no restriction on the form factor. While this has the cost of an additional transaction on the Arbitrating blockchain, this can be removed if the client is closely integrated in a given wallet.
+The design proposed here does not make any assumptions about wallet integration. All the funds can be sourced from external wallets with no restriction on the form factor. While this has the cost of an additional transaction on the Arbitrating blockchain, this can be removed if the client is closely integrated in a given wallet.
 
 ![GUI Swap Mockups](./02-user-stories/gui-swap-mockups.png)
 *Fig 2. Example of a GUI executing a swap*
@@ -190,7 +190,7 @@ Alice and Bob start the pre-initialization. They exchange and verify parameters 
 - Bob → Alice: [`reveal_bob_session_params`](./04-protocol-messages.md#the-reveal_bob_session_params-message)
 
 #### 2. Arbitrating Locking Step (2-3 in the diagram)
-After the parameters are exchanged and validated, Bob asks the user for funding. Upon receiving funds, Bob creates the transactions, signs the cancel path, and sends them to Alice with `core_arbitrating_setup` protocol message. He acquires Alice's signatures for the cancel path. The bitcoin are locked when Bob is able to trigger the cancel path and refund the assets, i.e. after receiving the `refund_procedure_signatures` protocol message.
+After the parameters are exchanged and validated, Bob asks the user for funding. Upon receiving funds, Bob creates the transactions, signs the cancel path, and sends them to Alice with the `core_arbitrating_setup` protocol message. He acquires Alice's signatures for the cancel path. The bitcoin are locked when Bob is able to trigger the cancel path and refund the assets, i.e. after receiving the `refund_procedure_signatures` protocol message.
 
 ##### Messages exchanged:
 

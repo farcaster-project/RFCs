@@ -7,7 +7,7 @@
 
 ## Overview
 
-This RFC specifies the inter-daemon communication messages used during swap phase, see [02. User Stories](./02-user-stories.md#1-initialization-step-1-in-the-diagram). Protocol messages are designed based on the protocol execution specified in [[1] Bitcoin-Monero Cross-chain Atomic Swap](#references) but generalized to generic arbitrating and accordant blockchains.
+This RFC specifies the inter-daemon communication messages used during the swap phase, see [02. User Stories](./02-user-stories.md#1-initialization-step-1-in-the-diagram). Protocol messages are designed based on the protocol execution specified in [[1] Bitcoin-Monero Cross-chain Atomic Swap](#references) but generalized to generic arbitrating and accordant blockchains.
 
 ## Table of Contents
 
@@ -29,9 +29,9 @@ The inter-daemon communication must follow [[2] BOLT #8: Encrypted and Authentic
 
 All communications between nodes are encrypted to provide confidentiality for all transcripts between nodes and are authenticated to avoid malicious interference. Each node has a known connection identifier that is a public key on Bitcoin's `secp256k1` curve. This connection public key is used to establish an encrypted and authenticated connection with peers.
 
-When starting in maker mode, a daemon will start a listening service. The listening service uses the connection public key to decrypt and authentify entering connections. The listening service may create an onion service to hide the node location or may listen on an IPv4/IPv6 address directly.
+When starting in maker mode, a daemon will start a listening service. The listening service uses the connection public key to decrypt and authenticate incoming connections. The listening service may create an onion service to hide the node location or may listen on an IPv4/IPv6 address directly.
 
-Node address and connection public key are registred into the public offer, which must be signed before been shared. Other daemons can then connect and create an encrypted and autheticated channel. It is worth noting that connecting peers are not authentified by the listening node, anyone who knows the address can try to connect. For more detail on the public offer see [02. User Stories](./02-user-stories.md).
+Node address and connection public key are registered into the public offer, which must be signed before been shared. Other daemons can then connect and create an encrypted and authenticated channel. It is worth noting that connecting peers are not authenticated by the listening node, anyone who knows the address can try to connect. For more detail on the public offer see [02. User Stories](./02-user-stories.md).
 
 ## Messages
 
@@ -41,7 +41,7 @@ The following convenience types extend 'BOLT #1' fundamental types:
 
  * `swap_id`: a 32-byte swap unique identifier
 
-Cryptographic and transaction types are assumed to be generic, so e.g. different public key types can be used, i.e. multiple arbitrating blockchain with multiple cryptographic primitive can be supported latter. These types such as `signature` and `adaptor_signature` are defined in [07. Cryptographic Setup](./07-cryptographic-setup.md) and may vary depending on the cryptography used on the arbitrating blockchain.
+Cryptographic and transaction types are assumed to be generic, so e.g. different public key types can be used, i.e. multiple arbitrating blockchains with multiple cryptographic primitives can be supported later. These types such as `signature` and `adaptor_signature` are defined in [07. Cryptographic Setup](./07-cryptographic-setup.md) and may vary depending on the cryptography used on the arbitrating blockchain.
 
 ### The `commit_alice_session_params` Message
 
