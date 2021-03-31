@@ -32,11 +32,11 @@ It is worth mentioning that the negotiation phase proposed in [02. User Stories]
 
 During the negotiation phase the *discovery* between participants is done through *public offers*. A public offer is created by one participant and shared, others can then parse and, if interested, accept the public offer. The acceptance is expressed by connecting to the node specified in the offer.
 
-This design is created such that services can be built on top of it, in a purely peer-to-peer network where offers are distributed amoung "swappers", or oriented as a publicly available service a la OTC where the offer always come from the same entity, or even inside more elaborated network within DEXs. Everything is compatible with the proposed design as the only constraints is the interface between the negociation and the swap phases.
+This design is created such that services can be built on top of it, in a purely peer-to-peer network where offers are distributed among "swappers", or oriented as a publicly available service à la OTC where the offer always comes from the same entity, or even inside more elaborated network within DEXs. Everything is compatible with the proposed design since the only constraint is the interface between the negotiation and the swap phases.
 
 ### Swap phase
 
-The swap phase always follows the negotiation, daemons are connected to each other and ready to start the swap protocol. Below, this RFC describe the roles participants can have during every phases, a role transition is operated by each participant between the phase transition, this role transition is an important parameter that compose the public offer and must be agreed on.
+The swap phase always follows the negotiation, daemons are connected to each other and ready to start the swap protocol. Below, this RFC describes the roles participants can have during every phases, a role transition is operated by each participant between the phase transition, this role transition is an important parameter that compose the public offer and must be agreed on.
 
 ## Roles
 
@@ -46,30 +46,30 @@ During the phases, different roles are distributed to participants and blockchai
 
 We describe two blockchain roles: (1) Arbitrating and (2) Accordant. The former corresponds to the chain where the constraint system lives, e.g. the Bitcoin blockchain in a BTC-XMR setup, the latter is the accordant chain which has no extra on-chain capabilities requirement, e.g. the Monero blockchain in a BTC-XMR setup.
 
-Those roles are distributed by the outgoing blockchains' capabilities involved in the swap pair, e.g Monero cannot be the arbitrating chain. Most of the time the choice is dictated, e.g. BTC-XMR, but with e.g. BTC-ETH we could argue what role each blockchain should receive, as both can endorse both roles. However, it is worth noting there may exist better protocols to exchange assets in such setups.
+Those roles are determined by the outgoing blockchains' capabilities involved in the swap pair, e.g Monero cannot be the arbitrating chain. Most of the time the choice is dictated by necessity, e.g. BTC-XMR, but with e.g. BTC-ETH there's flexibility in the assignment of their roles, since both are capable of either. However, it is worth noting that there may exist better protocols for exchanging assets in such chain pairings.
 
 ### Negotiation: Taker & Maker
 
-To allow the interconnection among participants and sets the parameters of a trade we describe two negotiation roles: (1) Taker and (2) Maker. The former will browse the public offers and the latter will produce them.
+To allow the interconnection among participants and set the parameters of a trade, we describe two negotiation roles: (1) Taker and (2) Maker. The former will browse the public offers and the latter will produce them.
 
-Taker and maker roles are dissociated from swap roles. They are used in the negotiation phase. A taker can later be transformed into an Alice or Bob role when moving from the negotiation phase into the swap phase, and vice versa.
+Taker and maker roles are dissociated from swap roles. They are used in the negotiation phase. A taker can later be transformed into an Alice or a Bob role when moving from the negotiation phase into the swap phase, and vice versa.
 
 The maker role offers a trade, via the public offer. Its proposal sets the amounts, the asset pair, and what role each participant takes in the swap. There is no special limitation on what a proposal can be in theory. The taker then sends the offer to whom might accept it.
 
-A taker visualizes an offer and chooses to try the trade or not.
+A taker inspects an offer and decides whether or not to engage in the trade.
 
 ### Swap: Alice & Bob
 
-Because of the protocol asymmetry property, we describe two swap roles: (1) Alice and (2) Bob. Each will play a different and thus complementary game, together composing the entire atomic swap protocol.
+Emergent from the protocol's asymmetry, we identify two swap roles: (1) Alice and (2) Bob. Each plays a different and thus complementary game, together composing the entire atomic swap protocol.
 
-Alice always moves coins from the accordant chain to the arbitrating chain. In other words, Alice sells accordant assets for arbitrating assets.
+Alice always moves coins from the accordant chain to the arbitrating chain. In other words, Alice sells accordant assets in return for arbitrating assets.
 
-Bob always moves coins from the arbitrating chain to the accordant chain. In other words, Bob sells arbitrating assets for accordant assets.
+Bob always moves coins from the arbitrating chain to the accordant chain. In other words, Bob sells arbitrating assets in return for accordant assets.
 
 ## Reputation asymmetry
 
-Because of the protocol asymmetry, Alice always locks her coins later in the swap process, implying that she gets an option to buy without costs. One way to resolve this issue is to introduce a reputation system between participants, but this is hard in a decentralized setup.
+Due to the protocol's asymmetry, Alice always locks her coins later in the swap process, implying that she gets an option to buy without cost. One way to resolve this issue is to introduce a reputation system between participants, but this is hard in a decentralized setup.
 
 The reputation asymmetry is not linked to the negotiation role assumed by Alice's daemon: If she's a Taker she can cancel for free on any prices and if she's a Maker she can propose any prices and cancel for free if someone tries to take it.
 
-More broadly, the "one has to lock funds first" problem is not due to this protocol nor its asymetry, but concerns all layer-1 protocols based on multilateral lock/refund primitives.
+More broadly, the "one has to lock funds first" problem is not due to this protocol nor its asymmetry, but concerns all layer-1 protocols based on multilateral lock/refund primitives.
