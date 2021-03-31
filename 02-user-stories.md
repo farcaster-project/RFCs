@@ -140,19 +140,19 @@ Connecting to counterparty daemon...
 
 ## Swap phase
 
-The swap phase starts for each role with the common set of parameters defined above as the interface, the public offer.
+The swap phase for each role starts with the common set of parameters defined above as the interface: the public offer.
 
-plus for Alice's role:
+In addition, for Alice's role:
 
  * The destination Arbitrating address
 
-and for Bob's role:
+And, in addition, for Bob's role:
 
  * The refund Arbitrating address
 
 Those addresses are inputs asked by the client before the beginning of the swap and should follow the address *reuse* stategy for the concerned blockchain.
 
-During the swap phase the client may propose to the user an *abort* action. It is to the client implementation to define how a user can abort a conducting swap or not. We recommend that the client allows the user to *abort* only before detecting money locked on-chain.
+During the swap phase the client may propose to the user an *abort* action. It is up to the client implementation to define whether a user can abort a running swap, and how this should be done. We recommend that the client allows the user to *abort* only before detecting money locked on-chain.
 
 ### Steps
 
@@ -163,9 +163,9 @@ We describe the high-level view of the swap phase with four steps:
  3. Accordant locking step
  4. Swap step
 
-We describe a basic user experience with an atomic swap GUI client for Alice and Bob. This is provided for educational purposes and to give an idea to the reader, the swap GUI client may look different depending on the platform (mobile, desktop, cli, etc) and potential wallet integration.
+We describe a basic user experience with an atomic swap GUI client for Alice and Bob. This is provided for educational purposes and to give an idea to the reader; the swap GUI client may look different depending on the platform (mobile, desktop, cli, etc) and potential wallet integration.
 
-The design proposed here does not make any asumption about wallet integration. All the funds can arise from external wallet with no restriction on the form factor. However, this as the cost of an extra transaction on the Arbitrating blockchain, but can be removed if the client is closely integrated in a wallet.
+The design proposed here does not make any assumption about wallet integration. All the funds can be sourced from external wallets with no restriction on the form factor. While this has the cost of an additional transaction on the Arbitrating blockchain, this can be removed if the client is closely integrated in a given wallet.
 
 ![GUI Swap Mockups](./02-user-stories/gui-swap-mockups.png)
 *Fig 2. Example of a GUI executing a swap*
@@ -190,7 +190,7 @@ Alice and Bob start the pre-initialization. They exchange and verify parameters 
 - Bob → Alice: [`reveal_bob_session_params`](./04-protocol-messages.md#the-reveal_bob_session_params-message)
 
 #### 2. Arbitrating Locking Step (2-3 in the diagram)
-After the parameters are exchanged and validated, Bob asks the user for funding. Upon receiving funds, Bob creates the transactions, signs the cancel path, and sends them to Alice with `core_arbitrating_setup` protocol message. He acquires Alice's signatures for the cancel path. The bitcoin are locked when Bob is able to trigger the cancel path and refund the assets, i.e. after reception of `refund_procedure_signatures` protocol message.
+After the parameters are exchanged and validated, Bob asks the user for funding. Upon receiving funds, Bob creates the transactions, signs the cancel path, and sends them to Alice with `core_arbitrating_setup` protocol message. He acquires Alice's signatures for the cancel path. The bitcoin are locked when Bob is able to trigger the cancel path and refund the assets, i.e. after receiving the `refund_procedure_signatures` protocol message.
 
 ##### Messages exchanged:
 
