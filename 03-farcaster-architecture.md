@@ -27,7 +27,7 @@ This RFC describes the overall architecture and how the software stack of Farcas
 
 ## Global Architecture
 
-This architecture aims to provide flexibility and ease evolution of components or protocol for the future. Different use cases require different type of IT infrastructure and different threat models. Splitting the stack into three main components provide this flexibility and allow components to evolve solely by keeping the correct interfaces defined in these RFCs.
+This architecture aims to provide flexibility and ease the evolution of the components or protocol for the future. Different use cases require different types of IT infrastructure and different threat models. Splitting the stack into three main components provides this flexibility and allows components to evolve solely by keeping the correct interfaces defined in these RFCs.
 
 ### Main components
 
@@ -42,17 +42,17 @@ The figure below represents the general architecture based on these three main t
 ![Farcaster High-Level Components Architecture](./03-farcaster-architecture/global-farcaster-architecture.png)
 *Fig 1. Farcaster High-Level Components Architecture*
 
-Each component have a specific assigned role, they all work together to complete a swap. The following table summarizes different aspects of each component.
+Each component has a specific assigned role, they all work together to complete a swap. The following table summarizes different aspects of each component.
 
 |                              | `client`                                                          | `daemon`                                                     | `syncer`                                        |
 |------------------------------|-------------------------------------------------------------------|--------------------------------------------------------------|-------------------------------------------------|
 | Definition                   | a program that controls the daemon and displays the current state | a program that executes the core protocol in a state machine | a program that talks with a specific blockchain |
 | Cryptographic keys & secrets | private & public                                                  | public only`*`                                               | public only`*`                                  |
 | Client/User                  | end-user                                                          | `client`, counter-party `daemon`                             | `daemon`                                        |
-| Availability                 | present at the start and to sign                                  | mostly online, channel of communication between parties      | always online                                   |
+| Availability                 | present at the start and to sign                                  | mostly online, a channel of communication between parties      | always online                                   |
 | Communicates with            | `daemon`                                                          | `client`, `syncer`, counter-party `daemon`                   | `daemon`, blockchain                            |
 | Transactions                 | creates all transactions, signs                                   | verifies transactions and signatures                         | listens for and publishes transactions          |
-| Protocol state               | doesn't understand protocol, but can represent its state          | understands the protocol, but can't sign                     | doesn't understand protocol                     |
+| Protocol state               | doesn't understand the protocol, but can represent its state          | understands the protocol, but can't sign                     | doesn't understand protocol                     |
 
  `*` the exception is any keys needed to read the blockchain state and detect transactions or amounts, e.g. a private view key for the Monero accordant blockchain.
 
@@ -60,7 +60,7 @@ Each component have a specific assigned role, they all work together to complete
 
 Each swap component is represented as a black box that consumes input messages and produces output messages. Each input and output message is a typed message. Components subscribe to types of messages, e.g. the client may not consume messages produced by syncers but will subscribe to daemon's messages.
 
-Typed messages are defined to specified the interfaces between the components and to document what type of data is needed to be exchanged between this three high level components. In reallity the daemon can be split into multiple small services, but the interaction with the `client` and the `syncers` must follow the defined interfaces.
+Typed messages are defined to specify the interfaces between the components and to document what type of data is needed to be exchanged between these three high-level components. In reality, the daemon can be split into multiple small services, but the interaction with the `client` and the `syncers` must follow the defined interfaces.
 
 ![Typed messages exchanged between components](./03-farcaster-architecture/messages-architecture.png)
 *Fig 2. Typed messages exchanged between components*
@@ -69,7 +69,7 @@ It is worth noting that this diagram (Fig. 2) only shows one syncer, but a synce
 
 ### Networking stack
 
-Typed messages are strictly defined with their serialization and the inter-daemon networking stack is constrained and defined in [04. Protocol Messages](./04-protocol-messages.md), but we don't restrict the networking stack between `daemon`, `client` and `syncer`s. The technological choice is left up to the implementation, but must support running all interactions over the network, whenever required by the user.
+Typed messages are strictly defined with their serialization and the inter-daemon networking stack is constrained and defined in [04. Protocol Messages](./04-protocol-messages.md), but we don't restrict the networking stack between `daemon`, `client`, and `syncer`s. The technological choice is left up to the implementation but must support running all interactions over the network, whenever required by the user.
 
 ### Client & Daemon segregation rationale
 
@@ -82,7 +82,7 @@ The aim of this segregation is to improve flexibility and extensibility added by
 - Clients supporting hardware wallets
 - Mobile applications (that may run the daemon in the background or in a private server),
 - Heavy- or light-weight desktop GUIs,
-- Scripted/automated backend clients (e.g. run by market makers, OTCs etc)
+- Scripted/automated backend clients (e.g. run by market makers, OTCs, etc)
 
 We give a partial example of a `cli` client and a simple example of a `gui` client in [02. User Stories](./02-user-stories.md) to illustrate two implementation of a client.
 
@@ -98,7 +98,7 @@ Client and daemon communicate via `datum` and `instruction` messages (see [06. D
 
 Client and daemon must have an initialization protocol allowing one or the other to recover from a past swap state (see [09. Swap State](./09-swap-state.md)).
 
-Client passes `datum` and `instruction` messages to the daemon. That is, client may at the user's discretion fire one of the possible protocol transitions at each moment in time. A subset of transitions may require transactions, signatures, or keys as input which are transmitted via `datum` messages. Upon receiving a client's message, daemon must undertake the actions associated with the fired transition, and update the swap state accordingly. Daemon updates client with the same type of messages: `datum` and `instruction`, allowing the client to update its local state and produce the next `datum` messages needed by the daemon.
+The client passes `datum` and `instruction` messages to the daemon. That is, the client may at the user's discretion fire one of the possible protocol transitions at each moment in time. A subset of transitions may require transactions, signatures, or keys as input which are transmitted via `datum` messages. Upon receiving a client's message, the daemon must undertake the actions associated with the fired transition, and update the swap state accordingly. The daemon updates the client with the same type of messages: `datum` and `instruction`, allowing the client to update its local state and produce the next `datum` messages needed by the daemon.
 
 ### Why two bidirectional message types?
 
@@ -117,11 +117,11 @@ The daemon must be fully aware of the complete state of the cross-chain atomic s
 - User's data and instructions via a `client` (see [06. Datum & Instructions](./06-datum-and-instructions.md)), and
 - Self-produced loopback messages
 
-The Daemon must create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve this, a Petri net model of the protocol may be used to constrain the runtime environment that executes the user's respective swap role in the protocol (see [01. High Level Overview](./01-high-level-overview.md)), by only authorizing firing valid enabled protocol transitions.
+The Daemon must create a constrained runtime environment for executing the protocol, that only permits valid protocol transitions at all times. To achieve this, a Petri net model of the protocol may be used to constrain the runtime environment that executes the user's respective swap role in the protocol (see [01. High-Level Overview](./01-high-level-overview.md)), by only authorizing firing valid enabled protocol transitions.
 
 ### Counter-party daemon communication
 
-The Daemon has a bidirectional communication channel with the swap counter-party's daemon. This inter-daemon communication is used to pass protocol messages between the swap counterparties. To bootstrap this communication channel we distinguish two phases: the negotiation and the swap phase. The negotiation phase allows users to discover swaps through public offers and connect their daemons (see [02. User Stories](./02-user-stories.md)).
+The Daemon has a bidirectional communication channel with the swap counter-party's daemon. This inter-daemon communication is used to pass protocol messages between the swap counterparties. To bootstrap this communication channel, we distinguish two phases: the negotiation and the swap phase. The negotiation phase allows users to discover swaps through public offers and connect their daemons (see [02. User Stories](./02-user-stories.md)).
 
 ### Loopback: self-generated input messages
 

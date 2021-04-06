@@ -7,7 +7,7 @@
 
 ## Overview
 
-This RFC specifies the cryptographic primitives used to transfer secrets through transactions with adaptor signatures and specifies the cryptographic setup required at the beginning of a swap to guarantee funds safety and recovery. Key, signature, and proof formats are dependent on the blockchain and the type of cryptography used, see [08. Transactions](./08-transactions.md) for more examples with Bitcoin.
+This RFC specifies the cryptographic primitives used to transfer secrets through transactions with adaptor signatures and specifies the cryptographic setup required at the beginning of a swap to guarantee funds safety and recovery. Key, signature and proof formats are dependent on the blockchain and the type of cryptography used, see [08. Transactions](./08-transactions.md) for more examples with Bitcoin.
 
 ## Table of Contents
 
@@ -25,11 +25,11 @@ This RFC specifies the cryptographic primitives used to transfer secrets through
 
 We describe the cryptographic keys needed by both swap roles defined in [01. High Level Overview](./01-high-level-overview.md).
 
-A `private_key` type and a `public_key` type is defined for the arbitrating blockchain for each cryptographic approaches and for the accordant blockchain.
+A `private_key` type and a `public_key` type is defined for the arbitrating blockchain for each cryptographic approach and for the accordant blockchain.
 
-For each public key describe in the following section we assume knowledge of the corresponding private key.
+For each public key described in the following section, we assume knowledge of the corresponding private key.
 
-**Arbitrating example:** for Bitcoin ECDSA the `public_key` is an ECDSA `secp256k1` public key, and for Bitcoin Schnorr the `public_key` is a Schnorr `secp256k1` public key.
+**Arbitrating example:** For Bitcoin ECDSA the `public_key` is an ECDSA `secp256k1` public key. For Bitcoin Schnorr the `public_key` is a Schnorr `secp256k1` public key.
 
 **Accordant example:** for Monero the `public_key` is an `ed25519` public key.
 
@@ -75,7 +75,7 @@ where
 
 We define a `signature` type for the arbitrating blockchain role related to the `private_key`/`public_key` types defined previously.
 
-**Arbitrating example:** for Bitcoin ECDSA the `signature` is an ECDSA signature, and for Bitcoin Schnorr the `signature` is a Schnorr signature following [[2] BIP 0340: Schnorr Signatures for secp256k1](#references).
+**Arbitrating example:** for Bitcoin ECDSA the `signature` is an ECDSA signature, and for Bitcoin Schnorr, the `signature` is a Schnorr signature following [[2] BIP 0340: Schnorr Signatures for secp256k1](#references).
 
 The interface for interacting with arbitrating signatures is composed of three functions:
 
@@ -232,7 +232,7 @@ return s'
 
 We define a `cross_group_proof` type for the Arbitrating-Accordant blockchain pair dependent on the `private_key` groups. If the groups are the same, the proof is set to null.
 
-A Cross-group Discrete Logarithm proving system is define with:
+A cross-group Discrete Logarithm proving system is defined with:
 
  * `XDLGen`: An algorithm that generates the parameters based on the given security level.
 

@@ -95,7 +95,7 @@ Upon receiving the transaction, Alice must validate:
  * the buy script is composed of a 2-of-2 multisig with:
     * the first public key is `Ab`
     * the second public key is `Bb`
- * the cancel script is well formed
+ * the cancel script is well-formed
     * the timelock `<num>` is set accordingly to the agreed parameter
     * the timelock operation `[TIMEOUTOP]` is set accordingly to the agreed parameter
     * the timelock operation `[TIMEOUTOP]` is followed by a `DROP` operation
@@ -254,7 +254,7 @@ Upon receiving the transaction, Alice must validate:
  * the refund script is composed of a 2-of-2 multisig with:
     * the first public key is `Ar`
     * the second public key is `Br`
- * the punish script is well formed
+ * the punish script is well-formed
     * the timelock `<num>` is set accordingly to the agreed parameter
     * the timelock operation `[TIMEOUTOP]` is set accordingly to the agreed parameter
     * the timelock operation `[TIMEOUTOP]` is followed by a `DROP` operation
@@ -441,7 +441,7 @@ Two external Monero transactions are defined: the `lock (x)` transaction and the
 ![Accordant transaction graph](./08-transactions/accordant-tx-graph.png)
 *Fig 2. Accordant UTXO based transaction graph*
 
-> It is worth noting that all Monero transactions can be handled by external wallet. More precisely the latter by importing the private keys into an external software.
+> It is worth noting that all Monero transactions can be handled by an external wallet, or more precisely by importing the private keys into external software.
 
 ### Lock
 
