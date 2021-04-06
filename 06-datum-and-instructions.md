@@ -318,7 +318,7 @@ We define `instruction` messages as "courtesy" messages exchanged between a clie
 
 **Sent by**: Alice|Bob clients|daemon
 
-Provides clients or daemons the instruction to abort the swap, it is the daemon's responsibility to abort according to the current swap-state. Upon daemon `abort` instruction, the client must be able to provide any missing signatures.
+Provides clients or the daemon the instruction to abort the swap. It is the daemon's responsibility to abort according to the current swap-state. Upon daemon `abort` instruction, the client must be able to provide any missing signatures.
 
 The `abort` instruction can come from the client because the user chose to abort the swap and can come from the daemon to inform the client of the fact that the counter-party chose to abort.
 
