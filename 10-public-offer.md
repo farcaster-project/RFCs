@@ -98,32 +98,34 @@ A public offer MUST follow the specified format below to be considered valid.
  * The network as one byte: `0x01` for mainnet, `0x02` for testnet, and `0x03` for local
  * The arbitrating asset identifier followed by the accordant identifier, two four bytes unsigned integer serialized in little endian
  * The arbitrating asset amount followed by the accordant amount
-    * One unsigned integer byte defining the number of following bytes to parse
+    * A length prefix for the number of following bytes to parse
     * An array of bytes `[bytes]` representing the amount in the smallest granular native unit for its respective blockchain; bytes are serialized with the native blockchain consensus rules.
  * The cancel timeout followed by the punish timeout
-    * One unsigned integer byte defining the number of following bytes to parse
+    * A length prefix for the number of following bytes to parse
     * An array of bytes `[bytes]` representing the timelock value for its respective blockchain; bytes are serialized with the native blockchain consensus rules.
  * The fee strategy as one byte:
     * `0x01` for the fixed fee, followed by
-        * One unsigned integer byte defining the number of bytes to parse per value
+        * A length prefix for the number of bytes to parse the value
         * An array of bytes `[bytes]` representing the value of the fixed fee interpreted for its respective blockchain; bytes are serialized with the native blockchain consensus rules.
     * `0x02` for the range fee, followed by
-        * One unsigned integer byte defining the number of bytes to parse per value
+        * A length prefix for the number of bytes to parse the value
         * An array of bytes `[bytes]` representing the value of minimum fee interpreted for its respective blockchain; bytes are serialized with the native blockchain consensus rules.
-        * One unsigned integer byte defining the number of bytes to parse per value
+        * A length prefix for the number of bytes to parse the value
         * An array of bytes `[bytes]` representing the value of maximum fee interpreted for its respective blockchain; bytes are serialized with the native blockchain consensus rules.
  * The future maker swap role as one byte: `0x01` for Alice and `0x02` for Bob
 
 ```
 < [0x46, 0x43, 0x53, 0x57, 0x41, 0x50] MAGIC BYTES > < [u16] version > < [u8] network >
 < [u8; 4] arbitrating identifier > < [u8; 4] accordant identifier >
-< [u8] len > < [u8; len] arbitrating amount value >
-< [u8] len > < [u8; len] accordant amount value >
-< [u8] len > < [u8; len] cancel timeout value >
-< [u8] len > < [u8; len] punish timeout value >
-< [u8] fee strategy > < [u8] len > < [u8; len] fixed or minimum value > (< [u8] len > < [u8; len] maximum value >)
+< [u16] len > < [u8; len] arbitrating amount value >
+< [u16] len > < [u8; len] accordant amount value >
+< [u16] len > < [u8; len] cancel timeout value >
+< [u16] len > < [u8; len] punish timeout value >
+< [u8] fee strategy > < [u16] len > < [u8; len] fixed or minimum value > (< [u16] len > < [u8; len] maximum value >)
 < [u8] future maker role >
 ```
+
+Length prefixes are 16-bits unsigned little-endian encoded integers, this allows to store up to 65535 bytes per value, which is considered enough for all the potential use cases that should be covered by this public offer serialization format. In some cases 8-bits integers would be fine as many values does not length more than 255 bytes, but using 16-bits prefixes matches the other messages formats and space efficiency is not a priority here.
 
 ### Amounts
 
