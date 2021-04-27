@@ -39,7 +39,7 @@ A public offer as of version 1 contains the following fields:
  * The definition of the **punish timeout**
  * The definition of a **fee strategy**
  * The future **maker swap role**
- * TODO add peer connection parameters
+ * The **node address** where to connect
 
 This version 1 is the simplest offer possible, it does not contain asset amount ranges to be traded nor room for price negotiation.
 
@@ -113,6 +113,9 @@ A public offer MUST follow the specified format below to be considered valid.
         * A length prefix for the number of bytes to parse the value
         * An array of bytes `[bytes]` representing the value of maximum fee interpreted for its respective blockchain; bytes are serialized with the native blockchain consensus rules.
  * The future maker swap role as one byte: `0x01` for Alice and `0x02` for Bob
+ * The node address where takers can try to connect
+    * A lengh prefix for the number of bytes to parse
+    * An array of bytes `[bytes]` representing the node address as an [`internet2`](#references) strict encoded `RemoteNodeAddr`
 
 ```
 < [0x46, 0x43, 0x53, 0x57, 0x41, 0x50] MAGIC BYTES > < [u16] version > < [u8] network >
@@ -123,6 +126,7 @@ A public offer MUST follow the specified format below to be considered valid.
 < [u16] len > < [u8; len] punish timeout value >
 < [u8] fee strategy > < [u16] len > < [u8; len] fixed or minimum value > (< [u16] len > < [u8; len] maximum value >)
 < [u8] future maker role >
+< [u16] len > < [u8; len] strict encoded node address >
 ```
 
 Length prefixes are 16-bits unsigned little-endian encoded integers, this allows to store up to 65535 bytes per value, which is considered enough for all the potential use cases that should be covered by this public offer serialization format. In some cases 8-bits integers would be fine as many values does not length more than 255 bytes, but using 16-bits prefixes matches the other messages formats and space efficiency is not a priority here.
@@ -141,3 +145,4 @@ For Bitcoin, a timelock value must be serialized as a 4-byte unsigned little end
 
  * [[1] BIP 44: Multi-Account Hierarchy for Deterministic Wallets](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
  * [[2] SLIP 44: Registered coin types for BIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md#slip-0044--registered-coin-types-for-bip-0044)
+ * [[3] `internet2` Rust crate](https://github.com/internet2-org/rust-internet2)
