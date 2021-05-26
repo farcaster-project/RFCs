@@ -31,6 +31,7 @@ A public offer as of version 1 contains the following fields:
 
  * Public offer magic bytes and **version** format
  * **Network** to used on both assets to perform the swap
+ * **Time validity** of the offer
  * The **arbitrating asset** identifier
  * The **accordant asset** identifier
  * An arbitrating **asset amount** exchanged
@@ -56,6 +57,10 @@ Three networks are defined to scope the swap:
  * Local
 
 Only the mainnet network is used to swap valuable assets, the other networks are for test purposes only and do not under any circumstances move real value.
+
+### Time validity
+
+The validity of the offer allows better UX/UI, offers can be discarded/hidden when their validity is expired. Public offers are designed as the entry point of a Farcaster swap but do not make any asumptions on how they are shared nor any guarentee about the maker liveness, thus a non-expired offer may be already completed by another taker.
 
 ### Asset identifiers
 
@@ -96,6 +101,7 @@ A public offer MUST follow the specified format below to be considered valid.
  * Magic bytes is an array of bytes: `[0x46, 0x43, 0x53, 0x57, 0x41, 0x50]`, corresponding to `FCSWAP` in ASCII
  * The version and list of activated features as two bytes unsigned little endian integer, currently set as 1, i.e. `[0x01, 0x00]`
  * The network as one byte: `0x01` for mainnet, `0x02` for testnet, and `0x03` for local
+ * The offer validity as a "UNIX timestamp", the offer remains valid up to the timestamp value and should be considered invalid after reaching that value: an 8-bytes signed integer serialized in little endian
  * The arbitrating asset identifier followed by the accordant identifier, two four bytes unsigned integer serialized in little endian
  * The arbitrating asset amount followed by the accordant amount
     * A length prefix for the number of following bytes to parse
@@ -119,6 +125,7 @@ A public offer MUST follow the specified format below to be considered valid.
 
 ```
 < [0x46, 0x43, 0x53, 0x57, 0x41, 0x50] MAGIC BYTES > < [u16] version > < [u8] network >
+< [i64] max age validity timestamp >
 < [u8; 4] arbitrating identifier > < [u8; 4] accordant identifier >
 < [u16] len > < [u8; len] arbitrating amount value >
 < [u16] len > < [u8; len] accordant amount value >
