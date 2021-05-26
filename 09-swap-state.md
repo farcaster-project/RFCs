@@ -40,15 +40,15 @@ The swap state can be derived from an ordered set of incoming messages. On a cra
 By ensuring that daemon output messages can be replayed safely, like tasks, the work already performed since the last saved checkpoint can be replayed safely.
 
 ## Datum messages
-Datum messages are generic messages --- bidirectionally exchanged by client and daemon --- which allow the construction of types that are needed for protocol progressions, such as a signature or transaction. They convey the information needed to construct the state on the other side. The instantiation of the type is equivalent to placing a token in a petrinet. The marking of the net encodes the full state, and this one token is thus a partial state. 
+Datum messages are generic messages --- bidirectionally exchanged by client and daemon --- which allow the construction of types that are needed for protocol progressions, such as a signature or transaction. They convey the information needed to construct the state on the other side. The instantiation of the type is equivalent to placing a token in a petrinet. The marking of the net encodes the full state, and this one token is thus a partial state.
 
-## Transcripts 
-Transcripts are time-ordered, and composed of 
+## Transcripts
+Transcripts are time-ordered, and composed of
   - Syncer's blockchain `Event` Accordant
   - Syncer's blockchain `Event` Arbitrating
   - Client data bundles, `Bundles`
   - Counter-party Daemon `Protocol` messages
-  - Own Daemon `Protocol` messages 
+  - Own Daemon `Protocol` messages
   - Own Daemon Internal-timers, `Loopback`
   - Published task from Daemon to Accordant Syncer, `Task`
   - Published task from Daemon to Arbitrating Syncer, `Task`
@@ -83,12 +83,12 @@ Although desirable, transcript state recovery may not be essential, as checkpoin
 `Checkpoint`s must provide all the data to instantiate the types that underlie the state. They are expensive and shall be used only on critical sections.
 
 ### Inter-daemon
-Any interaction prior to the coins being locked can safely be ignored. Recovery to a state prior to locking funds is handy but optional. 
+Any interaction prior to the coins being locked can safely be ignored. Recovery to a state prior to locking funds is handy but optional.
 
-Before Bitcoin and Monero are locked, inter-daemon may fail with no further issues, and may not need recovery. 
+Before Bitcoin and Monero are locked, inter-daemon may fail with no further issues, and may not need recovery.
 
-`checkpoint pre-lock`: Both Alice and Bob, just before locking their coins, shall make a checkpoint. 
-`checkpoint post-buyprocsig`: Both Alice and Bob shall amend the `checkpoint pre-lock` by concatenating the `buy_procedure_signature` message after it is sent by Bob's to Alice's daemons. 
+`checkpoint pre-lock`: Both the accordant seller and the arbitrating seller, just before locking their coins, shall make a checkpoint.
+`checkpoint post-buyprocsig`: Both the accordant seller and the arbitrating seller shall amend the `checkpoint pre-lock` by concatenating the `buy_procedure_signature` message after it is sent by the arbitrating seller's to the accordant seller's daemons.
 
 ### Client-Daemon-Syncer (same user)
 
@@ -96,7 +96,7 @@ Daemon assumes Client and Syncer are stateless.
 
 All the interactions from the `buy_procedure_signature` protocol message until the end of the swap are critical. Nonetheless, since it's within a trusted setup composed of its own Daemon, Client, and Syncer setup, it can be safely replayed.
 
-The Daemon keeps track of its state but assumes Client and Syncer are stateless. 
+The Daemon keeps track of its state but assumes Client and Syncer are stateless.
 
 #### Daemon side
 
@@ -107,8 +107,8 @@ Upon Daemon recovery, Daemon must watch for all transactions it knows about thro
 The Client has to backup to disk: its own id, swap parameters, and Daemon id, and must have access to secret keys. From this backup, Daemon's messages sent during the recovery process are used to resume the swap, since Daemon is a trusted component. After a crash, a recovering Client must receive Daemon's datum messages, which are parametric on Daemon's swap state. From such messages, the Client may provide the additional signatures to complete the swap, if needed. As such, the Client is mostly stateless.
 
 The data needed for the Client to recover were already stored on Daemon's checkpoints:
-  - After `Signed adaptor buy` and `Signed arbitrating lock transactions`, a `checkpoint` is taken on Bob's Daemon side. Thereafter Bob locks the Bitcoin. Note that this corresponds to Bob's `checkpoint pre-lock`, so no new checkpoint is needed.
-  - After `Signed adaptor refund` and `Cosign arbitrating cancel` are received by Daemon, and just before locking the Monero, Alice's Daemon makes a `checkpoint`. Again, this corresponds to Alice's `checkpoint pre-lock`, so no new checkpoint is needed.
+  - After `Signed adaptor buy` and `Signed arbitrating lock transactions`, a `checkpoint` is taken on the arbitrating seller's Daemon side. Thereafter the arbitrating seller locks the Bitcoin. Note that this corresponds to the arbitrating seller's `checkpoint pre-lock`, so no new checkpoint is needed.
+  - After `Signed adaptor refund` and `Cosign arbitrating cancel` are received by Daemon, and just before locking the Monero, the accordant seller's Daemon makes a `checkpoint`. Again, this corresponds to the accordant seller's `checkpoint pre-lock`, so no new checkpoint is needed.
 
 Both daemon-client and daemon-syncer pairings must implement mechanisms to re-establish their connection.
 

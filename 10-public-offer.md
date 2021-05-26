@@ -84,10 +84,10 @@ A fixed fee strategy will always apply the same fee on every transaction. A rang
 
 As defined in [01. High-Level Overview](./01-high-level-overview.md) two swap roles are specified:
 
- * Alice
- * Bob
+ * the accordant seller
+ * the arbitrating seller
 
-A swap as defined in Farcaster always involves one and only one Alice and one and only one Bob. Defining the future maker swap role is enough to derive the future taker swap role.
+A swap as defined in Farcaster always involves one and only one the accordant seller and one and only one the arbitrating seller. Defining the future maker swap role is enough to derive the future taker swap role.
 
 ## Serialization
 
@@ -112,7 +112,7 @@ A public offer MUST follow the specified format below to be considered valid.
         * An array of bytes `[bytes]` representing the value of minimum fee interpreted for its respective blockchain; bytes are serialized with the native blockchain consensus rules.
         * A length prefix for the number of bytes to parse the value
         * An array of bytes `[bytes]` representing the value of maximum fee interpreted for its respective blockchain; bytes are serialized with the native blockchain consensus rules.
- * The future maker swap role as one byte: `0x01` for Alice and `0x02` for Bob
+ * The future maker swap role as one byte: `0x01` for the accordant seller and `0x02` for the arbitrating seller
  * The node address where takers can try to connect
     * A lengh prefix for the number of bytes to parse
     * An array of bytes `[bytes]` representing the node address as an [`internet2`](#references) strict encoded `RemoteNodeAddr`

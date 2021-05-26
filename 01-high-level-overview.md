@@ -17,7 +17,7 @@ This RFC describes the high-level concepts associated with the protocol such as 
   * [Roles](#roles)
     * [Blockchain: Arbitrating & Accordant](#blockchain-arbitrating--accordant)
     * [Negotiation: Taker & Maker](#negotiation-taker--maker)
-    * [Swap: Alice & Bob](#swap-alice--bob)
+    * [Swap: accordant seller & arbitrating seller](#swap-accordant-seller--arbitrating-seller)
   * [Reputation asymmetry](#reputation-asymmetry)
 
 ## Phases
@@ -52,24 +52,24 @@ Those roles are determined by the outgoing blockchains' capabilities involved in
 
 To allow the interconnection among participants and set the parameters of a trade, we describe two negotiation roles: (1) Taker and (2) Maker. The former will browse the public offers and the latter will produce them.
 
-Taker and maker roles are dissociated from swap roles. They are used in the negotiation phase. A taker can later be transformed into an Alice or a Bob role when moving from the negotiation phase into the swap phase, and vice versa.
+Taker and maker roles are dissociated from swap roles. They are used in the negotiation phase. A taker can later be transformed into an the accordant seller or a the arbitrating seller role when moving from the negotiation phase into the swap phase, and vice versa.
 
 The maker role offers a trade, via the public offer. Its proposal sets the amounts, the asset pair, and what role each participant takes in the swap. There is no special limitation on what a proposal can be in theory. The maker then sends the offer to potential takers.
 
 A taker inspects an offer and decides whether or not to engage in the offered trade.
 
-### Swap: Alice & Bob
+### Swap: accordant seller & arbitrating seller
 
-Emergent from the protocol's asymmetry, we identify two swap roles: (1) Alice and (2) Bob. Each plays a different and thus complementary game, together composing the entire atomic swap protocol.
+Emergent from the protocol's asymmetry, we identify two swap roles: (1) the accordant seller and (2) the arbitrating seller. Each plays a different and thus complementary game, together composing the entire atomic swap protocol.
 
-Alice always moves coins from the accordant chain to the arbitrating chain. In other words, Alice sells accordant assets in return for arbitrating assets.
+The accordant seller always moves coins from the accordant chain to the arbitrating chain. In other words, the accordant seller sells accordant assets in return for arbitrating assets.
 
-Bob always moves coins from the arbitrating chain to the accordant chain. In other words, Bob sells arbitrating assets in return for accordant assets.
+The arbitrating seller always moves coins from the arbitrating chain to the accordant chain. In other words, the arbitrating seller sells arbitrating assets in return for accordant assets.
 
 ## Reputation asymmetry
 
-Due to the protocol's asymmetry, Alice always locks her coins later in the swap process, implying that she gets an option to buy without cost. One way to resolve this issue is to introduce a reputation system between participants, but this is hard in a decentralized setup.
+Due to the protocol's asymmetry, the accordant seller always locks her coins later in the swap process, implying that she gets an option to buy without cost. One way to resolve this issue is to introduce a reputation system between participants, but this is hard in a decentralized setup.
 
-The reputation asymmetry is not linked to the negotiation role assumed by Alice's daemon: If she's a Taker she can cancel for free on any prices and if she's a Maker she can propose any prices and cancel for free if someone tries to take it.
+The reputation asymmetry is not linked to the negotiation role assumed by the accordant seller's daemon: If she's a Taker she can cancel for free on any prices and if she's a Maker she can propose any prices and cancel for free if someone tries to take it.
 
 More broadly, the "one has to lock funds first" problem is not due to this protocol nor its asymmetry, but concerns all layer-1 protocols based on multilateral lock/refund primitives.
