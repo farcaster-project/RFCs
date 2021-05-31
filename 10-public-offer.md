@@ -151,6 +151,8 @@ Data to sign:
 
 Length prefixes are 16-bits unsigned little-endian encoded integers, this allows to store up to 65535 bytes per value, which is considered enough for all the potential use cases that should be covered by this public offer serialization format. In some cases 8-bits integers would be fine as many values does not length more than 255 bytes, but using 16-bits prefixes matches the other messages formats and space efficiency is not a priority here.
 
+Signature is performed with ECDSA over secp256k1, which is used to create the `node_id`.
+
 ### Amounts
 
 For Bitcoin, amounts must be serialized as an 8-byte unsigned little endian integer representing the number of satoshis, i.e. 1e-8 bitcoin.
