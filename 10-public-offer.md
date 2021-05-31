@@ -25,7 +25,7 @@ This RFC describes and formalizes the content of a public offer and its serializ
 
 ## Content
 
-Public offers carry data about two specific blockchains, which needs to be interpreted in their blockchain context. A serialized binary value for a timelock can only be interpreted if the blockchain for which the value has been serialized is known. A timelock value for Bitcoin, e.g. a type and 4 bytes unsigned integer for the `nSequence` field, might be interpreted differently than an Etherum timelock value. The parser must then be generic and may fail to interpret blockchain-specific data if the wrong blockchain is used.
+Public offers carry data about two specific blockchains, and these data need to be interpreted in their blockchain context. A serialized binary value for a timelock can only be interpreted if the blockchain for which the value has been serialized is known. A timelock value for Bitcoin, e.g. a type and 4 bytes unsigned integer for the `nSequence` field, might be interpreted differently than an Etherum timelock value. The parser must then be generic and may fail to interpret blockchain-specific data if the wrong blockchain is used.
 
 A public offer as of version 1 contains the following fields:
 
@@ -67,12 +67,11 @@ Amounts must represent the value in its native smallest granularity format or ar
 
 ### Timeouts
 
-Timeout values are interpreted based on the arbitrating chain. For example, if Bitcoin is used as the arbitrating blockchain, the values may represent the `nSequence` input field of the transactions with a `CHECKSEQUENCEVERIFY` opcode. For other blockchains, the value might be interpreted differently, it must not matter if the transactions use relative timelocks or absolute timelocks, the value stored inside the `[bytes]` array must contain a type along the value if necessary, e.g. see
-Bitcoin example.
+Timeout values are interpreted based on the arbitrating chain. For example, if Bitcoin is used as the arbitrating blockchain, the values may represent the `nSequence` input field of the transactions with a `CHECKSEQUENCEVERIFY` opcode. For other blockchains, the value might be interpreted differently, but it may not matter whether the transactions use relative timelocks or absolute timelocks. The value stored inside the `[bytes]` array must contain a type along the value if necessary, e.g. see Bitcoin example.
 
 ### Fee strategy
 
-Two fee strategy are defined:
+Two fee strategies are defined:
 
  * Fixed
     * Contain one value, interpreted as the fixed fee to apply
@@ -144,7 +143,7 @@ For Bitcoin, a timelock value must be serialized as a one byte type and a 4-byte
 
 **Serialization**:
 
- * `< [u8] type >`: the type of timelock; only value `0x00` is valid and represent an `nSequence` field in the transaction and the number to push on the witness stack with a `CHECKSEQUENCEVERIFY` opcode.
+ * `< [u8] type >`: the type of timelock; only value `0x00` is valid and represents an `nSequence` field in the transaction and the number to push on the witness stack with a `CHECKSEQUENCEVERIFY` opcode.
  * `< [u8; 4] type >`: the numeric value to use according to the type.
 
 ## References
