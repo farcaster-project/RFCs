@@ -31,6 +31,7 @@ A public offer as of version 1 contains the following fields:
 
  * Public offer magic bytes and **version** format
  * **Network** to used on both assets to perform the swap
+ * **Time validity** of the offer
  * The **arbitrating asset** identifier
  * The **accordant asset** identifier
  * An arbitrating **asset amount** exchanged
@@ -40,6 +41,7 @@ A public offer as of version 1 contains the following fields:
  * The definition of a **fee strategy**
  * The future **maker swap role**
  * The **node address** where to connect
+ * A **signature** of the offer
 
 This version 1 is the simplest offer possible, it does not contain asset amount ranges to be traded nor room for price negotiation.
 
@@ -56,6 +58,10 @@ Three networks are defined to scope the swap:
  * Local
 
 Only the mainnet network is used to swap valuable assets, the other networks are for test purposes only and do not under any circumstances move real value.
+
+### Time validity
+
+Time constraining the validity of an offer allows better UI/UX: offers can be discarded/hidden when their validity is expired. Public offers are designed as the entry point of a Farcaster swap but do not make any assumptions on how they are shared nor any guarantee about the maker's liveness: a non-expired offer may already have been completed by another taker.
 
 ### Asset identifiers
 
@@ -89,6 +95,14 @@ As defined in [01. High-Level Overview](./01-high-level-overview.md) two swap ro
 
 A swap as defined in Farcaster always involves one and only one Alice and one and only one Bob. Defining the future maker swap role is enough to derive the future taker swap role.
 
+### Node address
+
+The node address contains a `node_id` and `remote_addr`. The format is defined in [`internet2`](#references) as a `RemoteNodeAddr`. The `node_id` is a secp256k1 public key used as an encryption/id key for the session. This public key is used to validate the signature provided at the end of the public offer.
+
+### Signature
+
+A signature is appended at the end of the public offer. The signature must be valid for the public key present in the node address, i.e. the `node_id`.
+
 ## Serialization
 
 A public offer MUST follow the specified format below to be considered valid.
@@ -96,6 +110,7 @@ A public offer MUST follow the specified format below to be considered valid.
  * Magic bytes is an array of bytes: `[0x46, 0x43, 0x53, 0x57, 0x41, 0x50]`, corresponding to `FCSWAP` in ASCII
  * The version and list of activated features as two bytes unsigned little endian integer, currently set as 1, i.e. `[0x01, 0x00]`
  * The network as one byte: `0x01` for mainnet, `0x02` for testnet, and `0x03` for local
+ * The offer validity as a "UNIX timestamp". The offer remains valid up to the timestamp value - an 8-byte signed integer serialized in little endian - and should be considered invalid after reaching this value
  * The arbitrating asset identifier followed by the accordant identifier, two four bytes unsigned integer serialized in little endian
  * The arbitrating asset amount followed by the accordant amount
     * A length prefix for the number of following bytes to parse
@@ -116,9 +131,14 @@ A public offer MUST follow the specified format below to be considered valid.
  * The node address where takers can try to connect
     * A lengh prefix for the number of bytes to parse
     * An array of bytes `[bytes]` representing the node address as an [`internet2`](#references) strict encoded `RemoteNodeAddr`
+        * Node address must be provided in the format `<node_id>@<node_inet_addr>[:<port>]`, where `<node_inet_addr>` may be IPv4, IPv6, Onion v2 or v3 address
+ * A signature of the previous serialized bytes, valid for the `node_id` provided in the node address
+
+Data to sign:
 
 ```
 < [0x46, 0x43, 0x53, 0x57, 0x41, 0x50] MAGIC BYTES > < [u16] version > < [u8] network >
+< [i64] max age validity timestamp >
 < [u8; 4] arbitrating identifier > < [u8; 4] accordant identifier >
 < [u16] len > < [u8; len] arbitrating amount value >
 < [u16] len > < [u8; len] accordant amount value >
@@ -130,6 +150,8 @@ A public offer MUST follow the specified format below to be considered valid.
 ```
 
 Length prefixes are 16-bits unsigned little-endian encoded integers, this allows to store up to 65535 bytes per value, which is considered enough for all the potential use cases that should be covered by this public offer serialization format. In some cases 8-bits integers would be fine as many values does not length more than 255 bytes, but using 16-bits prefixes matches the other messages formats and space efficiency is not a priority here.
+
+Signature is performed with ECDSA over secp256k1, which is used to create the `node_id`.
 
 ### Amounts
 
