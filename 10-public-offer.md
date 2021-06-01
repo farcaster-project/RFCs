@@ -61,7 +61,7 @@ Only the mainnet network is used to swap valuable assets, the other networks are
 
 ### Time validity
 
-Time constraining the validity of an offer allows better UI/UX: offers can be discarded/hidden when their validity is expired. Public offers are designed as the entry point of a Farcaster swap but do not make any assumptions on how they are shared nor any guarantee about the maker liveness: a non-expired offer may already have been completed by another taker.
+Time constraining the validity of an offer allows better UI/UX: offers can be discarded/hidden when their validity is expired. Public offers are designed as the entry point of a Farcaster swap but do not make any assumptions on how they are shared nor any guarantee about the maker's liveness: a non-expired offer may already have been completed by another taker.
 
 ### Asset identifiers
 
@@ -110,7 +110,7 @@ A public offer MUST follow the specified format below to be considered valid.
  * Magic bytes is an array of bytes: `[0x46, 0x43, 0x53, 0x57, 0x41, 0x50]`, corresponding to `FCSWAP` in ASCII
  * The version and list of activated features as two bytes unsigned little endian integer, currently set as 1, i.e. `[0x01, 0x00]`
  * The network as one byte: `0x01` for mainnet, `0x02` for testnet, and `0x03` for local
- * The offer validity as a "UNIX timestamp", the offer remains valid up to the timestamp value and should be considered invalid after reaching that value: an 8-byte signed integer serialized in little endian
+ * The offer validity as a "UNIX timestamp". The offer remains valid up to the timestamp value - an 8-byte signed integer serialized in little endian - and should be considered invalid after reaching this value
  * The arbitrating asset identifier followed by the accordant identifier, two four bytes unsigned integer serialized in little endian
  * The arbitrating asset amount followed by the accordant amount
     * A length prefix for the number of following bytes to parse
