@@ -61,7 +61,7 @@ Only the mainnet network is used to swap valuable assets, the other networks are
 
 ### Time validity
 
-The validity of the offer allows better UX/UI, offers can be discarded/hidden when their validity is expired. Public offers are designed as the entry point of a Farcaster swap but do not make any asumptions on how they are shared nor any guarentee about the maker liveness, thus a non-expired offer may be already completed by another taker.
+Time constraining the validity of an offer allows better UI/UX: offers can be discarded/hidden when their validity is expired. Public offers are designed as the entry point of a Farcaster swap but do not make any assumptions on how they are shared nor any guarantee about the maker liveness: a non-expired offer may already have been completed by another taker.
 
 ### Asset identifiers
 
@@ -110,7 +110,7 @@ A public offer MUST follow the specified format below to be considered valid.
  * Magic bytes is an array of bytes: `[0x46, 0x43, 0x53, 0x57, 0x41, 0x50]`, corresponding to `FCSWAP` in ASCII
  * The version and list of activated features as two bytes unsigned little endian integer, currently set as 1, i.e. `[0x01, 0x00]`
  * The network as one byte: `0x01` for mainnet, `0x02` for testnet, and `0x03` for local
- * The offer validity as a "UNIX timestamp", the offer remains valid up to the timestamp value and should be considered invalid after reaching that value: an 8-bytes signed integer serialized in little endian
+ * The offer validity as a "UNIX timestamp", the offer remains valid up to the timestamp value and should be considered invalid after reaching that value: an 8-byte signed integer serialized in little endian
  * The arbitrating asset identifier followed by the accordant identifier, two four bytes unsigned integer serialized in little endian
  * The arbitrating asset amount followed by the accordant amount
     * A length prefix for the number of following bytes to parse
@@ -131,7 +131,7 @@ A public offer MUST follow the specified format below to be considered valid.
  * The node address where takers can try to connect
     * A lengh prefix for the number of bytes to parse
     * An array of bytes `[bytes]` representing the node address as an [`internet2`](#references) strict encoded `RemoteNodeAddr`
-        * Node address must be given as in form of `<node_id>@<node_inet_addr>[:<port>]`, where `<node_inet_addr>` may be IPv4, IPv6, Onion v2 or v3 address
+        * Node address must be provided in the format `<node_id>@<node_inet_addr>[:<port>]`, where `<node_inet_addr>` may be IPv4, IPv6, Onion v2 or v3 address
  * A signature of the previous serialized bytes, valid for the `node_id` provided in the node address
 
 Data to sign:
