@@ -78,7 +78,7 @@ Parameters may be added to specify which blockchain, in order to support any net
 
 Required parameters are:
 
- 1. type: ? (`watch_height`)
+ 1. type: ? (`watch_address`)
  2. data:
     - [`i32`: `id`]: The task identifier
     - [`u64`: `lifetime`]: Epoch at which the syncer SHOULD drop this task. Until then, this task MUST be maintained, barring the case where an `abort` task aborts it.
