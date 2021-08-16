@@ -59,7 +59,7 @@ We define two categories of content composing the `datum` messages:
    - Signatures (partial and finalized)
    - Keys (public keys and exceptional private 'view' keys)
    - Off-chain multi-signature protocol messages (e.g., musig2)
-   - Zero knowledge proofs requires by the above protocols (e.g., cross-group discreet log equality)
+   - Zero knowledge proofs requires by the above protocols (e.g., cross-group discrete log equality)
 2. Transactions; following *PSBT standard* & *BIP 174* [[2,3]](#references)
 
 and a third category called `instruction` messages that represents:
