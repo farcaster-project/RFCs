@@ -82,6 +82,7 @@ Required parameters are:
  2. data:
     - [`i32`: `id`]: The task identifier
     - [`u64`: `lifetime`]: Epoch at which the syncer SHOULD drop this task. Until then, this task MUST be maintained, barring the case where an `abort` task aborts it.
+    - [`bool`: `include_tx`]: Include the full serialized raw transaction if true. Do not include if false.
 
 For Bitcoin, the following additional parameters are defined:
 
@@ -164,6 +165,8 @@ Once a `watch_address` address is involved in a transaction, `address_transactio
     - [`i32`: `id`]: The task identifier that emits this event
     - [`sha256`: `hash`]: Transaction ID.
     - [`u64`: `amount`]: Value of the amount sent to the specified address.
+    - [`u16`: `tx_len`]
+    - [`tx_len * byte`: `tx`]: Include the raw transaction in its serialized format if the corresponding `watch_address` task's `include_tx` field is set to `true`, use `0x0`, if it is set to false.
 
 Further fields may be defined depending on the asset. Any asset based on a blockchain MUST also have:
 
