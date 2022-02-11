@@ -42,8 +42,6 @@ The latter is the preferred option for privacy but depends on feature activation
 
 `[TIMEOUTOP]` is either `CHECKSEQUENCEVERIFY` or `CHECKLOCKTIMEVERIFY`.
 
-> It is worth noting that `CHECKLOCKTIMEVERIFY` will probably not work if we want to support RBF (Replace By Fee)
-
 #### Bitcoin transaction graph
 
 ![Arbitrating UTXO based transaction graph](./08-transactions/arbitrating-tx-graph.png)
@@ -74,23 +72,23 @@ The `lock (b)` creates a (SegWit v0) UTXO `(ii)` with the locking script:
 
 ```
 IF
-    2 <Alice's Ab PubKey> <Bob's Bb(Ta) PubKey> 2 CHECKMULTISIG
+    2 <the accordant seller's Ab PubKey> <the arbitrating seller's Bb(Ta) PubKey> 2 CHECKMULTISIG
 ELSE
     <num> [TIMEOUTOP] DROP
-    2 <Alice's Ac PubKey> <Bob's Bc PubKey> 2 CHECKMULTISIG
+    2 <the accordant seller's Ac PubKey> <the arbitrating seller's Bc PubKey> 2 CHECKMULTISIG
 ENDIF
 
 where
-    Ab: Alice's buy key;
-    Bb: Bob's buy key;
-    Ac: Alice's cancel key;
-    Bc: Bob's cancel key; and
-    Ta: Alice's adaptor key
+    Ab: the accordant seller's buy key;
+    Bb: the arbitrating seller's buy key;
+    Ac: the accordant seller's cancel key;
+    Bc: the arbitrating seller's cancel key; and
+    Ta: the accordant seller's adaptor key
 ```
 
 **Validation rules:**
 
-Upon receiving the transaction, Alice must validate:
+Upon receiving the transaction, the accordant seller must validate:
 
  * the buy script is composed of a 2-of-2 multisig with:
     * the first public key is `Ab`
@@ -121,13 +119,13 @@ The `lock (b)` creates a (SegWit v1) Taproot UTXO `(ii)` with the locking script
 with `TapLeaf buy script`:
 
 ```
-<Alice's Ab PubKey> CHECKSIG <Bob's Bb(Ta) PubKey> CHECKSIGADD m
+<the accordant seller's Ab PubKey> CHECKSIG <the arbitrating seller's Bb(Ta) PubKey> CHECKSIGADD m
 NUMEQUAL
 
 where
-    Ab: Alice's buy key;
-    Bb: Bob's buy key; and
-    Ta: Alice's adaptor key
+    Ab: the accordant seller's buy key;
+    Bb: the arbitrating seller's buy key; and
+    Ta: the accordant seller's adaptor key
 ```
 
 and `TapLeaf cancel script`, the cancel script, a 2-of-2 multisig with timelock constraint used by the `cancel (d)` transaction.
@@ -137,12 +135,12 @@ and `TapLeaf cancel script`, the cancel script, a 2-of-2 multisig with timelock 
 ```
 <num> [TIMEOUTOP]
 EQUALVERIFY DROP
-<Alice's Ac PubKey> CHECKSIG <Bob's Bc PubKey> CHECKSIGADD m
+<the accordant seller's Ac PubKey> CHECKSIG <the arbitrating seller's Bc PubKey> CHECKSIGADD m
 NUMEQUAL
 
 where
-    Ac: Alice's cancel key; and
-    Bc: Bob's cancel key;
+    Ac: the accordant seller's cancel key; and
+    Bc: the arbitrating seller's cancel key;
 ```
 
 #### Taproot MuSig2
@@ -165,30 +163,30 @@ The `lock (b)` creates a (SegWit v1) Taproot UTXO `(ii)` with the locking script
 P: Ab + Bb + Ta
 
 where
-    Ab: Alice's buy key;
-    Bb: Bob's buy key; and
-    Ta: Alice's adaptor key
+    Ab: the accordant seller's buy key;
+    Bb: the arbitrating seller's buy key; and
+    Ta: the accordant seller's adaptor key
 ```
 
 `TapLeaf cancel script`, the cancel script, as described in *Taproot Schnorr Scripts*.
 
 ### Buy
 
-The `buy` transaction is available as soon as the local confirmation security threshold is reached by Alice.
+The `buy` transaction is available as soon as the local confirmation security threshold is reached by the accordant seller.
 
 #### ECDSA Scripts
 
 Consumes the `lock`'s output `(ii)` with:
 
 ```
-0 <Bob's Bb(Ta) signature> <Alice's Ab signature> TRUE <script>
+0 <the arbitrating seller's Bb(Ta) signature> <the accordant seller's Ab signature> TRUE <script>
 ```
 
-and leaks the adaptor `Ta` on `<Bob's Bb(Ta) signature>` to Bob.
+and leaks the adaptor `Ta` on `<the arbitrating seller's Bb(Ta) signature>` to the arbitrating seller.
 
 **Validation rules:**
 
-Upon receiving Bob's `Bb(Ta)` signature, Alice must validate:
+Upon receiving the arbitrating seller's `Bb(Ta)` signature, the accordant seller must validate:
 
  * the signature received is:
     * valid for `Bb`
@@ -209,14 +207,14 @@ where `<script>` is the `TapLeaf buy script`;
 and `<input>`:
 
 ```
-<Bob's Bb(Ta) signature> <Alice's Ab signature>
+<the arbitrating seller's Bb(Ta) signature> <the accordant seller's Ab signature>
 ```
 
-and leaks the adaptor `Ta` on `<Bob's Bb(Ta) signature>` to Bob.
+and leaks the adaptor `Ta` on `<the arbitrating seller's Bb(Ta) signature>` to the arbitrating seller.
 
 #### Taproot MuSig2
 
-Consumes the `lock`'s Taproot output `(ii)` with one valid signature for `<Q>` the Taproot tweaked key, generated with `<P>` (MuSig2+adaptor), revealing the second secret spend key to the counterparty (Bob), effectively doing the swap.
+Consumes the `lock`'s Taproot output `(ii)` with one valid signature for `<Q>` the Taproot tweaked key, generated with `<P>` (MuSig2+adaptor), revealing the second secret spend key to the counterparty (the arbitrating seller), effectively doing the swap.
 
 ### Cancel
 
@@ -227,29 +225,29 @@ The `cancel (d)` transaction consumes the `lock`'s output `(ii)` and creates the
 Consumes the `lock`'s output `(ii)` with:
 
 ```
-0 <Bob's Bc signature> <Alice's Ac signature> FALSE <script>
+0 <the arbitrating seller's Bc signature> <the accordant seller's Ac signature> FALSE <script>
 ```
 
 and creates a (SegWit v0) UTXO `(iii)` with the locking script:
 
 ```
 IF
-    2 <Alice's Ar(Tb) PubKey> <Bob's Br PubKey> 2 CHECKMULTISIG
+    2 <the accordant seller's Ar(Tb) PubKey> <the arbitrating seller's Br PubKey> 2 CHECKMULTISIG
 ELSE
     <num> [TIMEOUTOP] DROP
-    <Alice's Ap PubKey> CHECKSIG
+    <the accordant seller's Ap PubKey> CHECKSIG
 ENDIF
 
 where
-    Ar: Alice's refund key;
-    Br: Bob's refund key;
-    Ap: Alice's punish key; and
-    Tb: Bob's adaptor key
+    Ar: the accordant seller's refund key;
+    Br: the arbitrating seller's refund key;
+    Ap: the accordant seller's punish key; and
+    Tb: the arbitrating seller's adaptor key
 ```
 
 **Validation rules:**
 
-Upon receiving the transaction, Alice must validate:
+Upon receiving the transaction, the accordant seller must validate:
 
  * the refund script is composed of a 2-of-2 multisig with:
     * the first public key is `Ar`
@@ -260,12 +258,12 @@ Upon receiving the transaction, Alice must validate:
     * the timelock operation `[TIMEOUTOP]` is followed by a `DROP` operation
     * the `DROP` is followed by `CHECKSIG` on `Ap` public key
 
-Upon receiving Bob's `Bc` signature, Alice must validate:
+Upon receiving the arbitrating seller's `Bc` signature, the accordant seller must validate:
 
  * the signature received is:
     * valid for `Bc`
 
-Upon receiving Alice's `Ac` signature, Bob must validate:
+Upon receiving the accordant seller's `Ac` signature, the arbitrating seller must validate:
 
  * the signature received is:
     * valid for `Ac`
@@ -283,7 +281,7 @@ with `<input>`: an input that fulfills the spending conditions set by `<script>`
 and `<input>`:
 
 ```
-<Bob's Bc signature> <Alice's Ac signature>
+<the arbitrating seller's Bc signature> <the accordant seller's Ac signature>
 ```
 
 Creates a Taproot UTXO `(iii)` with the locking script (SegWit v1) `OP_1 0x20 <Q' pubkey>`:
@@ -303,26 +301,26 @@ Creates a Taproot UTXO `(iii)` with the locking script (SegWit v1) `OP_1 0x20 <Q
 with `TapLeaf refund script`:
 
 ```
-<Alice's Ar(Tb) PubKey> CHECKSIG <Bob's Br PubKey> CHECKSIGADD m
+<the accordant seller's Ar(Tb) PubKey> CHECKSIG <the arbitrating seller's Br PubKey> CHECKSIGADD m
 NUMEQUAL
 
 where
-    Ar: Alice's refund key;
-    Br: Bob's refund key; and
-    Tb: Bob's adaptor key
+    Ar: the accordant seller's refund key;
+    Br: the arbitrating seller's refund key; and
+    Tb: the arbitrating seller's adaptor key
 ```
 
-and `TapLeaf punish script`, the punish script, a single signature (Alice's) with timelock constraint used by the `punish (f)` transaction.
+and `TapLeaf punish script`, the punish script, a single signature (the accordant seller's) with timelock constraint used by the `punish (f)` transaction.
 
 `TapLeaf punish script`:
 
 ```
 <num> [TIMEOUTOP]
 EQUALVERIFY DROP
-<Alice's Ap PubKey> CHECKSIGVERIFY
+<the accordant seller's Ap PubKey> CHECKSIGVERIFY
 
 where
-    Ap: Alice's punish key;
+    Ap: the accordant seller's punish key;
 ```
 
 #### Taproot MuSig2
@@ -347,30 +345,30 @@ Creates a Taproot UTXO `(iii)` with the locking script (SegWit v1) `OP_1 0x20 <Q
 P': Ar + Br + Tb
 
 where
-    Ar: Alice's refund key;
-    Br: Bob's refund key; and
-    Tb: Bob's adaptor key
+    Ar: the accordant seller's refund key;
+    Br: the arbitrating seller's refund key; and
+    Tb: the arbitrating seller's adaptor key
 ```
 
 `TapLeaf punish script`, the punish script, as described in *Taproot Schnorr Scripts*.
 
 ### Refund
 
-The `refund (e)` transaction is available as soon as the local confirmation security threshold is reached by Bob.
+The `refund (e)` transaction is available as soon as the local confirmation security threshold is reached by the arbitrating seller.
 
 #### ECDSA Scripts
 
 Consumes the `cancel (d)`'s output `(iii)` with:
 
 ```
-0 <Bob's Br signature> <Alice's Ar(Tb) signature> FALSE <script>
+0 <the arbitrating seller's Br signature> <the accordant seller's Ar(Tb) signature> FALSE <script>
 ```
 
-and leaks the adaptor `Tb` on `<Alice's Ar(Tb) signature>` to Alice.
+and leaks the adaptor `Tb` on `<the accordant seller's Ar(Tb) signature>` to the accordant seller.
 
 **Validation rules:**
 
-Upon receiving Alice's `Ar(Tb)` signature, Bob must validate:
+Upon receiving the accordant seller's `Ar(Tb)` signature, the arbitrating seller must validate:
 
  * the signature received is:
     * valid for `Ar`
@@ -391,18 +389,18 @@ where `<script>` is the `TapLeaf refund script`;
 and `<input>`:
 
 ```
-<Bob's Br signature> <Alice's Ar(Tb) signature>
+<the arbitrating seller's Br signature> <the accordant seller's Ar(Tb) signature>
 ```
 
-and leaks the adaptor `Tb` on `<Alice's Ar(Tb) signature>` to Alice.
+and leaks the adaptor `Tb` on `<the accordant seller's Ar(Tb) signature>` to the accordant seller.
 
 #### Taproot MuSig2
 
-Consumes the `cancel`'s Taproot output `(iii)` with one valid signature for `<Q'>` the Taproot tweaked key, generated with `<P'>` (MuSig2+adaptor), revealing the second secret spend key to the counterparty (Alice), effectively doing the refund.
+Consumes the `cancel`'s Taproot output `(iii)` with one valid signature for `<Q'>` the Taproot tweaked key, generated with `<P'>` (MuSig2+adaptor), revealing the second secret spend key to the counterparty (the accordant seller), effectively doing the refund.
 
 ### Punish
 
-The `punish (f)` transaction consumes `cancel (d)`'s output `(iii)` and transfers the funds to Alice and is available as soon as the timelock is passed.
+The `punish (f)` transaction consumes `cancel (d)`'s output `(iii)` and transfers the funds to the accordant seller and is available as soon as the timelock is passed.
 
 **Validation rules:**
 
@@ -413,7 +411,7 @@ This transaction has no particular validation rules enforced by either of the sw
 Consumes the `cancel`'s output `(iii)` with:
 
 ```
-<Alice's Ap signature> FALSE <script>
+<the accordant seller's Ap signature> FALSE <script>
 ```
 
 #### Taproot Schnorr Scripts & Taproot MuSig2
@@ -431,7 +429,7 @@ where `<script>` is the `TapLeaf punish script`;
 and `<input>`:
 
 ```
-<Alice's Ap signature>
+<the accordant seller's Ap signature>
 ```
 
 ## Monero
@@ -480,7 +478,7 @@ Let's define `f(tx, c)`, a function returning the fee over time for a transactio
 
 If `c(buy) = 1`, then `c(cancel) > 1`, such that at time `t` when `buy` and `cancel` are both available `cancel` has a higher probability to be mined.
 
-It is worth noting that we cannot control the coefficients `c` between `refund` and `punish` as `punish` is controlled unilaterally by Alice.
+It is worth noting that we cannot control the coefficients `c` between `refund` and `punish` as `punish` is controlled unilaterally by the accordant seller.
 
 #### Replace By Fee (RBF)
 
@@ -501,22 +499,22 @@ The swap participant has a temporal safety parameter, `delta_irreversible`, in b
 
 ##### Funding
 
-After the atomic swap protocol initialization successfully completes, Bob can publish the funding transaction. Bob publishes the funding transaction, which is later mined at block height `t(funding)`.
+After the atomic swap protocol initialization successfully completes, the arbitrating seller can publish the funding transaction. the arbitrating seller publishes the funding transaction, which is later mined at block height `t(funding)`.
 
-At `t(funding) + delta_irreversible` Alice assumes Bob's transaction is irreversible and may move on with the protocol execution. That is, Alice can publish her buy transaction.
+At `t(funding) + delta_irreversible` the accordant seller assumes the arbitrating seller's transaction is irreversible and may move on with the protocol execution. That is, the accordant seller can publish her buy transaction.
 
 ##### Buy
 
-However Alice should not wait too long for publishing the buy transaction as the cancellation path may become available, and then a race condition (double spend) between the swap (buy transaction) and the cancellation (cancel transaction) paths becomes possible.
+However the accordant seller should not wait too long for publishing the buy transaction as the cancellation path may become available, and then a race condition (double spend) between the swap (buy transaction) and the cancellation (cancel transaction) paths becomes possible.
 
 The safety parameter to prevent race conditions (=double spends) is `delta_race`, in blocks.
 
-The cancellation path becomes valid at time `t(funding) + delta(cancel)$`. Thus Alice has to publish her buy transaction the latest at
+The cancellation path becomes valid at time `t(funding) + delta(cancel)$`. Thus the accordant seller has to publish her buy transaction the latest at
 
     t(funding) + delta(cancel) - delta_race
 
 
-In sum, Alice's safety window to publish the buy transaction is from
+In sum, the accordant seller's safety window to publish the buy transaction is from
 
     t(funding) + delta_irreversible
 
@@ -555,11 +553,11 @@ to
 
     t(cancel) + delta(punish) - delta_race
 
-It can be argued that the higher bound of the refund transaction window can be extended, not deliberately and safely, but in emergency cases where Bob could not be online. The refund transaction must be published before the punish transaction gets mined, as they consume the same output from the cancel transaction.
+It can be argued that the higher bound of the refund transaction window can be extended, not deliberately and safely, but in emergency cases where the arbitrating seller could not be online. The refund transaction must be published before the punish transaction gets mined, as they consume the same output from the cancel transaction.
 
-The counterargument is that if Bob publishes the refund transaction, Alice can retrieve the secret key and will get the monero, and might as well get the bitcoin if she wins the race.
+The counterargument is that if the arbitrating seller publishes the refund transaction, the accordant seller can retrieve the secret key and will get the monero, and might as well get the bitcoin if she wins the race.
 
-While if she only gets the bitcoin, and the monero stays locked, Bob could set up a new swap to unlock the already locked monero (no cost for Alice) and propose a nice reward to Alice for revealing her private key. That is a fairly graceful failure.
+While if she only gets the bitcoin, and the monero stays locked, the arbitrating seller could set up a new swap to unlock the already locked monero (no cost for the accordant seller) and propose a nice reward to the accordant seller for revealing her private key. That is a fairly graceful failure.
 
 ##### Punish
 

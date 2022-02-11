@@ -38,9 +38,9 @@ Such protocols can be designed with cryptography and sometimes game theory. Pure
 
 **Let's explain how the game theory works in Farcaster:**
 
-The main goal of a swap is to have a successful trade. But imagine if one participant disappears or acts maliciously after all have locked their money. In such a case, the swap must be cancelled and participants must be refunded. The refund process in this protocol is heavily linked to one participant called Bob. He only has one choice: refund his money. By doing it he also refunds others' money. If Bob doesn't react the refund cannot happen for others. Now Bob can be honest or malicious: in the case he's honest he will behave according to the protocol and everyone will be refunded, but if he's malicious he can choose to do nothing, letting everybody hanging.
+The main goal of a swap is to have a successful trade. But imagine if one participant disappears or acts maliciously after all have locked their money. In such a case, the swap must be cancelled and participants must be refunded. The refund process in this protocol is heavily linked to one participant called the arbitrating seller. He only has one choice: refund his money. By doing it he also refunds others' money. If the arbitrating seller doesn't react the refund cannot happen for others. Now the arbitrating seller can be honest or malicious: in the case he's honest he will behave according to the protocol and everyone will be refunded, but if he's malicious he can choose to do nothing, letting everybody hanging.
 
-To incentivize Bob to do the action of refunding his money, a game takes place: if he doesn't react, after a determined time frame, the other participant can take his money for free, meaning he gets punished.
+To incentivize the arbitrating seller to do the action of refunding his money, a game takes place: if he doesn't react, after a determined time frame, the other participant can take his money for free, meaning he gets punished.
 
 ## Glossary and Terminology Guide
 
@@ -96,7 +96,7 @@ To incentivize Bob to do the action of refunding his money, a game takes place: 
    * The phase a *daemon* plays after the negotiation phase to perform the swap. During this phase, the *daemon* is connected and interacts with *clients*, *syncers*, and a *counter-party daemon*.
 
 * #### *Swap role*:
-   * The role a *daemon* fulfills during the swap phase. Two roles are available: Alice and Bob.
+   * The role a *daemon* fulfills during the swap phase. Two roles are available: the accordant seller and the arbitrating seller.
 
 * #### *Syncer*:
    * Syncer or Chain Syncer; A piece of software bridging a *daemon* and a blockchain. Produces *blockchain events* and listens for *tasks*.

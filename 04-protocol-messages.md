@@ -45,9 +45,9 @@ Cryptographic and transaction types are assumed to be generic, so e.g. different
 
 ### The `commit_alice_session_params` Message
 
-**Sent by**: Alice
+**Sent by**: the accordant seller
 
-`commit_alice_session_params` forces Alice to commit to the result of her cryptographic setup before receiving Bob's setup. This is done to remove adaptive behavior.
+`commit_alice_session_params` forces the accordant seller to commit to the result of her cryptographic setup before receiving the arbitrating seller's setup. This is done to remove adaptive behavior.
 
 If not needed for the accordant blockchain the view key commitment must be set to a null hash.
 
@@ -64,9 +64,9 @@ If not needed for the accordant blockchain the view key commitment must be set t
 
 ### The `commit_bob_session_params` Message
 
-**Sent by**: Bob
+**Sent by**: the arbitrating seller
 
-`commit_bob_session_params` forces Bob to commit to the result of his cryptographic setup before receiving Alice's setup. This is done to remove adaptive behavior.
+`commit_bob_session_params` forces the arbitrating seller to commit to the result of his cryptographic setup before receiving the accordant seller's setup. This is done to remove adaptive behavior.
 
 If not needed for the accordant blockchain the view key commitment must be set to a null hash.
 
@@ -82,7 +82,7 @@ If not needed for the accordant blockchain the view key commitment must be set t
 
 ### The `reveal_alice_session_params` Message
 
-**Sent by**: Alice
+**Sent by**: the accordant seller
 
 `reveal_alice_session_params` reveals the parameters commited by the `commit_alice_session_params` message.
 
@@ -114,7 +114,7 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
 
 ### The `reveal_bob_session_params` Message
 
-**Sent by**: Bob
+**Sent by**: the arbitrating seller
 
 `reveal_bob_session_params` reveals the parameters commited by the `commit_bob_session_params` message.
 
@@ -144,9 +144,9 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
 
 ### The `core_arbitrating_setup` Message
 
-**Sent by**: Bob
+**Sent by**: the arbitrating seller
 
-`core_arbitrating_setup` sends the `lock (b)`, `cancel (d)` and `refund (e)` arbitrating transactions from Bob to Alice, as well as Bob's signature for the `cancel (d)` transaction.
+`core_arbitrating_setup` sends the `lock (b)`, `cancel (d)` and `refund (e)` arbitrating transactions from the arbitrating seller to the accordant seller, as well as the arbitrating seller's signature for the `cancel (d)` transaction.
 
  1. type: 33710 (`core_arbitrating_setup`)
  2. data:
@@ -162,9 +162,9 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
 
 ### The `refund_procedure_signatures` Message
 
-**Sent by**: Alice
+**Sent by**: the accordant seller
 
-`refund_procedure_signatures` transmits Alice's signature for the `cancel (d)` transaction and Alice's adaptor signature for the `refund (e)` transaction. Upon receipt, Bob must validate the signatures.
+`refund_procedure_signatures` transmits the accordant seller's signature for the `cancel (d)` transaction and the accordant seller's adaptor signature for the `refund (e)` transaction. Upon receipt, the arbitrating seller must validate the signatures.
 
  1. type: 33720 (`refund_procedure_signatures`)
  2. data:
@@ -177,9 +177,9 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
 
 ### The `buy_procedure_signature` Message
 
-**Sent by**: Bob
+**Sent by**: the arbitrating seller
 
-`buy_procedure_signature`is intended to transmit Bob's adaptor signature for the `buy (c)` transaction and the transaction itself. Upon receipt, Alice must validate the transaction and the adaptor signature.
+`buy_procedure_signature`is intended to transmit the arbitrating seller's adaptor signature for the `buy (c)` transaction and the transaction itself. Upon receipt, the accordant seller must validate the transaction and the adaptor signature.
 
  1. type: 33730 (`buy_procedure_signature`)
  2. data:
@@ -191,7 +191,7 @@ If not needed for the pair of Arbitrating-Accordant blockchain the proof value m
 
 ### The `abort` Message
 
-**Sent by**: Alice|Bob
+**Sent by**: the accordant seller|the arbitrating seller
 
 `abort` is an `OPTIONAL` courtesy message from either swap partner to inform the counterparty that they have aborted the swap with an `OPTIONAL` message body to provide the reason.
 

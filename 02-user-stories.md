@@ -32,18 +32,18 @@ The maker starts her node in maker mode and registers all the parameters an offe
 
 ### Create an offer
 
-To create an offer, a maker registers the following list of required inputs:
+To create an offer, a maker registers the following list of required inputs (non-exhaustive list, see [10. Public Offer](./10-public-offer.md)):
 
  * The Arbitrating/Accordant blockchain identifier, e.g. BTC-XMR; *Must identify: blockchain chain and asset traded. E.g. bitcoin on mainnet or bitcoin on testnet. This can be done through a `chain_hash` parameter or be defined by an RFC in Farcaster.*
  * The arbitrating blockchain asset amount; *In the unit type defined by the blockchain.*
  * The accordant blockchain asset amount; *In the unit type defined by the blockchain.*
- * The timelock durations used during the swap, they define the two-time frames for canceling the swap on-chain and punishing Bob if he doesn't react after a swap cancellation; *In the unit type defined by the blockchain.*
+ * The timelock durations used during the swap, they define the two-time frames for canceling the swap on-chain and punishing the arbitrating seller if he doesn't react after a swap cancellation; *In the unit type defined by the blockchain.*
  * The fee calculation strategy defines the transactions fee strategy to use on e.g. BTC transactions; *This might be fixed, within a range, or defined as a function or a more evolved type.*
- * The future maker swap role (Alice or Bob); *Taker role is derived from this as the protocol always have one Alice and one Bob.*
+ * The future maker swap role (accordant seller or arbitrating seller); *Taker role is derived from this as the protocol always have one accordant seller and one arbitrating seller.*
 
 The client user interface should provide an easy way to define an offer through e.g. a Buy or Sell point of view, and may auto-fill the fee strategy based on user preferred fee estimators.
 
-For the participant who plays Bob's role during the swap, the fee strategy and the timelock durations are critical values to guarantee safety and potential funds recovery. A too short timelock duration or too low fee strategy might allow Alice to punish Bob even if he behaves accordingly to the protocol. The swap client should carefully check these parameters as a regular wallet would do for the fees.
+For the participant who plays the arbitrating seller's role during the swap, the fee strategy and the timelock durations are critical values to guarantee safety and potential funds recovery. A too short timelock duration or too low fee strategy might allow the accordant seller to punish the arbitrating seller even if he behaves accordingly to the protocol. The swap client should carefully check these parameters as a regular wallet would do for the fees.
 
 ### Create a public offer
 
@@ -69,8 +69,8 @@ We define in this RFC the interface between the negotiation and swap phase. At t
  * They validated a set of parameters containing:
      * Blockchains & assets used as an Arbitrating-Accordant asset pair, e.g. BTC-XMR
      * Amount exchanged of each asset, e.g. 200 XMR and 1.3 BTC
-     * Transition from Maker-Taker roles into Alice-Bob roles
-     * Timelock durations for canceling the swap and punishing Bob's non-reaction
+     * Transition from Maker-Taker roles into accordant seller-arbitrating seller roles
+     * Timelock durations for canceling the swap and punishing the arbitrating seller's non-reaction
      * Fee strategy applied to arbitrating transactions
 
 ### GUI Example
@@ -102,9 +102,9 @@ $ swap-cli --make
 > Punish Timelock: 10
 > Fee strategy ([F]ixed, [R]ange, [D]ynamic): R
 > Fee range (sat/vB): 10-40
-> Role ([A]lice,[B]ob): A
+> Role ([A]ccordant,A[r]bitrating) seller: A
 
-You chose Alice:
+You chose the accordant seller:
 > Bitcoin destination address: bc1qndk902ka3266wzta9cnl4fgfcmhy7xqrdh26ka
 
 Exchange 0.3 BTC for 10 XMR? [y/N] y
@@ -127,12 +127,12 @@ Public offer
 : Cancel Timelock: 4
 : Punish Timelock: 10
 : Fee range (sat/vB): 10-40
-: Your role: Bob
-: Counterparty role: Alice
+: Your role: the arbitrating seller
+: Counterparty role: the accordant seller
 
 Exchange 10 XMR for 0.3 BTC? [y/N] y
 
-You are Bob:
+You are the arbitrating seller:
 > Bitcoin refund address: bc1qkj370d9hc3seqauu9sujm96aqfw5ml9a46ejfa
 
 Connecting to counterparty daemon...
@@ -142,11 +142,11 @@ Connecting to counterparty daemon...
 
 The swap phase for each role starts with the common set of parameters defined above as the interface: the public offer.
 
-In addition, for Alice's role:
+In addition, for the accordant seller's role:
 
  * The destination Arbitrating address
 
-And, in addition, for Bob's role:
+And, in addition, for the arbitrating seller's role:
 
  * The refund Arbitrating address
 
@@ -163,7 +163,7 @@ We describe the high-level view of the swap phase with four steps:
  3. Accordant locking step
  4. Swap step
 
-We describe a basic user experience with an atomic swap GUI client for Alice and Bob. This is provided for educational purposes and to give an idea to the reader; the swap GUI client may look different depending on the platform (mobile, desktop, cli, etc) and potential wallet integration.
+We describe a basic user experience with an atomic swap GUI client for the accordant seller and the arbitrating seller. This is provided for educational purposes and to give an idea to the reader; the swap GUI client may look different depending on the platform (mobile, desktop, cli, etc) and potential wallet integration.
 
 The design proposed here does not make any assumptions about wallet integration. All the funds can be sourced from external wallets with no restriction on the form factor. While this has the cost of an additional transaction on the Arbitrating blockchain, this can be removed if the client is closely integrated in a given wallet.
 
@@ -171,7 +171,7 @@ The design proposed here does not make any assumptions about wallet integration.
 *Fig 2. Example of a GUI executing a swap*
 
 #### 1. Initialization Step (1 in the diagram)
-Alice and Bob start the pre-initialization. They exchange and verify parameters specified in [04. Protocol Messages](./04-protocol-messages.md) RFC. If the validation successfully terminates, the client moves to the next step.
+The accordant seller and the arbitrating seller start the pre-initialization. They exchange and verify parameters specified in [04. Protocol Messages](./04-protocol-messages.md) RFC. If the validation successfully terminates, the client moves to the next step.
 
 ##### Messages exchanged:
 
@@ -179,33 +179,33 @@ Alice and Bob start the pre-initialization. They exchange and verify parameters 
 
 > Messages can arrive in any order
 
-- Alice → Bob: [`commit_alice_session_params`](./04-protocol-messages.md#the-commit_alice_session_params-message)
-- Bob → Alice: [`commit_bob_session_params`](./04-protocol-messages.md#the-commit_bob_session_params-message)
+- Accordant seller → Arbitrating seller: [`commit_alice_session_params`](./04-protocol-messages.md#the-commit_alice_session_params-message)
+- Arbitrating seller → Accordant seller: [`commit_bob_session_params`](./04-protocol-messages.md#the-commit_bob_session_params-message)
 
 *Second round, reveal values*
 
 > Messages can arrive in any order
 
-- Alice → Bob: [`reveal_alice_session_params`](./04-protocol-messages.md#the-reveal_alice_session_params-message)
-- Bob → Alice: [`reveal_bob_session_params`](./04-protocol-messages.md#the-reveal_bob_session_params-message)
+- Accordant seller → Arbitrating seller: [`reveal_alice_session_params`](./04-protocol-messages.md#the-reveal_alice_session_params-message)
+- Arbitrating seller → Accordant seller: [`reveal_bob_session_params`](./04-protocol-messages.md#the-reveal_bob_session_params-message)
 
 #### 2. Arbitrating Locking Step (2-3 in the diagram)
-After the parameters are exchanged and validated, Bob asks the user for funding. Upon receiving funds, Bob creates the transactions, signs the cancel path, and sends them to Alice with the `core_arbitrating_setup` protocol message. He acquires Alice's signatures for the cancel path. The bitcoin are locked when Bob is able to trigger the cancel path and refund the assets, i.e. after receiving the `refund_procedure_signatures` protocol message.
+After the parameters are exchanged and validated, the arbitrating seller asks the user for funding. Upon receiving funds, the arbitrating seller creates the transactions, signs the cancel path, and sends them to the accordant seller with the `core_arbitrating_setup` protocol message. He acquires the accordant seller's signatures for the cancel path. The bitcoin are locked when the arbitrating seller is able to trigger the cancel path and refund the assets, i.e. after receiving the `refund_procedure_signatures` protocol message.
 
 ##### Messages exchanged:
 
-- Bob → Alice: [`core_arbitrating_setup`](./04-protocol-messages.md#the-core_arbitrating_setup-message)
-- Alice → Bob: [`refund_procedure_signatures`](./04-protocol-messages.md#the-refund_procedure_signatures-message)
+- Arbitrating seller → Accordant seller: [`core_arbitrating_setup`](./04-protocol-messages.md#the-core_arbitrating_setup-message)
+- Accordant seller → Arbitrating seller: [`refund_procedure_signatures`](./04-protocol-messages.md#the-refund_procedure_signatures-message)
 
 #### 3. Accordant Locking Step (4 in the diagram)
-Once Alice has received sufficient confirmations for Bob's `lock (b)` transaction to feel safe, Alice proceeds to lock her monero with the Monero `lock (x)` transaction.
+Once the accordant seller has received sufficient confirmations for the arbitrating seller's `lock (b)` transaction to feel safe, the accordant seller proceeds to lock her monero with the Monero `lock (x)` transaction.
 
 #### 4. Swap Step (5-6 in the diagram)
-Once Bob has received sufficient confirmations for the Monero `lock (x)` transaction to feel safe, Bob sends Alice the `buy (c)` encrypted signature, which Alice requires to execute the first branch of the `lock (b)` transaction output script via the `buy (c)` transaction.
+Once the arbitrating seller has received sufficient confirmations for the Monero `lock (x)` transaction to feel safe, the arbitrating seller sends the accordant seller the `buy (c)` encrypted signature, which the accordant seller requires to execute the first branch of the `lock (b)` transaction output script via the `buy (c)` transaction.
 
-Alice then signs the `buy (c)` transaction to complete it and publishes it, leaking her Monero key share and finalizing her swap at the same time. Bob sees the `buy (c)` transaction in the mempool, extracts the Monero key share, and displays it to the user.
+The accordant seller then signs the `buy (c)` transaction to complete it and publishes it, leaking her Monero key share and finalizing her swap at the same time. the arbitrating seller sees the `buy (c)` transaction in the mempool, extracts the Monero key share, and displays it to the user.
 
 ##### Message exchanged:
 
-- Bob → Alice: [`buy_procedure_signature`](./04-protocol-messages.md#the-buy_procedure_signature-message)
+- Arbitrating seller → Accordant seller: [`buy_procedure_signature`](./04-protocol-messages.md#the-buy_procedure_signature-message)
 
